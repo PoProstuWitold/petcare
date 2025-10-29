@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<header th:fragment="nav" class="bg-white/70 backdrop-blur sticky top-0 z-40 border-b">
+    <div class="container mx-auto max-w-5xl px-4 h-16 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2 font-semibold">
+            <span>PetCare</span>
+        </a>
+
+        <nav class="flex items-center gap-4">
+            <a href="/" class="text-sm hover:text-blue-600 transition">Home</a>
+            <a href="/status" class="text-sm hover:text-blue-600 transition">System Status</a>
+        </nav>
+    </div>
+</header>
+</body>
+</html>
