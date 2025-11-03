@@ -29,7 +29,7 @@ public class RootController {
         Map<String, Object> live = healthService.liveness();
         Map<String, Object> ready = healthService.readiness();
 
-        model.addAttribute("pageTitle", "PetCare — Status");
+        model.addAttribute("pageTitle", "PetCare - Status");
         model.addAttribute("timestamp", Instant.now().toString());
 
         model.addAttribute("overall", overall);

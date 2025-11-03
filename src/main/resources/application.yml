@@ -2,5 +2,35 @@ spring:
   application:
     name: petcare
 
+  datasource:
+    url: jdbc:h2:mem:petcare;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+
+  flyway:
+    enabled: true
+
+  thymeleaf:
+    cache: false
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+logging:
+  level:
+    org.springframework.security: info
+    org.hibernate.SQL: debug
+
 server:
   port: 8080
