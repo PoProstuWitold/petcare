@@ -78,7 +78,6 @@ public class DataInitializer implements CommandLineRunner {
         boolean emailTaken = userRepository.existsByEmail(email);
         if (emailTaken) {
             log.info("Email '{}' already used. Skipping user '{}' seeding.", email, username);
-            // próbujemy jednak go znaleźć po emailu, żeby mieć referencję
             return userRepository.findByEmail(email).orElse(null);
         }
 

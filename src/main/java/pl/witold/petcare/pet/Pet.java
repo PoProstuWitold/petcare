@@ -1,10 +1,13 @@
 package pl.witold.petcare.pet;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import pl.witold.petcare.user.User;
 
 import java.time.LocalDate;
 
+@Getter
 @Entity
 @Table(name = "pets")
 public class Pet {
@@ -13,27 +16,32 @@ public class Pet {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
-            name = "owner_id",
             nullable = false,
             foreignKey = @ForeignKey(name = "fk_pets_owner")
     )
     private User owner;
 
+    @Setter
     @Column(nullable = false, length = 64)
     private String name;
 
-    // Na razie jako zwykły string (np. "DOG", "CAT")
+    // For now regular string, later can be changed to enum or separate entity
+    @Setter
     @Column(nullable = false, length = 32)
     private String species;
 
+    @Setter
     @Column(length = 64)
     private String breed;
 
-    @Column(name = "date_of_birth")
+    @Setter
+    @Column()
     private LocalDate dateOfBirth;
 
+    @Setter
     @Column(length = 512)
     private String notes;
 
@@ -55,55 +63,4 @@ public class Pet {
         this.notes = notes;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public User getOwner() {
-        return owner;
-    }
-
-    public void setOwner(User owner) {
-        this.owner = owner;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getSpecies() {
-        return species;
-    }
-
-    public void setSpecies(String species) {
-        this.species = species;
-    }
-
-    public String getBreed() {
-        return breed;
-    }
-
-    public void setBreed(String breed) {
-        this.breed = breed;
-    }
-
-    public LocalDate getDateOfBirth() {
-        return dateOfBirth;
-    }
-
-    public void setDateOfBirth(LocalDate dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
 }

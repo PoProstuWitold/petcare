@@ -3,7 +3,7 @@
       th:replace="~{layouts/base :: layout(~{::section})}">
 <section>
     <div class="mx-auto max-w-md bg-white shadow rounded-xl p-6">
-        <h1 class="text-2xl font-semibold mb-4">Create account</h1>
+        <h1 class="text-2xl font-semibold mb-4">Register</h1>
 
         <form th:action="@{/auth/register}" th:object="${form}" method="post" novalidate class="space-y-4">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
@@ -42,10 +42,9 @@
                 <p class="text-sm text-red-700" th:each="e : ${#fields.globalErrors()}" th:text="${e}"></p>
             </div>
 
-            <!-- Submit jak na stronie logowania -->
             <button type="submit"
                     class="w-full rounded-lg bg-gray-900 text-white py-2 hover:bg-black">
-                Create account
+                SIGN UP
             </button>
         </form>
 

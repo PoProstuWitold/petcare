@@ -36,10 +36,10 @@ public class AuthController {
                            BindingResult binding,
                            Model model) {
         if (!form.getPassword().equals(form.getConfirmPassword())) {
-            binding.rejectValue("confirmPassword", "password.mismatch", "Hasła nie są takie same");
+            binding.rejectValue("confirmPassword", "password.mismatch", "Passwords do not match");
         }
         if (binding.hasErrors()) {
-            model.addAttribute("pageTitle", "Rejestracja · PetCare");
+            model.addAttribute("pageTitle", "PetCare - Register");
             return "auth/register";
         }
         try {
@@ -47,13 +47,13 @@ public class AuthController {
         } catch (IllegalArgumentException ex) {
             String msg = ex.getMessage();
             if (msg != null && msg.contains("Username")) {
-                binding.rejectValue("username", "username.taken", "Nazwa użytkownika zajęta");
+                binding.rejectValue("username", "username.taken", "Username is already in use");
             } else if (msg != null && msg.contains("Email")) {
-                binding.rejectValue("email", "email.used", "Email już użyty");
+                binding.rejectValue("email", "email.used", "Email is already in use");
             } else {
-                binding.reject("register.failed", "Rejestracja nie powiodła się");
+                binding.reject("register.failed", "Registration failed");
             }
-            model.addAttribute("pageTitle", "Rejestracja · PetCare");
+            model.addAttribute("pageTitle", "PetCare - Register");
             return "auth/register";
         }
         return "redirect:/auth/login?registered";

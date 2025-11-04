@@ -39,7 +39,7 @@ public class PetController {
         }
 
         model.addAttribute("pets", pets);
-        model.addAttribute("pageTitle", "My pets · PetCare");
+        model.addAttribute("pageTitle", "PetCare - My Pets");
 
         return "pets/index";
     }

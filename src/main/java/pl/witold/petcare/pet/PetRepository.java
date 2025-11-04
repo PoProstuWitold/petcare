@@ -10,10 +10,7 @@ public interface PetRepository extends JpaRepository<Pet, Long> {
 
     List<Pet> findByOwnerOrderByNameAsc(User owner);
     @Query("""
-           select p 
-           from Pet p 
-           join fetch p.owner o 
-           order by o.fullName, p.name
+           select p from Pet p join fetch p.owner o order by o.fullName, p.name
            """)
     List<Pet> findAllWithOwnerOrdered();
 }

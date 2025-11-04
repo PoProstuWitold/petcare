@@ -3,7 +3,7 @@
       th:replace="~{layouts/base :: layout(~{::section})}">
 <section>
     <div class="mx-auto max-w-md bg-white shadow rounded-xl p-6">
-        <h1 class="text-2xl font-semibold mb-4">Sign in</h1>
+        <h1 class="text-2xl font-semibold mb-4">Login</h1>
 
         <div th:if="${param.registered}">
             <p class="mb-4 rounded-md bg-green-50 p-3 text-green-700">Registration successful. Please sign in.</p>
@@ -31,12 +31,12 @@
             </label>
 
             <button type="submit"
-                    class="w-full rounded-lg bg-gray-900 text-white py-2 hover:bg-black">Sign in</button>
+                    class="w-full rounded-lg bg-gray-900 text-white py-2 hover:bg-black">SIGN IN</button>
         </form>
 
         <p class="mt-4 text-sm text-gray-600">
             Don’t have an account?
-            <a class="text-blue-700 hover:underline" th:href="@{/auth/register}">Create one</a>
+            <a class="text-blue-700 hover:underline" th:href="@{/auth/register}">Sign up</a>
         </p>
     </div>
 </section>

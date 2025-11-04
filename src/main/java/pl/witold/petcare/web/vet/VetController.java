@@ -1,4 +1,4 @@
-package pl.witold.petcare.web;
+package pl.witold.petcare.web.vet;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -22,6 +22,7 @@ public class VetController {
         List<Pet> pets = petRepository.findAllWithOwnerOrdered();
 
         model.addAttribute("pets", pets);
+        model.addAttribute("pageTitle", "PetCare - Vet Panel");
         return "vet/index";
     }
 }

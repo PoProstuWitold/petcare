@@ -24,7 +24,7 @@ public class AdminController {
         List<User> allUsers = users.findAll();
 
         model.addAttribute("users", allUsers);
-        model.addAttribute("pageTitle", "Admin · PetCare");
+        model.addAttribute("pageTitle", "PetCare - Admin Panel");
 
         return "admin/index";
     }

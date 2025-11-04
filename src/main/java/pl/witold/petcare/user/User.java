@@ -1,16 +1,14 @@
 package pl.witold.petcare.user;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.Set;
 
+@Getter
 @Entity
-@Table(
-        name = "users",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uk_users_username", columnNames = "username"),
-                @UniqueConstraint(name = "uk_users_email", columnNames = "email")
-        }
-)
+@Table(name = "users")
 public class User {
 
     @Id
@@ -20,27 +18,30 @@ public class User {
     /**
      * Full name of the person (first name, optional middle name, surname) in a single field.
      */
-    @Column(name = "full_name", nullable = false, length = 128)
+    @Setter
+    @Column(nullable = false, length = 128)
     private String fullName;
 
-    @Column(nullable = false, length = 64)
+    @Setter
+    @Column(nullable = false, length = 64, unique = true)
     private String username;
 
-    @Column(nullable = false, length = 255)
+    @Setter
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password_hash", nullable = false, length = 60)
+    @Setter
+    @Column(nullable = false, length = 60)
     private String passwordHash;
 
+    @Setter
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
-            name = "user_roles",
             joinColumns = @JoinColumn(
-                    name = "user_id",
                     foreignKey = @ForeignKey(name = "fk_user_roles_user")
             )
     )
-    @Column(name = "role", nullable = false, length = 32)
+    @Column(nullable = false, length = 32)
     @Enumerated(EnumType.STRING)
     private Set<Role> roles;
 
@@ -56,47 +57,4 @@ public class User {
         this.roles = roles;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
-    public Set<Role> getRoles() {
-        return roles;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
-    }
 }

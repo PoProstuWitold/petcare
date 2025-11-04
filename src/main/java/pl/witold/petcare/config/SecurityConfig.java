@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -15,7 +16,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
-                .headers(h -> h.frameOptions(f -> f.sameOrigin()))
+                .headers(h -> h.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/", "/home/**",
@@ -23,13 +24,13 @@ public class SecurityConfig {
                                 "/css/**", "/js/**", "/assets/**",
                                 "/h2-console/**"
                         ).permitAll()
-                        // wymaga logowania
+                        // requires authentication
                         .requestMatchers("/pets/**").authenticated()
                         // vet + admin
                         .requestMatchers("/vet/**").hasAnyRole("VET", "ADMIN")
-                        // tylko admin
+                        // only admin
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        // cała reszta na razie bez wymogów
+                        // everything else
                         .anyRequest().permitAll()
                 )
                 .formLogin(form -> form
@@ -58,9 +59,9 @@ public class SecurityConfig {
             UserDetailsService userDetailsService,
             BCryptPasswordEncoder encoder
     ) {
-        DaoAuthenticationProvider p = new DaoAuthenticationProvider();
-        p.setPasswordEncoder(encoder);
-        p.setUserDetailsService(userDetailsService);
-        return p;
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+        provider.setPasswordEncoder(encoder);
+        return provider;
     }
+
 }
