@@ -9,6 +9,12 @@
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
             <label class="block">
+                <span class="text-sm">Full name</span>
+                <input class="mt-1 w-full rounded-lg border px-3 py-2" th:field="*{fullName}" />
+                <span class="text-sm text-red-700" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></span>
+            </label>
+
+            <label class="block">
                 <span class="text-sm">Username</span>
                 <input class="mt-1 w-full rounded-lg border px-3 py-2" th:field="*{username}" />
                 <span class="text-sm text-red-700" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></span>

@@ -43,7 +43,7 @@ public class AuthController {
             return "auth/register";
         }
         try {
-            users.register(form.getUsername().trim(), form.getEmail().trim(), form.getPassword());
+            users.register(form.getFullName().trim(), form.getUsername().trim(), form.getEmail().trim(), form.getPassword());
         } catch (IllegalArgumentException ex) {
             String msg = ex.getMessage();
             if (msg != null && msg.contains("Username")) {

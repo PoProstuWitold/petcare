@@ -19,7 +19,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User register(String username, String email, String rawPassword) {
+    public User register(String fullName, String username, String email, String rawPassword) {
         if (userRepository.existsByUsername(username)) {
             throw new IllegalArgumentException("Username already taken");
         }
@@ -27,7 +27,7 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Email already in use");
         }
         String hash = encoder.encode(rawPassword);
-        User user = new User(username, email, hash, Set.of(Role.USER));
+        User user = new User(fullName, username, email, hash, Set.of(Role.USER));
         return userRepository.save(user);
     }
 

@@ -1,6 +1,7 @@
 -- Users
 create table if not exists users (
     id bigint generated always as identity primary key,
+    full_name varchar(128) not null,
     username varchar(64) not null,
     email varchar(255) not null,
     password_hash varchar(60) not null
