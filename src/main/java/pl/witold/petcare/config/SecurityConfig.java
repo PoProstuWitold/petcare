@@ -3,7 +3,6 @@ package pl.witold.petcare.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,8 +17,20 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
                 .headers(h -> h.frameOptions(f -> f.sameOrigin()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/home/**", "/auth/**", "/css/**", "/js/**", "/assets/**", "/h2-console/**").permitAll()
-                        .anyRequest().permitAll() // <- nic nie wymuszamy
+                        .requestMatchers(
+                                "/", "/home/**",
+                                "/auth/**",
+                                "/css/**", "/js/**", "/assets/**",
+                                "/h2-console/**"
+                        ).permitAll()
+                        // wymaga logowania
+                        .requestMatchers("/pets/**").authenticated()
+                        // vet + admin
+                        .requestMatchers("/vet/**").hasAnyRole("VET", "ADMIN")
+                        // tylko admin
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        // cała reszta na razie bez wymogów
+                        .anyRequest().permitAll()
                 )
                 .formLogin(form -> form
                         .loginPage("/auth/login")

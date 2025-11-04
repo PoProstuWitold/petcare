@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/base :: layout(~{::section})}">
+<section th:fragment="content" class="space-y-6">
+
+    <div class="flex items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-semibold">Admin Panel</h1>
+            <p class="mt-1 text-sm text-slate-600">
+                Overview of all users in the PetCare system.
+            </p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-4">
+        <h2 class="text-lg font-semibold mb-3">Users</h2>
+
+        <div th:if="${#lists.isEmpty(users)}">
+            <p class="text-sm text-gray-600">No users found.</p>
+        </div>
+
+        <div th:if="${!#lists.isEmpty(users)}" class="overflow-x-auto">
+            <table class="w-full text-sm border-t border-gray-200">
+                <thead>
+                <tr class="text-left text-gray-600">
+                    <th class="py-2 pr-4">ID</th>
+                    <th class="py-2 pr-4">Username</th>
+                    <th class="py-2 pr-4">Full name</th>
+                    <th class="py-2 pr-4">Email</th>
+                    <th class="py-2 pr-4">Roles</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="user : ${users}" class="border-t border-gray-100">
+                    <td class="py-2 pr-4 text-gray-500" th:text="${user.id}">1</td>
+                    <td class="py-2 pr-4 font-medium" th:text="${user.username}">username</td>
+                    <td class="py-2 pr-4" th:text="${user.fullName}">Full Name</td>
+                    <td class="py-2 pr-4" th:text="${user.email}">email@example.com</td>
+                    <td class="py-2 pr-4">
+                        <span th:each="role : ${user.roles}"
+                              class="inline-flex items-center rounded-full border border-slate-300 px-2 py-0.5 text-xs mr-1 mb-1"
+                              th:text="${role}">
+                            ROLE
+                        </span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section>
+</html>

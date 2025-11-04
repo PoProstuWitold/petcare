@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/base :: layout(~{::section})}">
+<section th:fragment="content" class="space-y-6">
+
+    <div class="flex items-center justify-between gap-4">
+        <h1 class="text-2xl md:text-3xl font-semibold">My Pets</h1>
+    </div>
+
+    <!-- Flash po dodaniu -->
+    <div th:if="${petCreated}">
+        <p class="rounded-md bg-green-50 p-3 text-green-700">
+            Pet has been added successfully.
+        </p>
+    </div>
+
+    <!-- Lista zwierzaków -->
+    <div class="bg-white rounded-xl shadow p-4">
+        <h2 class="text-lg font-semibold mb-3">Your pets</h2>
+
+        <div th:if="${#lists.isEmpty(pets)}">
+            <p class="text-sm text-gray-600">You don’t have any pets yet. Add your first pet below.</p>
+        </div>
+
+        <table th:if="${!#lists.isEmpty(pets)}" class="w-full text-sm border-t border-gray-200">
+            <thead>
+            <tr class="text-left text-gray-600">
+                <th class="py-2 pr-4">Name</th>
+                <th class="py-2 pr-4">Species</th>
+                <th class="py-2 pr-4">Breed</th>
+                <th class="py-2 pr-4">Date of birth</th>
+                <th class="py-2 pr-4">Notes</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="pet : ${pets}" class="border-t border-gray-100">
+                <td class="py-2 pr-4 font-medium" th:text="${pet.name}">Name</td>
+                <td class="py-2 pr-4" th:text="${pet.species}">Species</td>
+                <td class="py-2 pr-4" th:text="${pet.breed} ?: '-'">Breed</td>
+                <td class="py-2 pr-4" th:text="${pet.dateOfBirth} ?: '-'">Date of birth</td>
+                <td class="py-2 pr-4 text-gray-700" th:text="${pet.notes} ?: '-'">Notes</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Formularz dodawania zwierzaka -->
+    <div class="bg-white rounded-xl shadow p-4">
+        <h2 class="text-lg font-semibold mb-3">Add a new pet</h2>
+
+        <form th:action="@{/pets}" th:object="${petForm}" method="post" class="space-y-4">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <div class="grid md:grid-cols-2 gap-4">
+                <!-- Name -->
+                <label class="block">
+                    <span class="text-sm">Name</span>
+                    <input class="mt-1 w-full rounded-lg border px-3 py-2"
+                           th:field="*{name}" />
+                    <span class="text-sm text-red-700"
+                          th:if="${#fields.hasErrors('name')}"
+                          th:errors="*{name}"></span>
+                </label>
+
+                <!-- Species -->
+                <label class="block">
+                    <span class="text-sm">Species (e.g. DOG, CAT)</span>
+                    <input class="mt-1 w-full rounded-lg border px-3 py-2"
+                           th:field="*{species}" />
+                    <span class="text-sm text-red-700"
+                          th:if="${#fields.hasErrors('species')}"
+                          th:errors="*{species}"></span>
+                </label>
+
+                <!-- Breed -->
+                <label class="block">
+                    <span class="text-sm">Breed (optional)</span>
+                    <input class="mt-1 w-full rounded-lg border px-3 py-2"
+                           th:field="*{breed}" />
+                    <span class="text-sm text-red-700"
+                          th:if="${#fields.hasErrors('breed')}"
+                          th:errors="*{breed}"></span>
+                </label>
+
+                <!-- Date of birth -->
+                <label class="block">
+                    <span class="text-sm">Date of birth (optional)</span>
+                    <input class="mt-1 w-full rounded-lg border px-3 py-2"
+                           type="date"
+                           th:field="*{dateOfBirth}" />
+                    <span class="text-sm text-red-700"
+                          th:if="${#fields.hasErrors('dateOfBirth')}"
+                          th:errors="*{dateOfBirth}"></span>
+                </label>
+            </div>
+
+            <!-- Notes -->
+            <label class="block">
+                <span class="text-sm">Notes (optional)</span>
+                <textarea class="mt-1 w-full rounded-lg border px-3 py-2"
+                          rows="3"
+                          th:field="*{notes}"></textarea>
+                <span class="text-sm text-red-700"
+                      th:if="${#fields.hasErrors('notes')}"
+                      th:errors="*{notes}"></span>
+            </label>
+
+            <div class="pt-2">
+                <button type="submit"
+                        class="inline-flex items-center rounded-lg bg-gray-900 text-white px-4 py-2 text-sm font-medium hover:bg-black">
+                    Add pet
+                </button>
+            </div>
+        </form>
+    </div>
+
+</section>
+</html>
