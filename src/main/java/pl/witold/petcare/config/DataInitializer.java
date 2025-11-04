@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import pl.witold.petcare.pet.Pet;
 import pl.witold.petcare.pet.PetRepository;
+import pl.witold.petcare.pet.Sex;
+import pl.witold.petcare.pet.Species;
 import pl.witold.petcare.user.Role;
 import pl.witold.petcare.user.User;
 import pl.witold.petcare.user.UserRepository;
@@ -108,42 +110,54 @@ public class DataInitializer implements CommandLineRunner {
         if (witq != null) {
             petRepository.save(new Pet(
                     witq,
-                    "Burek",
-                    "DOG",
+                    "Sara",
+                    Species.DOG,
+                    Sex.FEMALE,
                     "Crossbreed",
-                    LocalDate.of(2018, 5, 10),
-                    "Allergic to chicken."
+                    LocalDate.of(2021, 5, 10),
+                    2021,
+                    9.5,
+                    "Very friendly and loves kids."
             ));
 
             petRepository.save(new Pet(
                     witq,
-                    "Filemon",
-                    "CAT",
+                    "Yuki",
+                    Species.CAT,
+                    Sex.FEMALE,
                     "European Shorthair",
-                    LocalDate.of(2021, 3, 2),
-                    "Indoor cat, slightly overweight."
+                    LocalDate.of(2022, 5, 10),
+                    2022,
+                    3.8,
+                    "Timid and afraid of vaccinations."
             ));
         }
 
         if (vet != null) {
             petRepository.save(new Pet(
                     vet,
-                    "Luna",
-                    "DOG",
-                    "Border Collie",
-                    LocalDate.of(2020, 9, 15),
-                    "Belongs to the vet. Very energetic."
+                    "Abi",
+                    Species.DOG,
+                    Sex.FEMALE,
+                    "Crossbreed",
+                    LocalDate.of(2023, 5, 10),
+                    2023,
+                    9.0,
+                    "Very shy and needs time to warm up to new people."
             ));
         }
 
         if (admin != null) {
             petRepository.save(new Pet(
                     admin,
-                    "Rex",
-                    "DOG",
-                    "German Shepherd",
-                    LocalDate.of(2017, 1, 20),
-                    "Guard dog of the clinic owner."
+                    "Harry",
+                    Species.DOG,
+                    Sex.MALE,
+                    "hunting spaniel",
+                    LocalDate.of(2008, 5, 10),
+                    2008,
+                    15.5,
+                    "Naughty, allergic to chicken."
             ));
         }
     }

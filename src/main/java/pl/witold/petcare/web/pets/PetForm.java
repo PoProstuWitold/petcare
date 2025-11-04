@@ -1,7 +1,6 @@
 package pl.witold.petcare.web.pets;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -12,21 +11,29 @@ import java.time.LocalDate;
 @Getter
 public class PetForm {
 
-    @NotBlank
+    @NotBlank(message = "Name is required")
     @Size(max = 64)
     private String name;
 
-    @NotBlank
-    @Size(max = 32)
+    @NotBlank(message = "Species is required")
     private String species;
+
+    private String sex;
 
     @Size(max = 64)
     private String breed;
 
+    @NotNull(message = "Birth year is required")
+    @Min(1990)
+    @Max(2025)
+    private Integer birthYear;
+
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    private LocalDate dateOfBirth;
+    private LocalDate birthDate;
+
+    @DecimalMin(value = "0.1", message = "Weight must be positive")
+    private Double weight;
 
     @Size(max = 512)
     private String notes;
-
 }

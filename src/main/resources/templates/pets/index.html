@@ -13,11 +13,14 @@
         </p>
     </div>
 
+    <!-- Pets list -->
     <div class="bg-white rounded-xl shadow p-4">
         <h2 class="text-lg font-semibold mb-3">Your pets</h2>
 
         <div th:if="${#lists.isEmpty(pets)}">
-            <p class="text-sm text-gray-600">You don’t have any pets yet. Add your first pet below.</p>
+            <p class="text-sm text-gray-600">
+                You don’t have any pets yet. Add your first pet below.
+            </p>
         </div>
 
         <table th:if="${!#lists.isEmpty(pets)}" class="w-full text-sm border-t border-gray-200">
@@ -25,8 +28,11 @@
             <tr class="text-left text-gray-600">
                 <th class="py-2 pr-4">Name</th>
                 <th class="py-2 pr-4">Species</th>
+                <th class="py-2 pr-4">Sex</th>
                 <th class="py-2 pr-4">Breed</th>
-                <th class="py-2 pr-4">Date of birth</th>
+                <th class="py-2 pr-4">Birth Year</th>
+                <th class="py-2 pr-4">Birth Date</th>
+                <th class="py-2 pr-4">Weight</th>
                 <th class="py-2 pr-4">Notes</th>
             </tr>
             </thead>
@@ -34,14 +40,21 @@
             <tr th:each="pet : ${pets}" class="border-t border-gray-100">
                 <td class="py-2 pr-4 font-medium" th:text="${pet.name}">Name</td>
                 <td class="py-2 pr-4" th:text="${pet.species}">Species</td>
+                <td class="py-2 pr-4" th:text="${pet.sex} ?: '-'">Sex</td>
                 <td class="py-2 pr-4" th:text="${pet.breed} ?: '-'">Breed</td>
-                <td class="py-2 pr-4" th:text="${pet.dateOfBirth} ?: '-'">Date of birth</td>
+                <td class="py-2 pr-4" th:text="${pet.birthYear} ?: '-'">Year of birth</td>
+                <td class="py-2 pr-4"
+                    th:text="${pet.birthDate} != null ? ${#temporals.format(pet.birthDate, 'yyyy-MM-dd')} : '-'">
+                    Birthdate
+                </td>
+                <td class="py-2 pr-4" th:text="${pet.weight} ?: '-'">Weight</td>
                 <td class="py-2 pr-4 text-gray-700" th:text="${pet.notes} ?: '-'">Notes</td>
             </tr>
             </tbody>
         </table>
     </div>
 
+    <!-- Add pet form -->
     <div class="bg-white rounded-xl shadow p-4">
         <h2 class="text-lg font-semibold mb-3">Add a new pet</h2>
 
@@ -59,11 +72,40 @@
                           th:errors="*{name}"></span>
                 </label>
 
+                <!-- Sex -->
+                <label class="block">
+                    <span class="text-sm">Sex (optional)</span>
+                    <select class="mt-1 w-full rounded-lg border px-3 py-2"
+                            th:field="*{sex}">
+                        <option value=""
+                                th:selected="${petForm.sex == null}">
+                            Select sex
+                        </option>
+                        <option th:each="sx : ${sexOptions}"
+                                th:value="${sx.name()}"
+                                th:text="${sx.name()}">
+                        </option>
+                    </select>
+                    <span class="text-sm text-red-700"
+                          th:if="${#fields.hasErrors('sex')}"
+                          th:errors="*{sex}"></span>
+                </label>
+
                 <!-- Species -->
                 <label class="block">
-                    <span class="text-sm">Species (e.g. DOG, CAT)</span>
-                    <input class="mt-1 w-full rounded-lg border px-3 py-2"
-                           th:field="*{species}" />
+                    <span class="text-sm">Species</span>
+                    <select class="mt-1 w-full rounded-lg border px-3 py-2"
+                            th:field="*{species}">
+                        <option value="" disabled
+                                th:if="${#fields.hasErrors('species')} == false"
+                                th:selected="${petForm.species == null}">
+                            Select species
+                        </option>
+                        <option th:each="sp : ${speciesOptions}"
+                                th:value="${sp.name()}"
+                                th:text="${sp.name()}">
+                        </option>
+                    </select>
                     <span class="text-sm text-red-700"
                           th:if="${#fields.hasErrors('species')}"
                           th:errors="*{species}"></span>
@@ -79,15 +121,41 @@
                           th:errors="*{breed}"></span>
                 </label>
 
-                <!-- Date of birth -->
+                <!-- Birth Year -->
                 <label class="block">
-                    <span class="text-sm">Date of birth (optional)</span>
+                    <span class="text-sm">Birth Year</span>
+                    <input class="mt-1 w-full rounded-lg border px-3 py-2"
+                           type="number"
+                           min="1990"
+                           max="2025"
+                           th:field="*{birthYear}" />
+                    <span class="text-sm text-red-700"
+                          th:if="${#fields.hasErrors('birthYear')}"
+                          th:errors="*{birthYear}"></span>
+                </label>
+
+                <!-- Birth Date -->
+                <label class="block">
+                    <span class="text-sm">Birth Date (optional)</span>
                     <input class="mt-1 w-full rounded-lg border px-3 py-2"
                            type="date"
-                           th:field="*{dateOfBirth}" />
+                           th:field="*{birthDate}" />
                     <span class="text-sm text-red-700"
-                          th:if="${#fields.hasErrors('dateOfBirth')}"
-                          th:errors="*{dateOfBirth}"></span>
+                          th:if="${#fields.hasErrors('birthDate')}"
+                          th:errors="*{birthDate}"></span>
+                </label>
+
+                <!-- Weight -->
+                <label class="block">
+                    <span class="text-sm">Weight (kg, optional)</span>
+                    <input class="mt-1 w-full rounded-lg border px-3 py-2"
+                           type="number"
+                           step="0.1"
+                           min="0.1"
+                           th:field="*{weight}" />
+                    <span class="text-sm text-red-700"
+                          th:if="${#fields.hasErrors('weight')}"
+                          th:errors="*{weight}"></span>
                 </label>
             </div>
 

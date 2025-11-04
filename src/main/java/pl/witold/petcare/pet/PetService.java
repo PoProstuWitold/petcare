@@ -13,8 +13,11 @@ public interface PetService {
     Pet createPetForOwner(User owner,
                           String name,
                           String species,
+                          String sex,
                           String breed,
-                          LocalDate dateOfBirth,
+                          LocalDate birthDate,
+                          Integer birthYear,
+                          Double weight,
                           String notes);
 
     Optional<Pet> findByIdAndOwner(Long id, User owner);

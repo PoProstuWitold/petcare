@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import pl.witold.petcare.pet.Pet;
 import pl.witold.petcare.pet.PetService;
+import pl.witold.petcare.pet.Sex;
+import pl.witold.petcare.pet.Species;
 import pl.witold.petcare.user.User;
 import pl.witold.petcare.user.UserService;
 
@@ -39,6 +41,8 @@ public class PetController {
         }
 
         model.addAttribute("pets", pets);
+        model.addAttribute("speciesOptions", Species.values());
+        model.addAttribute("sexOptions", Sex.values());
         model.addAttribute("pageTitle", "PetCare - My Pets");
 
         return "pets/index";
@@ -55,7 +59,9 @@ public class PetController {
 
         if (binding.hasErrors()) {
             model.addAttribute("pets", petService.findPetsForOwner(currentUser));
-            model.addAttribute("pageTitle", "My pets · PetCare");
+            model.addAttribute("speciesOptions", Species.values());
+            model.addAttribute("sexOptions", Sex.values());
+            model.addAttribute("pageTitle", "PetCare - My Pets");
             return "pets/index";
         }
 
@@ -63,8 +69,11 @@ public class PetController {
                 currentUser,
                 form.getName().trim(),
                 form.getSpecies().trim(),
+                form.getSex(),
                 form.getBreed() != null ? form.getBreed().trim() : null,
-                form.getDateOfBirth(),
+                form.getBirthDate(),
+                form.getBirthYear(),
+                form.getWeight(),
                 form.getNotes()
         );
 

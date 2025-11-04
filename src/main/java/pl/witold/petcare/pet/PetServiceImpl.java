@@ -28,19 +28,32 @@ public class PetServiceImpl implements PetService {
     public Pet createPetForOwner(User owner,
                                  String name,
                                  String species,
+                                 String sex,
                                  String breed,
-                                 LocalDate dateOfBirth,
-                                 String notes) {
+                                 LocalDate birthDate,
+                                 Integer birthYear,
+                                 Double weight,
+                                 String notes)
+    {
+        Species speciesEnum = Species.valueOf(species);
+        Sex sexEnum = (sex != null && !sex.isBlank())
+                ? Sex.valueOf(sex)
+                : Sex.UNKNOWN;
+
         Pet pet = new Pet(
                 owner,
                 name,
-                species,
+                speciesEnum,
+                sexEnum,
                 breed,
-                dateOfBirth,
+                birthDate,
+                birthYear,
+                weight,
                 notes
         );
         return pets.save(pet);
     }
+
 
     @Override
     @Transactional(readOnly = true)

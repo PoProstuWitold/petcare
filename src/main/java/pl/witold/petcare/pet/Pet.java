@@ -28,10 +28,15 @@ public class Pet {
     @Column(nullable = false, length = 64)
     private String name;
 
-    // For now regular string, later can be changed to enum or separate entity
     @Setter
+    @Enumerated(EnumType.STRING) // store enum name as string
     @Column(nullable = false, length = 32)
-    private String species;
+    private Species species;
+
+    @Setter
+    @Enumerated(EnumType.STRING)
+    @Column(length = 16)
+    private Sex sex;
 
     @Setter
     @Column(length = 64)
@@ -39,7 +44,16 @@ public class Pet {
 
     @Setter
     @Column()
-    private LocalDate dateOfBirth;
+    private Integer birthYear;
+
+    @Setter
+    @Column()
+    private LocalDate birthDate;
+
+    // NEW: weight in kilograms
+    @Setter
+    @Column()
+    private Double weight;
 
     @Setter
     @Column(length = 512)
@@ -51,16 +65,21 @@ public class Pet {
 
     public Pet(User owner,
                String name,
-               String species,
+               Species species,
+               Sex sex,
                String breed,
-               LocalDate dateOfBirth,
+               LocalDate birthDate,
+               Integer birthYear,
+               Double weight,
                String notes) {
         this.owner = owner;
         this.name = name;
         this.species = species;
+        this.sex = sex;
         this.breed = breed;
-        this.dateOfBirth = dateOfBirth;
+        this.birthDate = birthDate;
+        this.birthYear = birthYear;
+        this.weight = weight;
         this.notes = notes;
     }
-
 }
