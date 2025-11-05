@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link } from 'react-router'
+import { toast } from 'react-toastify'
 
 type RegisterFormValues = {
 	fullName: string
@@ -44,10 +45,10 @@ export function RegisterPage() {
 			// Handle success, redirect to login, etc.
 
 			console.log('Register form submitted:', values)
-			alert('Registration submitted. Check console for payload.')
+			toast.success('Registration submitted. Check console for payload.')
 		} catch (error) {
 			console.error('Registration failed', error)
-			alert('Registration failed. Please try again.')
+			toast.error('Registration failed. Please try again.')
 		} finally {
 			setIsSubmitting(false)
 		}
@@ -147,9 +148,9 @@ export function RegisterPage() {
 							{...register('password', {
 								required: 'Password is required',
 								minLength: {
-									value: 6,
+									value: 8,
 									message:
-										'Password must be at least 6 characters'
+										'Password must be at least 8 characters'
 								}
 							})}
 						/>

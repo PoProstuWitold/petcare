@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
+import { ToastContainer } from 'react-toastify'
 import { Footer } from './components/Footer'
 import { Navbar } from './components/Navbar'
 import { HomePage } from './pages/HomePage'
@@ -10,7 +11,6 @@ function App() {
 		<BrowserRouter>
 			<div className='min-h-screen flex flex-col bg-slate-50 text-slate-900'>
 				<Navbar />
-
 				<main className='flex-1'>
 					<Routes>
 						<Route path='/' element={<HomePage />} />
@@ -20,9 +20,9 @@ function App() {
 						<Route path='*' element={<Navigate to='/' replace />} />
 					</Routes>
 				</main>
-
 				<Footer />
 			</div>
+			<ToastContainer />
 		</BrowserRouter>
 	)
 }

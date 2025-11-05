@@ -1,14 +1,19 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
+import { toast } from 'react-toastify'
+import { useAuth } from '../context/AuthContext'
 
 type LoginFormValues = {
-	email: string
+	username: string
 	password: string
 }
 
 export function LoginPage() {
 	const [isSubmitting, setIsSubmitting] = useState(false)
+	const [serverError, setServerError] = useState<string | null>(null)
+	const navigate = useNavigate()
+	const { login } = useAuth()
 
 	const {
 		register,
@@ -16,25 +21,29 @@ export function LoginPage() {
 		formState: { errors }
 	} = useForm<LoginFormValues>({
 		defaultValues: {
-			email: '',
+			username: '',
 			password: ''
 		}
 	})
 
 	const onSubmit = async (values: LoginFormValues) => {
 		setIsSubmitting(true)
-		try {
-			// TODO: Replace with real API call to your Spring Boot backend
-			// Example:
-			// const response = await fetch('/api/auth/login', { ... })
-			// Handle JWT, store tokens, redirect, etc.
+		setServerError(null)
 
-			console.log('Login form submitted:', values)
-			// Temporary placeholder:
-			alert('Login submitted. Check console for payload.')
+		try {
+			await login({
+				username: values.username,
+				password: values.password
+			})
+
+			// TODO: możesz tu dodać logikę zależną od roli
+			// np. jeśli ADMIN => /admin, jeśli VET => /vet itd.
+			toast.success('Login successful')
+			navigate('/', { replace: true })
 		} catch (error) {
+			toast.error('Login failed')
 			console.error('Login failed', error)
-			alert('Login failed. Please try again.')
+			setServerError('Invalid username or password')
 		} finally {
 			setIsSubmitting(false)
 		}
@@ -45,7 +54,7 @@ export function LoginPage() {
 			<div className='w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8'>
 				<div className='mb-6 text-center'>
 					<h1 className='text-xl font-semibold text-slate-900'>
-						Login to your account
+						Sign in
 					</h1>
 					<p className='mt-1 text-sm text-slate-600'>
 						Access your PetCare account to manage pets and
@@ -58,31 +67,31 @@ export function LoginPage() {
 					onSubmit={handleSubmit(onSubmit)}
 					noValidate
 				>
+					{serverError && (
+						<p className='rounded-md bg-red-50 px-3 py-2 text-xs text-red-700'>
+							{serverError}
+						</p>
+					)}
+
 					<div className='space-y-1.5'>
 						<label
-							htmlFor='email'
+							htmlFor='username'
 							className='block text-sm font-medium text-slate-800'
 						>
-							Email address
+							Username
 						</label>
 						<input
-							id='email'
-							type='email'
-							autoComplete='email'
+							id='username'
+							type='text'
 							className='block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200'
-							placeholder='you@example.com'
-							{...register('email', {
-								required: 'Email is required',
-								pattern: {
-									value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-									message:
-										'Please enter a valid email address'
-								}
+							placeholder='Your username'
+							{...register('username', {
+								required: 'username is required'
 							})}
 						/>
-						{errors.email && (
+						{errors.username && (
 							<p className='text-xs text-red-600'>
-								{errors.email.message}
+								{errors.username.message}
 							</p>
 						)}
 					</div>

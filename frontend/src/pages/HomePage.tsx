@@ -1,5 +1,3 @@
-import { Link } from 'react-router'
-
 export function HomePage() {
 	return (
 		<div className='bg-gradient-to-b from-sky-50 to-slate-50'>
@@ -19,22 +17,6 @@ export function HomePage() {
 						for busy pet owners and vets who want a simple, clear
 						overview.
 					</p>
-
-					<div className='flex flex-col gap-3 sm:flex-row sm:items-center'>
-						<Link
-							to='/register'
-							className='inline-flex items-center justify-center rounded-full bg-sky-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2'
-						>
-							Get started for free
-						</Link>
-
-						<Link
-							to='/login'
-							className='inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-2.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50'
-						>
-							I already have an account
-						</Link>
-					</div>
 
 					<ul className='mt-4 grid gap-3 text-sm text-slate-700 sm:grid-cols-2'>
 						<li className='flex items-start gap-2'>
