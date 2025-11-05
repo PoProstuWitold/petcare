@@ -153,7 +153,7 @@ public class DataInitializer implements CommandLineRunner {
                     "Harry",
                     Species.DOG,
                     Sex.MALE,
-                    "hunting spaniel",
+                    "Hunting Spaniel",
                     LocalDate.of(2008, 5, 10),
                     2008,
                     15.5,
