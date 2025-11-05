@@ -90,7 +90,7 @@ DO ZROBIENIA
 - **JPA**
 - **Flyway (migracje)**
 - **H2 Database**
-- **Docker (opcjonalnie)**
+- **Docker**
 
 <p align="right">(<a href="#top">przewiń do góry</a>)</p>
 
@@ -98,6 +98,8 @@ DO ZROBIENIA
 
 ## REST API
 
-DO ZROBIENIA
+- ``/api/health`` - sprawdzenie stanu aplikacji
+- ``/api/pets`` - zarządzanie zwierzętami
+- 2x eksport i import danych
 
 <p align="right">(<a href="#top">przewiń do góry</a>)</p>
