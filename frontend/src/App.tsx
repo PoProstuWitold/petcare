@@ -8,6 +8,7 @@ import { LoginPage } from './pages/LoginPage'
 import { PetsPage } from './pages/PetsPage.tsx'
 import { RegisterPage } from './pages/RegisterPage'
 import { VetPage } from './pages/VetPage.tsx'
+import { ProtectedRoute } from './utils/ProtectedRoute.tsx'
 
 function App() {
 	return (
@@ -19,9 +20,36 @@ function App() {
 						<Route path='/' element={<HomePage />} />
 						<Route path='/login' element={<LoginPage />} />
 						<Route path='/register' element={<RegisterPage />} />
-						<Route path='/admin' element={<AdminPage />} />
-						<Route path='/vet' element={<VetPage />} />
-						<Route path='/pets' element={<PetsPage />} />
+						{/* Protected Routes */}
+						{/* ADMIN - only admins */}
+						<Route
+							element={
+								<ProtectedRoute allowedRoles={['ADMIN']} />
+							}
+						>
+							<Route path='/admin' element={<AdminPage />} />
+						</Route>
+						{/* VET - vets & admins */}
+						<Route
+							element={
+								<ProtectedRoute
+									allowedRoles={['VET', 'ADMIN']}
+								/>
+							}
+						>
+							<Route path='/vet' element={<VetPage />} />
+						</Route>
+						{/* USER - any role; just need to be authenticated */}
+						<Route
+							path='/pets'
+							element={
+								<ProtectedRoute
+									allowedRoles={['USER', 'VET', 'ADMIN']}
+								/>
+							}
+						>
+							<Route path='/pets' element={<PetsPage />} />
+						</Route>
 						{/* Fallback for unknown routes */}
 						<Route path='*' element={<Navigate to='/' replace />} />
 					</Routes>
