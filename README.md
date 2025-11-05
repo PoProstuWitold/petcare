@@ -5,7 +5,7 @@
 
 **Autor:** Witold Zawada (indywidualny projekt)
 
-**Technologia:** Spring Boot + Spring Security + Thymeleaf + H2 (Flyway)  
+**Technologia:** Spring Boot + Spring Security + React (Vite) + H2 (Flyway)  
 
 **Wersja Java oraz JDK:** 21
 
@@ -50,19 +50,7 @@ Aplikacja została stworzona w modelu **klient–serwer**:
 
 ### Moduły
 
-**java:**
-- **config**
-- **pet**
-- **security**
-- **status**
-- **user**
-- **web**
-
-**resources:**
-- **db.migration**
-- **public**
-- **templates**
-- **application.yml**
+DO ZROBIENIA
 
 <p align="right">(<a href="#top">przewiń do góry</a>)</p>
 
@@ -88,7 +76,7 @@ DO ZROBIENIA
 
 - **Spring Boot 3.5.6**
 - **Spring Security**
-- **Thymeleaf**
+- **React v19**
 - **JPA**
 - **Flyway (migracje)**
 - **H2 Database**
@@ -100,8 +88,6 @@ DO ZROBIENIA
 
 ## REST API
 
-- ``/api/health`` - sprawdzenie stanu aplikacji
-- ``/api/pets`` - zarządzanie zwierzętami
-- 2x eksport i import danych
+DO ZROBIENIA
 
 <p align="right">(<a href="#top">przewiń do góry</a>)</p>
