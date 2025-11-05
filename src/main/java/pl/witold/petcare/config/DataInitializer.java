@@ -42,23 +42,23 @@ public class DataInitializer implements CommandLineRunner {
                 "admin",
                 "admin@petcare.local",
                 "System Administrator",
-                "admin123",
+                "admin12345678",
                 Role.ADMIN
         );
 
         User vet = createUserIfNotExists(
                 "vet",
                 "vet@petcare.local",
-                "Default Veterinarian",
-                "vet123",
+                "System Veterinarian",
+                "vet12345678",
                 Role.VET
         );
 
         User user = createUserIfNotExists(
-                "witq",
-                "witq@petcare.local",
-                "Example User",
-                "witq123",
+                "user",
+                "user@petcare.local",
+                "System User",
+                "user12345678",
                 Role.USER
         );
 
