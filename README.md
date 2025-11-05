@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 # [PL] PetCare
 ## System do zarządzania wizytami u weterynarza i profilami zwierząt.
 
@@ -10,18 +12,19 @@
 ## Spis treści
 1. [Opis projektu](#opis-projektu)
 2. [Architektura](#architektura)
-3. [Funkcjonalności](#funkcjonalnosci)
-    - [Role](#role)
-    - [Moduły aplikacji](#moduly-aplikacji)
+3. [Aplikacja](#aplikacja)
 4. [Zasady SOLID](#zasady-solid)
 5. [Testy](#testy)
-6. [Technologie i narzędzia](#technologie-i-narzedzia)
+6. [Technologie](#technologie)
 7. [REST API](#rest-api)
+
 ---
 
 ## Opis projektu
 
 **PetCare** to aplikacja webowa w architekturze **klient–serwer**, której celem jest zarządzanie zwierzętami, ich profilami oraz wizytami u weterynarza. System umożliwia logowanie, przeglądanie oraz zarządzanie danymi przez różne role użytkowników (`USER`, `VET`, `ADMIN`).
+
+<p align="right">(<a href="#top">przewiń do góry</a>)</p>
 
 ---
 
@@ -32,18 +35,18 @@ Aplikacja została stworzona w modelu **klient–serwer**:
 - **Serwer:** aplikacja Spring Boot (renderuje strony HTML za pomocą silnika Thymeleaf)
 - **Baza danych:** H2 (z migracjami Flyway)
 
-Dodatkowo udostępniane są dane poprzez **REST API**, np. `/api/pets`.
+<p align="right">(<a href="#top">przewiń do góry</a>)</p>
 
 ---
 
-## Funkcjonalności
+## Aplikacja
 
 ### Role
 - `USER` – właściciel zwierząt, może przeglądać i dodawać swoje zwierzaki oraz wizyty.
 - `VET` – weterynarz (pełni też rolę recepcjonisty), widzi wszystkie zwierzęta, wizyty i ich historię.
 - `ADMIN` – administrator systemu, zarządza użytkownikami i danymi.
 
-### Moduły aplikacji
+### Moduły
 
 **java:**
 - **config**
@@ -58,11 +61,16 @@ Dodatkowo udostępniane są dane poprzez **REST API**, np. `/api/pets`.
 - **public**
 - **templates**
 - **application.yml**
+
+<p align="right">(<a href="#top">przewiń do góry</a>)</p>
+
 ---
 
 ## Zasady SOLID
 
 DO ZROBIENIA
+
+<p align="right">(<a href="#top">przewiń do góry</a>)</p>
 
 ---
 
@@ -70,9 +78,11 @@ DO ZROBIENIA
 
 DO ZROBIENIA
 
+<p align="right">(<a href="#top">przewiń do góry</a>)</p>
+
 ---
 
-## Technologie i narzędzia
+## Technologie
 
 - **Spring Boot 3.5.6**
 - **Spring Security**
@@ -82,8 +92,12 @@ DO ZROBIENIA
 - **H2 Database**
 - **Docker (opcjonalnie)**
 
+<p align="right">(<a href="#top">przewiń do góry</a>)</p>
+
 ---
 
 ## REST API
 
 DO ZROBIENIA
+
+<p align="right">(<a href="#top">przewiń do góry</a>)</p>
