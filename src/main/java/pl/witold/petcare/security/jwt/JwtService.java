@@ -9,7 +9,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
-import java.security.Key;
 import java.time.Instant;
 import java.util.Date;
 
@@ -19,7 +18,7 @@ public class JwtService {
     @Value("${app.jwt.secret}")
     private String secret; // BASE64-encoded key
 
-    @Value("${app.jwt.expiration-ms:3600000}") // 1h domyślnie
+    @Value("${app.jwt.expiration-ms:3600000}") // 1h
     private long jwtExpirationMs;
 
     private SecretKey getSigningKey() {
@@ -55,7 +54,7 @@ public class JwtService {
     }
 
     private Claims getAllClaims(String token) {
-        return (Claims) Jwts.parser()
+        return Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()
                 .parseSignedClaims(token)

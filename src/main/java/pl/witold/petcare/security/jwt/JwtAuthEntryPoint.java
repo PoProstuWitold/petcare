@@ -19,7 +19,11 @@ import static pl.witold.petcare.security.jwt.JwtAuthFilter.JWT_ERROR_ATTR;
 @Component
 public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
+
+    public JwtAuthEntryPoint(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     @Override
     public void commence(
@@ -28,7 +32,6 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
             AuthenticationException authException
     ) throws IOException {
 
-        // Decide message based on what JwtAuthFilter detected
         String jwtError = (String) request.getAttribute(JWT_ERROR_ATTR);
 
         int status;
@@ -48,7 +51,6 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
                 message = "Invalid JWT token";
             }
             case null, default -> {
-                // No token or not authenticated at all
                 status = HttpServletResponse.SC_UNAUTHORIZED;
                 message = "Authentication is required to access this resource";
             }

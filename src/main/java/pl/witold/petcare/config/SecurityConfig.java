@@ -20,6 +20,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import pl.witold.petcare.security.jwt.JwtAuthEntryPoint;
 import pl.witold.petcare.security.jwt.JwtAuthFilter;
+import pl.witold.petcare.security.jwt.RestAccessDeniedHandler;
 
 import java.util.List;
 
@@ -29,15 +30,22 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final JwtAuthEntryPoint jwtAuthEntryPoint;
+    private final pl.witold.petcare.security.jwt.RestAccessDeniedHandler accessDeniedHandler;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter, JwtAuthEntryPoint jwtAuthEntryPoint) {
+    public SecurityConfig(
+            JwtAuthFilter jwtAuthFilter,
+            JwtAuthEntryPoint jwtAuthEntryPoint,
+            RestAccessDeniedHandler accessDeniedHandler
+    ) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.jwtAuthEntryPoint = jwtAuthEntryPoint;
+        this.accessDeniedHandler = accessDeniedHandler;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(
-            HttpSecurity http, AuthenticationProvider authenticationProvider
+            HttpSecurity http,
+            AuthenticationProvider authenticationProvider
     ) throws Exception {
 
         http
@@ -46,10 +54,12 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(jwtAuthEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler)
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
                         .requestMatchers("/api/status/**").permitAll()
+                        .requestMatchers("/api/users/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/vet/**").hasAnyRole("VET", "ADMIN")
                         .anyRequest().authenticated()
