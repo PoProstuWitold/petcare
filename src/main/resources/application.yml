@@ -19,9 +19,6 @@ spring:
   flyway:
     enabled: true
 
-  thymeleaf:
-    cache: false
-
   h2:
     console:
       enabled: true
@@ -34,3 +31,8 @@ logging:
 
 server:
   port: 8080
+
+app:
+  jwt:
+    secret: ${JWT_SECRET_BASE64:faJJ1JQFddaDGiwl6BOXixX95I1HGKbTYBjRWdxv4EY2}
+    expiration-ms: 3600000

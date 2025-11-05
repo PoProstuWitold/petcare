@@ -54,7 +54,7 @@ public class DataInitializer implements CommandLineRunner {
                 Role.VET
         );
 
-        User witq = createUserIfNotExists(
+        User user = createUserIfNotExists(
                 "witq",
                 "witq@petcare.local",
                 "Example User",
@@ -62,7 +62,7 @@ public class DataInitializer implements CommandLineRunner {
                 Role.USER
         );
 
-        seedPetsIfEmpty(admin, vet, witq);
+        seedPetsIfEmpty(admin, vet, user);
     }
 
     private User createUserIfNotExists(String username,
@@ -99,7 +99,7 @@ public class DataInitializer implements CommandLineRunner {
         return user;
     }
 
-    private void seedPetsIfEmpty(User admin, User vet, User witq) {
+    private void seedPetsIfEmpty(User admin, User vet, User user) {
         if (petRepository.count() > 0) {
             log.info("Pets already exist. Skipping pet seeding.");
             return;
@@ -107,9 +107,9 @@ public class DataInitializer implements CommandLineRunner {
 
         log.info("Seeding example pets...");
 
-        if (witq != null) {
+        if (user != null) {
             petRepository.save(new Pet(
-                    witq,
+                    user,
                     "Sara",
                     Species.DOG,
                     Sex.FEMALE,
@@ -121,7 +121,7 @@ public class DataInitializer implements CommandLineRunner {
             ));
 
             petRepository.save(new Pet(
-                    witq,
+                    user,
                     "Yuki",
                     Species.CAT,
                     Sex.FEMALE,

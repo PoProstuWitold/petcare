@@ -26,8 +26,6 @@ dependencies {
 
     // Web + MVC
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    // Thymeleaf for Spring Boot frontend
-    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 
     // JPA + DB
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -51,7 +49,6 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
 }
 
 test {

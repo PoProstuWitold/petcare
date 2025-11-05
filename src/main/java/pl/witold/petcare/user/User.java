@@ -15,9 +15,6 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /**
-     * Full name of the person (first name, optional middle name, surname) in a single field.
-     */
     @Setter
     @Column(nullable = false, length = 128)
     private String fullName;
