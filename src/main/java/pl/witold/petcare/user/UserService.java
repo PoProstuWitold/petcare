@@ -1,17 +1,20 @@
 package pl.witold.petcare.user;
 
+import pl.witold.petcare.user.commands.UserRegistrationCommand;
+
+import java.util.List;
+import java.util.Set;
+
 public interface UserService {
-
-    /**
-     * Registers a new regular USER account.
-     *
-     * @param fullName   full name of the person (first + last name in one field)
-     * @param username   unique username used for login
-     * @param email      unique email
-     * @param rawPassword plain text password that will be encoded
-     * @return persisted User entity
-     */
-    User register(String fullName, String username, String email, String rawPassword);
-
-    User findByUsernameOrThrow(String username);
+    User create(UserRegistrationCommand command);
+    User update(Long id, User updatedUser);
+    User getById(Long id);
+    User getByUsername(String username);
+    User getByEmail(String email);
+    List<User> getAll();
+    boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
+    void deleteById(Long id);
+    void changePassword(Long userId, String rawNewPassword);
+    void updateRoles(Long userId, Set<Role> roles);
 }

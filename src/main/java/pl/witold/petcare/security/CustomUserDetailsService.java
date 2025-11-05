@@ -2,38 +2,45 @@ package pl.witold.petcare.security;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.*;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import pl.witold.petcare.user.UserService;
+import pl.witold.petcare.user.Role;
+import pl.witold.petcare.user.User;
+import pl.witold.petcare.user.UserRepository;
 
-import java.util.Set;
+import java.util.Collection;
 import java.util.stream.Collectors;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UserService users;
+    private final UserRepository userRepository;
 
-    public CustomUserDetailsService(UserService users) {
-        this.users = users;
+    public CustomUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        pl.witold.petcare.user.User u;
-        try {
-            u = users.findByUsernameOrThrow(username);
-        } catch (IllegalArgumentException ex) {
-            throw new UsernameNotFoundException("User not found");
-        }
-        Set<GrantedAuthority> authorities = u.getRoles().stream()
-                .map(r -> new SimpleGrantedAuthority("ROLE_" + r.name()))
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException("User not found: " + username)
+                );
+
+        Collection<? extends GrantedAuthority> authorities = user.getRoles().stream()
+                .map(this::mapRoleToAuthority)
                 .collect(Collectors.toSet());
-        return User.withUsername(u.getUsername())
-                .password(u.getPasswordHash())
-                .authorities(authorities)
-                .accountExpired(false).accountLocked(false)
-                .credentialsExpired(false).disabled(false)
-                .build();
+
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                user.getPasswordHash(),
+                authorities
+        );
+    }
+
+    private GrantedAuthority mapRoleToAuthority(Role role) {
+        return new SimpleGrantedAuthority("ROLE_" + role.name());
     }
 }

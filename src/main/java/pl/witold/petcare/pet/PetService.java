@@ -1,26 +1,15 @@
 package pl.witold.petcare.pet;
 
-import pl.witold.petcare.user.User;
+import pl.witold.petcare.pet.commands.PetCreateCommand;
+import pl.witold.petcare.pet.commands.PetUpdateCommand;
 
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 public interface PetService {
-
-    List<Pet> findPetsForOwner(User owner);
-
-    Pet createPetForOwner(User owner,
-                          String name,
-                          String species,
-                          String sex,
-                          String breed,
-                          LocalDate birthDate,
-                          Integer birthYear,
-                          Double weight,
-                          String notes);
-
-    Optional<Pet> findByIdAndOwner(Long id, User owner);
-
-    void deleteByIdAndOwner(Long id, User owner);
+    Pet create(PetCreateCommand command);
+    Pet update(Long petId, PetUpdateCommand command);
+    Pet getById(Long id);
+    List<Pet> getAll();
+    List<Pet> getByOwnerId(Long ownerId);
+    void deleteById(Long id);
 }
