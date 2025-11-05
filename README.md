@@ -4,7 +4,9 @@
 ## System do zarządzania wizytami u weterynarza i profilami zwierząt.
 
 **Autor:** Witold Zawada (indywidualny projekt)
+
 **Technologia:** Spring Boot + Spring Security + Thymeleaf + H2 (Flyway)  
+
 **Wersja Java oraz JDK:** 21
 
 ---
