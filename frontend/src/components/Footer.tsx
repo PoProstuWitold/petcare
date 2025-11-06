@@ -1,32 +1,62 @@
+import { Link } from 'react-router'
+
 export function Footer() {
 	const year = new Date().getFullYear()
 
 	return (
-		<footer className='border-t border-slate-200 bg-white'>
-			<div className='mx-auto flex max-w-6xl flex-col gap-4 px-4 py-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8'>
-				<p className='text-center sm:text-left'>
-					&copy; {year} PetCare. All rights reserved. Witold Zawada
-				</p>
+		<footer className='mt-auto bg-slate-700 text-white'>
+			<div className='mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8'>
+				<div className='flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between'>
+					{/* Brand / copyright */}
+					<div className='space-y-1 text-center sm:text-left'>
+						<p className='text-base font-semibold tracking-tight'>
+							PetCare
+						</p>
+						<p className='text-slate-300 text-sm'>
+							&copy; {year} PetCare. All rights reserved. Built by
+							Witold Zawada.
+						</p>
+					</div>
 
-				<div className='flex justify-center gap-4 text-xs sm:text-sm'>
-					<button
-						type='button'
-						className='text-slate-500 hover:text-slate-800'
-					>
-						Privacy Policy
-					</button>
-					<button
-						type='button'
-						className='text-slate-500 hover:text-slate-800'
-					>
-						Terms of Service
-					</button>
-					<button
-						type='button'
-						className='text-slate-500 hover:text-slate-800'
-					>
-						Contact support
-					</button>
+					{/* Divider on larger screens */}
+					<div className='hidden h-10 w-px bg-slate-500 sm:block' />
+
+					{/* Nav + address */}
+					<div className='flex flex-col items-center gap-2 text-center sm:items-end sm:text-right'>
+						<nav className='flex flex-wrap justify-center gap-3 sm:gap-4'>
+							<a
+								href='https://github.com/PoProstuWitold/petcare'
+								target='_blank'
+								rel='noreferrer'
+								className='font-semibold text-slate-100 transition-colors hover:text-sky-200 text-sm'
+							>
+								Source Code
+							</a>
+							<Link
+								to='/privacy'
+								className='font-semibold text-slate-100 transition-colors hover:text-sky-200 text-sm'
+							>
+								Privacy Policy
+							</Link>
+							<Link
+								to='/terms'
+								className='font-semibold text-slate-100 transition-colors hover:text-sky-200 text-sm'
+							>
+								Terms of Service
+							</Link>
+							<Link
+								to='/contact'
+								className='font-semibold text-slate-100 transition-colors hover:text-sky-200 text-sm'
+							>
+								Contact
+							</Link>
+						</nav>
+
+						<p className='text-sm text-slate-300'>
+							PetCare Clinic · ul. Zwierzęcia 12, 20-400 Lublin,
+							Poland
+						</p>
+					</div>
 				</div>
 			</div>
 		</footer>

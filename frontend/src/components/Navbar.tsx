@@ -142,7 +142,7 @@ export function Navbar() {
 								<button
 									type='button'
 									onClick={logout}
-									className={buttonSecondary}
+									className={`${buttonSecondary} cursor-pointer`}
 								>
 									Logout
 								</button>
@@ -235,7 +235,7 @@ export function Navbar() {
 											logout()
 											setIsOpen(false)
 										}}
-										className={`${buttonSecondary} w-full justify-center`}
+										className={`${buttonSecondary} w-full justify-center cursor-pointer`}
 									>
 										Log out
 									</button>
