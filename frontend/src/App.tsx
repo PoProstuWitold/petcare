@@ -1,12 +1,15 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
+import { BrowserRouter, Route, Routes } from 'react-router'
 import { ToastContainer } from 'react-toastify'
 import { Footer } from './components/Footer'
 import { Navbar } from './components/Navbar'
 import { AdminPage } from './pages/AdminPage.tsx'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
+import { NotFoundPage } from './pages/NotFoundPage.tsx'
 import { PetsPage } from './pages/PetsPage.tsx'
 import { RegisterPage } from './pages/RegisterPage'
+import { StatusPage } from './pages/StatusPage.tsx'
+import { UserProfilePage } from './pages/UserProfilePage.tsx'
 import { VetPage } from './pages/VetPage.tsx'
 import { ProtectedRoute } from './utils/ProtectedRoute.tsx'
 
@@ -20,6 +23,11 @@ function App() {
 						<Route path='/' element={<HomePage />} />
 						<Route path='/login' element={<LoginPage />} />
 						<Route path='/register' element={<RegisterPage />} />
+						<Route path='/status' element={<StatusPage />} />
+						<Route
+							path='/u/:username'
+							element={<UserProfilePage />}
+						/>
 						{/* Protected Routes */}
 						{/* ADMIN - only admins */}
 						<Route
@@ -51,7 +59,7 @@ function App() {
 							<Route path='/pets' element={<PetsPage />} />
 						</Route>
 						{/* Fallback for unknown routes */}
-						<Route path='*' element={<Navigate to='/' replace />} />
+						<Route path='*' element={<NotFoundPage />} />
 					</Routes>
 				</main>
 				<Footer />

@@ -15,6 +15,7 @@ export interface AuthUser {
 	id: number
 	fullName: string
 	email: string
+	username: string
 	roles: Role[]
 }
 
@@ -77,6 +78,7 @@ function mapMeToAuthUser(data: MeResponse): AuthUser {
 	return {
 		id: data.id,
 		fullName: data.fullName,
+		username: data.username,
 		email: data.email,
 		roles: data.roles as Role[]
 	}

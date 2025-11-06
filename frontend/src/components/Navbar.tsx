@@ -14,6 +14,11 @@ type NavItem = {
 
 const navItems: NavItem[] = [
 	{ label: 'Home', to: '/' },
+	// public status page
+	{
+		label: 'Status',
+		to: '/status'
+	},
 	{
 		label: 'My Pets',
 		to: '/pets',
@@ -34,7 +39,7 @@ const navItems: NavItem[] = [
 	}
 ]
 
-// wspólne style
+// shared styles
 const navLinkBase =
 	'inline-flex items-center rounded-full px-3 py-2 text-sm font-medium transition-colors'
 const navLinkActive = 'bg-sky-50 text-sky-700'
@@ -114,12 +119,26 @@ export function Navbar() {
 					<div className='flex items-center gap-3'>
 						{isAuthenticated ? (
 							<>
-								<span className={pillGreeting}>
-									Hello,&nbsp;
-									<span className='font-semibold'>
-										{user?.fullName}
+								{user?.username ? (
+									<Link
+										to={`/u/${encodeURIComponent(
+											user.username
+										)}`}
+										className={pillGreeting}
+									>
+										Hello,&nbsp;
+										<span className='font-semibold'>
+											{user.fullName}
+										</span>
+									</Link>
+								) : (
+									<span className={pillGreeting}>
+										Hello,&nbsp;
+										<span className='font-semibold'>
+											{user?.fullName}
+										</span>
 									</span>
-								</span>
+								)}
 								<button
 									type='button'
 									onClick={logout}
@@ -187,14 +206,29 @@ export function Navbar() {
 						<div className='mt-3 flex flex-col gap-2'>
 							{isAuthenticated ? (
 								<>
-									<span
-										className={`${pillGreeting} justify-center`}
-									>
-										Hello,&nbsp;
-										<span className='font-semibold'>
-											{user?.fullName}
+									{user?.username ? (
+										<Link
+											to={`/u/${encodeURIComponent(
+												user.username
+											)}`}
+											onClick={() => setIsOpen(false)}
+											className={`${pillGreeting} justify-center`}
+										>
+											Hello,&nbsp;
+											<span className='font-semibold'>
+												{user.fullName}
+											</span>
+										</Link>
+									) : (
+										<span
+											className={`${pillGreeting} justify-center`}
+										>
+											Hello,&nbsp;
+											<span className='font-semibold'>
+												{user?.fullName}
+											</span>
 										</span>
-									</span>
+									)}
 									<button
 										type='button'
 										onClick={() => {
