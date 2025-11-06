@@ -27,6 +27,14 @@ public class GlobalExceptionHandler {
 
     // --- Custom domain exceptions ---
 
+    @ExceptionHandler(VetProfileNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleVetProfileNotFound(
+            VetProfileNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex, request);
+    }
+
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleUserNotFound(
             UserNotFoundException ex,

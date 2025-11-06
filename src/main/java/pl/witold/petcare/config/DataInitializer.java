@@ -13,8 +13,15 @@ import pl.witold.petcare.pet.Species;
 import pl.witold.petcare.user.Role;
 import pl.witold.petcare.user.User;
 import pl.witold.petcare.user.UserRepository;
+import pl.witold.petcare.vet.VetProfile;
+import pl.witold.petcare.vet.repository.VetProfileRepository;
+import pl.witold.petcare.vet.VetScheduleEntry;
+import pl.witold.petcare.vet.repository.VetScheduleEntryRepository;
+import pl.witold.petcare.vet.VetSpecialization;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Optional;
 import java.util.Set;
 
@@ -26,13 +33,19 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final PetRepository petRepository;
+    private final VetProfileRepository vetProfileRepository;
+    private final VetScheduleEntryRepository vetScheduleEntryRepository;
 
     public DataInitializer(UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
-                           PetRepository petRepository) {
+                           PetRepository petRepository,
+                           VetProfileRepository vetProfileRepository,
+                           VetScheduleEntryRepository vetScheduleEntryRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.petRepository = petRepository;
+        this.vetProfileRepository = vetProfileRepository;
+        this.vetScheduleEntryRepository = vetScheduleEntryRepository;
     }
 
     @Override
@@ -63,6 +76,7 @@ public class DataInitializer implements CommandLineRunner {
         );
 
         seedPetsIfEmpty(admin, vet, user);
+        seedVetProfileAndSchedule(vet);
     }
 
     private User createUserIfNotExists(String username,
@@ -160,5 +174,53 @@ public class DataInitializer implements CommandLineRunner {
                     "Naughty, allergic to chicken."
             ));
         }
+    }
+
+    private void seedVetProfileAndSchedule(User vetUser) {
+        if (vetUser == null) {
+            log.info("Vet user is null. Skipping vet profile seeding.");
+            return;
+        }
+
+        if (vetProfileRepository.existsByUserId(vetUser.getId())) {
+            log.info("Vet profile for user '{}' already exists. Skipping vet profile seeding.", vetUser.getUsername());
+            return;
+        }
+
+        log.info("Seeding vet profile and schedule for user '{}'", vetUser.getUsername());
+
+        // Create vet profile
+        VetProfile profile = new VetProfile(vetUser);
+        profile.setBio("Experienced small animal veterinarian focused on preventive care.");
+        profile.setAcceptsNewPatients(true);
+        profile.setAverageVisitLengthMinutes(30);
+        profile.setSpecializations(Set.of(
+                VetSpecialization.GENERAL_PRACTICE,
+                VetSpecialization.SURGERY
+        ));
+
+        vetProfileRepository.save(profile);
+
+        // Clear any schedule entries just in case
+        vetScheduleEntryRepository.deleteByVetProfile(profile);
+
+        // Seed a simple weekly schedule: Mon–Fri 09:00–13:00 with 30-minute slots
+        for (DayOfWeek day : new DayOfWeek[]{
+                DayOfWeek.MONDAY,
+                DayOfWeek.TUESDAY,
+                DayOfWeek.WEDNESDAY,
+                DayOfWeek.THURSDAY,
+                DayOfWeek.FRIDAY
+        }) {
+            VetScheduleEntry entry = new VetScheduleEntry();
+            entry.setVetProfile(profile);
+            entry.setDayOfWeek(day);
+            entry.setStartTime(LocalTime.of(9, 0));
+            entry.setEndTime(LocalTime.of(13, 0));
+            entry.setSlotLengthMinutes(30);
+            vetScheduleEntryRepository.save(entry);
+        }
+
+        log.info("Vet profile and schedule seeded for user '{}'", vetUser.getUsername());
     }
 }

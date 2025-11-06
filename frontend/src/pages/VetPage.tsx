@@ -8,17 +8,31 @@ export function VetPage() {
 	const { user, accessToken } = useAuth()
 
 	if (!user || !accessToken) {
-		return <div>Backs to login</div>
+		return <div>Redirecting to login...</div>
+	}
+
+	const isVet = user.roles?.includes('VET')
+
+	if (!isVet) {
+		return (
+			<div className='page-container'>
+				<ProtectedHeader
+					user={user}
+					title='Vet Panel'
+					description='Access to this page is restricted to users with the VET role.'
+				/>
+			</div>
+		)
 	}
 
 	return (
 		<div className='page-container'>
 			<ProtectedHeader
 				user={user}
-				title={'Vet Panel'}
-				description={'Manage your profile, schedule, and time off.'}
+				title='Vet Panel'
+				description='Manage your profile, schedule, and time off.'
 			/>
-			<div className='page-content'>
+			<div className='page-content space-y-6'>
 				<VetProfileCard />
 				<VetScheduleCard />
 				<VetTimeOffCard />

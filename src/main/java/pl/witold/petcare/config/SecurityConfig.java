@@ -70,8 +70,10 @@ public class SecurityConfig {
                         // Admin-only areas
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        // Vet panel – vets and admins
-                        .requestMatchers("/api/vet/**").hasAnyRole("VET", "ADMIN")
+                        // Vet profile & schedule – only vets can manage their own data
+                        .requestMatchers("/api/vets/me/**").hasRole("VET")
+                        // Vet listing – available for authenticated domain users
+                        .requestMatchers("/api/vets/**").hasAnyRole("USER", "VET", "ADMIN")
                         // Pets API – any authenticated domain role; ownership będzie sprawdzane później w guardach
                         .requestMatchers("/api/pets/**").hasAnyRole("USER", "VET", "ADMIN")
                         // Everything else requires authentication
