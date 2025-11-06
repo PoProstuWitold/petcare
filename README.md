@@ -47,9 +47,9 @@ Przykładowe zwierzęta:
 ## Architektura
 
 Aplikacja została stworzona w modelu **klient–serwer**:
-- **Klient:** przeglądarka internetowa (wysyła żądania HTTP do serwera)
-- **Serwer:** aplikacja Spring Boot (renderuje strony HTML za pomocą silnika Thymeleaf)
-- **Baza danych:** H2 (z migracjami Flyway)
+- **Klient:** aplikacja React (Vite) komunikująca się z serwerem za pomocą REST API,
+- **Serwer:** aplikacja Spring Boot,
+- **Baza danych:** H2 (z migracjami Flyway).
 
 <p align="right">(<a href="#top">przewiń do góry</a>)</p>
 
