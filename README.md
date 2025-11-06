@@ -64,7 +64,8 @@ Aplikacja została stworzona w modelu **klient–serwer**:
 
 ### Moduły
 
-DO ZROBIENIA
+- **Zarządzanie użytkownikami:** rejestracja, logowanie, role.
+- **Zarządzanie zwierzętami:** dodawanie, edytowanie, usuwanie profili zwierząt.
 
 <p align="right">(<a href="#top">przewiń do góry</a>)</p>
 
@@ -72,7 +73,13 @@ DO ZROBIENIA
 
 ## Zasady SOLID
 
-DO ZROBIENIA
+Projekt został zaprojektowany zgodnie z zasadami SOLID, co zapewnia jego elastyczność, skalowalność i łatwość utrzymania. Poniżej przedstawiono, jak każda z zasad została zaimplementowana:
+- **S - Single Responsibility Principle (SRP):** Każda klasa ma jedną odpowiedzialność, np. serwisy zajmują się logiką biznesową, a kontrolery obsługują żądania HTTP.
+- **O - Open/Closed Principle (OCP):** System jest otwarty na rozszerzenia (np. dodawanie nowych funkcji), ale zamknięty na modyfikacje istniejącego kodu.
+- **L - Liskov Substitution Principle (LSP):** Podklasy mogą być używane zamiast swoich nadklas bez zmiany poprawności programu.
+- **I - Interface Segregation Principle (ISP):** Interfejsy są podzielone na mniejsze, bardziej specyficzne, co pozwala na implementację tylko tych metod, które są potrzebne.
+- **D - Dependency Inversion Principle (DIP):** Moduły wysokiego poziomu nie zależą od modułów niskiego poziomu; oba zależą od abstrakcji.
+
 
 <p align="right">(<a href="#top">przewiń do góry</a>)</p>
 
@@ -102,6 +109,30 @@ DO ZROBIENIA
 
 ## REST API
 
-DO ZROBIENIA
+Wszystkie mają prefiks `/api`. 
+
+W nawiasie podano podprefiksy dla danej grupy endpointów.
+
+- **Status (`/status`)**:
+  - `GET /health` - sprawdzenie stanu aplikacji.
+- **Auth (`/auth`)**:
+  - `POST /login` - logowanie użytkownika,
+  - `POST /register` - rejestracja nowego użytkownika,
+  - `POST /logout` - wylogowanie użytkownika,
+  - `GET /me` - pobranie informacji o aktualnie zalogowanym użytkowniku.
+- **Users (`/users`)**:
+  - `POST /` - tworzenie nowego użytkownika (ADMIN),
+  - `GET /` - pobranie listy wszystkich użytkowników (ADMIN),
+  - `GET /{id}` - pobranie szczegółów użytkownika (ADMIN),
+  - `PUT /{id}` - aktualizacja danych użytkownika (ADMIN),
+  - `DELETE /{id}` - usunięcie użytkownika (ADMIN).
+- **Pets (`/pets`)**:
+  - `POST /` - dodanie nowego zwierzęcia (USER),
+  - `GET /` - pobranie listy zwierząt (USER: własne, VET/ADMIN: wszystkie),
+  - `GET /{id}` - pobranie szczegółów zwierzęcia (USER: własne, VET/ADMIN: wszystkie),
+  - `PUT /{id}` - aktualizacja danych zwierzęcia (USER: własne, VET/ADMIN: wszystkie),
+  - `DELETE /{id}` - usunięcie zwierzęcia (USER: własne, VET/ADMIN: wszystkie).
+- **Appointments (`/appointments`)**: DO ZROBIENIA.
+- **Medical Records (`/medical-records`)**: DO ZROBIENIA.
 
 <p align="right">(<a href="#top">przewiń do góry</a>)</p>
