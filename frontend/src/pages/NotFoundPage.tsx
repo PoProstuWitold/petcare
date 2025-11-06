@@ -2,7 +2,7 @@ import { Link } from 'react-router'
 
 export function NotFoundPage() {
 	return (
-		<main className='flex min-h-[60vh] items-center justify-center px-4 py-12 sm:px-6 lg:px-8'>
+		<main className='page-container items-center justify-center px-4 py-12 sm:px-6 lg:px-8'>
 			<div className='mx-auto flex w-full max-w-xl flex-col items-center gap-6 text-center'>
 				<div className='inline-flex items-center rounded-full bg-sky-50 px-3 py-1 text-lg font-medium uppercase tracking-wide text-sky-700'>
 					<span className='mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-sky-100 text-[10px]'>

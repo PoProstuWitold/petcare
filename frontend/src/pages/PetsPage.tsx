@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
+import { ErrorHandler } from '../components/ErrorHandler'
+import { Loader } from '../components/Loader'
 import { PetCard } from '../components/PetCard'
 import { PetForm } from '../components/PetForm'
+import { ProtectedHeader } from '../components/ProtectedHeader'
 import { useAuth } from '../context/AuthContext'
 import type { Pet } from '../utils/types'
 
@@ -141,73 +144,43 @@ export function PetsPage() {
 
 			toast.success('Pet deleted successfully.')
 		} catch (error) {
-			console.error('Error while deleting pet', error)
+			console.error('ErrorHandler while deleting pet', error)
 			toast.error('Unexpected error while deleting pet.')
 		}
 	}
 
 	return (
-		<div className='min-h-[calc(100vh-4rem-4rem)] bg-gradient-to-b from-sky-50 to-slate-50'>
-			<div className='mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8'>
-				<header className='mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between'>
-					<div>
-						<h1 className='text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl'>
-							My Pets
-						</h1>
-						<p className='mt-1 text-sm text-slate-600'>
-							Here you can see and manage all pets assigned to
-							your account.
-						</p>
-					</div>
-
-					<div className='flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4'>
-						{user && (
-							<p className='text-xs text-slate-500 sm:text-sm'>
-								Signed in as{' '}
-								<span className='font-medium text-slate-800'>
-									{user.fullName}
-								</span>
-							</p>
-						)}
-
-						<button
-							type='button'
-							onClick={() => {
-								setEditingPet(null)
-								setIsCreating(true)
-							}}
-							className='rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60'
-							disabled={isCreating || !!editingPet}
-						>
-							Add new pet
-						</button>
-					</div>
-				</header>
-
+		<div className='page-container'>
+			<ProtectedHeader
+				user={user}
+				title='My Pets'
+				description='Here you can see and manage all pets assigned to your account.'
+			>
+				<button
+					type='button'
+					onClick={() => {
+						setEditingPet(null)
+						setIsCreating(true)
+					}}
+					className='rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60'
+					disabled={isCreating || !!editingPet}
+				>
+					Add new pet
+				</button>
+			</ProtectedHeader>
+			<div className='page-content'>
 				{(isCreating || editingPet) && (
-					<div className='mb-6'>
-						<PetForm
-							mode={editingPet ? 'edit' : 'create'}
-							initialPet={editingPet ?? undefined}
-							onCancel={handleCancelForm}
-							onSaved={handleSavedPet}
-						/>
-					</div>
+					<PetForm
+						mode={editingPet ? 'edit' : 'create'}
+						initialPet={editingPet ?? undefined}
+						onCancel={handleCancelForm}
+						onSaved={handleSavedPet}
+					/>
 				)}
 
-				{isLoading && (
-					<div className='rounded-2xl border border-slate-200 bg-white p-6 shadow-sm'>
-						<p className='text-sm text-slate-600'>
-							Loading your pets...
-						</p>
-					</div>
-				)}
+				{isLoading && <Loader message='Loading your pets...' />}
 
-				{!isLoading && error && (
-					<div className='rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700'>
-						<p>{error}</p>
-					</div>
-				)}
+				{!isLoading && error && <ErrorHandler message={error} />}
 
 				{!isLoading && !error && pets.length === 0 && (
 					<div className='rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm'>

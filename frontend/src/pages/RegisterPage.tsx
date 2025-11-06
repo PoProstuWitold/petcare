@@ -57,7 +57,7 @@ export function RegisterPage() {
 	const passwordValue = watch('password')
 
 	return (
-		<div className='flex min-h-[calc(100vh-4rem-4rem)] items-center justify-center bg-slate-50 px-4 py-8 sm:px-6 lg:px-8'>
+		<div className='page-container flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8'>
 			<div className='w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8'>
 				<div className='mb-6 text-center'>
 					<h1 className='text-xl font-semibold text-slate-900'>

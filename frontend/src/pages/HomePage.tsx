@@ -1,6 +1,6 @@
 export function HomePage() {
 	return (
-		<div className='bg-gradient-to-b from-sky-50 to-slate-50'>
+		<div className='page-container'>
 			<section className='mx-auto flex max-w-6xl flex-col gap-10 px-4 py-12 sm:px-6 lg:flex-row lg:items-center lg:py-16 lg:px-8'>
 				<div className='flex-1 space-y-6'>
 					<p className='inline-flex rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sky-700'>

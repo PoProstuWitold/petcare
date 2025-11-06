@@ -1,4 +1,4 @@
-import type { Pet } from '../utils/types.ts'
+import type { Pet } from '../utils/types'
 
 interface PetCardProps {
 	pet: Pet

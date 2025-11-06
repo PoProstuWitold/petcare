@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react'
+import { ErrorHandler } from '../components/ErrorHandler'
+import { Loader } from '../components/Loader'
+import { ProtectedHeader } from '../components/ProtectedHeader'
 
 type HealthStatus = {
 	timestamp: string
@@ -56,7 +59,7 @@ export function StatusPage() {
 				const res = await fetch('/api/status/health')
 
 				if (!res.ok) {
-					throw new Error(`Request failed with status ${res.status}`)
+					new Error(`Request failed with status ${res.status}`)
 				}
 
 				const data = (await res.json()) as HealthStatus
@@ -91,17 +94,11 @@ export function StatusPage() {
 		: 'Down'
 
 	return (
-		<main className='mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8'>
-			<header className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
-				<div>
-					<h1 className='text-2xl font-semibold text-slate-900'>
-						Application status
-					</h1>
-					<p className='text-sm text-slate-600'>
-						Health check based on <code>/api/status/health</code>
-					</p>
-				</div>
-
+		<main className='page-container'>
+			<ProtectedHeader
+				title='Application Status'
+				description='Health check based on <code>/api/status/health</code>'
+			>
 				<span
 					className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium ${getStatusColor(
 						status
@@ -118,59 +115,51 @@ export function StatusPage() {
 					/>
 					{status.toUpperCase()}
 				</span>
-			</header>
+			</ProtectedHeader>
+			<div className='page-content'>
+				{loading && <Loader message='Loading status...' />}
+				{error && !loading && <ErrorHandler message={error} />}
 
-			{loading && (
-				<div className='rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm'>
-					Loading status...
-				</div>
-			)}
+				{!loading && !error && health && (
+					<section className='grid gap-4 sm:grid-cols-3'>
+						<article className='rounded-2xl border border-slate-200 bg-white p-4 shadow-sm'>
+							<h2 className='text-xs font-semibold uppercase tracking-wide text-slate-500'>
+								Uptime
+							</h2>
+							<p className='mt-2 text-lg font-semibold text-slate-900'>
+								{uptime}
+							</p>
+							<p className='mt-1 text-xs text-slate-500'>
+								Based on <code>details.uptime_ms</code>
+							</p>
+						</article>
 
-			{error && !loading && (
-				<div className='rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800 shadow-sm'>
-					{error}
-				</div>
-			)}
+						<article className='rounded-2xl border border-slate-200 bg-white p-4 shadow-sm'>
+							<h2 className='text-xs font-semibold uppercase tracking-wide text-slate-500'>
+								Database
+							</h2>
+							<p className='mt-2 text-lg font-semibold text-slate-900'>
+								{dbStatus}
+							</p>
+							<p className='mt-1 text-xs text-slate-500'>
+								Value from <code>details.db</code>
+							</p>
+						</article>
 
-			{!loading && !error && health && (
-				<section className='grid gap-4 sm:grid-cols-3'>
-					<article className='rounded-2xl border border-slate-200 bg-white p-4 shadow-sm'>
-						<h2 className='text-xs font-semibold uppercase tracking-wide text-slate-500'>
-							Uptime
-						</h2>
-						<p className='mt-2 text-lg font-semibold text-slate-900'>
-							{uptime}
-						</p>
-						<p className='mt-1 text-xs text-slate-500'>
-							Based on <code>details.uptime_ms</code>
-						</p>
-					</article>
-
-					<article className='rounded-2xl border border-slate-200 bg-white p-4 shadow-sm'>
-						<h2 className='text-xs font-semibold uppercase tracking-wide text-slate-500'>
-							Database
-						</h2>
-						<p className='mt-2 text-lg font-semibold text-slate-900'>
-							{dbStatus}
-						</p>
-						<p className='mt-1 text-xs text-slate-500'>
-							Value from <code>details.db</code>
-						</p>
-					</article>
-
-					<article className='rounded-2xl border border-slate-200 bg-white p-4 shadow-sm'>
-						<h2 className='text-xs font-semibold uppercase tracking-wide text-slate-500'>
-							Last check
-						</h2>
-						<p className='mt-2 text-sm font-medium text-slate-900'>
-							{timestamp}
-						</p>
-						<p className='mt-1 text-xs text-slate-500'>
-							Raw: <code>{health.timestamp}</code>
-						</p>
-					</article>
-				</section>
-			)}
+						<article className='rounded-2xl border border-slate-200 bg-white p-4 shadow-sm'>
+							<h2 className='text-xs font-semibold uppercase tracking-wide text-slate-500'>
+								Last check
+							</h2>
+							<p className='mt-2 text-sm font-medium text-slate-900'>
+								{timestamp}
+							</p>
+							<p className='mt-1 text-xs text-slate-500'>
+								Raw: <code>{health.timestamp}</code>
+							</p>
+						</article>
+					</section>
+				)}
+			</div>
 		</main>
 	)
 }

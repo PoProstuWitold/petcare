@@ -1,5 +1,3 @@
-// frontend/src/components/PetForm.tsx
-
 import type * as React from 'react'
 import { useState } from 'react'
 import { toast } from 'react-toastify'
@@ -157,7 +155,7 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 				})
 			}
 		} catch (error) {
-			console.error('Error while submitting pet form', error)
+			console.error('ErrorHandler while submitting pet form', error)
 			toast.error('Unexpected error while saving pet.')
 		} finally {
 			setIsSubmitting(false)
