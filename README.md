@@ -26,6 +26,20 @@
 
 **PetCare** to aplikacja webowa w architekturze **klient–serwer**, której celem jest zarządzanie zwierzętami, ich profilami oraz wizytami u weterynarza. System umożliwia logowanie, przeglądanie oraz zarządzanie danymi przez różne role użytkowników (`USER`, `VET`, `ADMIN`).
 
+**Konta testowe i dane przykładowe**
+Aby szybciej rozpocząć pracę z aplikacją, w trybie deweloperskim automatycznie tworzone są konta testowe oraz przykładowe dane.
+
+Konta użytkowników:
+- **Administrator:** - username: `admin`, password: `admin12345678`,
+- **Weterynarz:** - username: `vet`, password: `vet12345678`,
+- **Użytkownik:** - username: `user`, password: `user12345678`.
+
+Przykładowe zwierzęta:
+- **Sara** - suczka, właściciel: user,
+- **Yuki** - kotka, właściciel: user,
+- **Abi** - suczka, właściciel: vet,
+- **Harry** - pies, właściciel: admin.
+
 <p align="right">(<a href="#top">przewiń do góry</a>)</p>
 
 ---
@@ -74,7 +88,7 @@ DO ZROBIENIA
 
 ## Technologie
 
-- **Spring Boot 3.5.6**
+- **Spring Boot v3.5.6**
 - **Spring Security**
 - **React v19**
 - **JPA**
