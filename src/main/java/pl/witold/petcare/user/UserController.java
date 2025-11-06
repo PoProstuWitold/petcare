@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.witold.petcare.user.commands.UserRegistrationCommand;
+import pl.witold.petcare.user.commands.PasswordChangeCommand;
 import pl.witold.petcare.dto.*;
 
 import java.util.List;
@@ -49,14 +50,20 @@ public class UserController {
     }
 
     @PatchMapping("/{id}/roles")
-    public ResponseEntity<Void> updateRoles(@PathVariable Long id, @RequestBody Set<Role> roles) {
+    public ResponseEntity<Void> updateRoles(
+            @PathVariable Long id,
+            @RequestBody Set<Role> roles
+    ) {
         userService.updateRoles(id, roles);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/password")
-    public ResponseEntity<Void> changePassword(@PathVariable Long id, @RequestBody String newPassword) {
-        userService.changePassword(id, newPassword);
+    public ResponseEntity<Void> changePassword(
+            @PathVariable Long id,
+            @Valid @RequestBody PasswordChangeCommand command
+    ) {
+        userService.changePassword(id, command.newPassword());
         return ResponseEntity.noContent().build();
     }
 }

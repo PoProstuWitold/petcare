@@ -2,18 +2,19 @@ package pl.witold.petcare.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
+import pl.witold.petcare.dto.ApiErrorResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Custom access denied handler for authenticated users with insufficient roles.
+ * Produces a consistent ApiErrorResponse JSON body.
  */
 @Component
 @RequiredArgsConstructor
@@ -28,17 +29,16 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler {
             AccessDeniedException accessDeniedException
     ) throws IOException {
 
-        int status = HttpServletResponse.SC_FORBIDDEN;
+        HttpStatus status = HttpStatus.FORBIDDEN;
 
-        response.setStatus(status);
+        ApiErrorResponse body = ApiErrorResponse.of(
+                status,
+                "You do not have sufficient permissions to access this resource",
+                request.getRequestURI()
+        );
+
+        response.setStatus(status.value());
         response.setContentType("application/json");
-
-        Map<String, Object> body = new HashMap<>();
-        body.put("status", status);
-        body.put("error", "Forbidden");
-        body.put("message", "You do not have sufficient permissions to access this resource");
-        body.put("path", request.getRequestURI());
-
         objectMapper.writeValue(response.getOutputStream(), body);
     }
 }

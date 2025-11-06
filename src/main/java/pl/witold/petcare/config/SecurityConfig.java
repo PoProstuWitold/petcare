@@ -1,5 +1,6 @@
 package pl.witold.petcare.config;
 
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,23 +24,28 @@ import pl.witold.petcare.security.jwt.JwtAuthFilter;
 import pl.witold.petcare.security.jwt.RestAccessDeniedHandler;
 
 import java.util.List;
+import java.util.Optional;
 
 @Configuration
 @EnableMethodSecurity
+@EnableConfigurationProperties(CorsProperties.class)
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final JwtAuthEntryPoint jwtAuthEntryPoint;
-    private final pl.witold.petcare.security.jwt.RestAccessDeniedHandler accessDeniedHandler;
+    private final RestAccessDeniedHandler accessDeniedHandler;
+    private final CorsProperties corsProperties;
 
     public SecurityConfig(
             JwtAuthFilter jwtAuthFilter,
             JwtAuthEntryPoint jwtAuthEntryPoint,
-            RestAccessDeniedHandler accessDeniedHandler
+            RestAccessDeniedHandler accessDeniedHandler,
+            CorsProperties corsProperties
     ) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.jwtAuthEntryPoint = jwtAuthEntryPoint;
         this.accessDeniedHandler = accessDeniedHandler;
+        this.corsProperties = corsProperties;
     }
 
     @Bean
@@ -57,12 +63,18 @@ public class SecurityConfig {
                         .accessDeniedHandler(accessDeniedHandler)
                 )
                 .authorizeHttpRequests(auth -> auth
+                        // Public authentication endpoints
                         .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
+                        // Public status/health endpoints
                         .requestMatchers("/api/status/**").permitAll()
+                        // Admin-only areas
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // Vet panel – vets and admins
                         .requestMatchers("/api/vet/**").hasAnyRole("VET", "ADMIN")
+                        // Pets API – any authenticated domain role; ownership będzie sprawdzane później w guardach
                         .requestMatchers("/api/pets/**").hasAnyRole("USER", "VET", "ADMIN")
+                        // Everything else requires authentication
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider)
@@ -89,14 +101,22 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration configuration
+    ) throws Exception {
         return configuration.getAuthenticationManager();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+
+        // Fallback for local development if property is not set
+        List<String> allowedOrigins = Optional.ofNullable(corsProperties.allowedOrigins())
+                .filter(list -> !list.isEmpty())
+                .orElse(List.of("http://localhost:5173"));
+
+        config.setAllowedOrigins(allowedOrigins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
