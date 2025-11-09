@@ -237,8 +237,10 @@ export function VetTimeOffCard() {
 								<div>
 									<p className='font-medium text-slate-900'>
 										{item.startDate === item.endDate
-											? item.startDate
-											: `${item.startDate} – ${item.endDate}`}
+											? new Date(
+													item.startDate
+												).toLocaleDateString('pl-PL')
+											: `${new Date(item.startDate).toLocaleDateString('pl-PL')} – ${new Date(item.endDate).toLocaleDateString('pl-PL')}`}
 									</p>
 									{item.reason && (
 										<p className='text-xs text-slate-600'>

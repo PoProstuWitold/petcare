@@ -21,7 +21,7 @@ public class VetProfile {
     private Long id;
 
     @Setter
-    @OneToOne(optional = false, fetch = FetchType.LAZY)
+    @OneToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", unique = true, nullable = false)
     private User user;
 

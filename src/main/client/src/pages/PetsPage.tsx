@@ -5,8 +5,10 @@ import { Loader } from '../components/Loader'
 import { PetCard } from '../components/PetCard'
 import { PetForm } from '../components/PetForm'
 import { ProtectedHeader } from '../components/ProtectedHeader'
+import { PetVisitsSection } from '../components/visits/PetVisitsSection'
+import { VisitBookingForm } from '../components/visits/VisitBookingForm'
 import { useAuth } from '../context/AuthContext'
-import type { Pet } from '../utils/types'
+import type { Pet, Visit } from '../utils/types'
 
 export function PetsPage() {
 	const { accessToken, user } = useAuth()
@@ -16,6 +18,8 @@ export function PetsPage() {
 
 	const [isCreating, setIsCreating] = useState(false)
 	const [editingPet, setEditingPet] = useState<Pet | null>(null)
+	const [isBookingVisit, setIsBookingVisit] = useState(false)
+	const [visitsRefreshKey, setVisitsRefreshKey] = useState(0)
 
 	useEffect(() => {
 		if (!accessToken) {
@@ -96,6 +100,11 @@ export function PetsPage() {
 		setEditingPet(null)
 	}
 
+	const handleVisitBooked = (_visit: Visit) => {
+		setIsBookingVisit(false)
+		setVisitsRefreshKey((prev) => prev + 1)
+	}
+
 	const handleDeletePet = async (pet: Pet) => {
 		if (!accessToken) {
 			toast.error('Missing access token. Please log in again.')
@@ -136,7 +145,6 @@ export function PetsPage() {
 
 			setPets((prev) => prev.filter((p) => p.id !== pet.id))
 
-			// If we were editing this pet, close the form
 			setEditingPet((current) =>
 				current && current.id === pet.id ? null : current
 			)
@@ -156,18 +164,40 @@ export function PetsPage() {
 				title='My Pets'
 				description='Here you can see and manage all pets assigned to your account.'
 			>
-				<button
-					type='button'
-					onClick={() => {
-						setEditingPet(null)
-						setIsCreating(true)
-					}}
-					className='rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60'
-					disabled={isCreating || !!editingPet}
-				>
-					Add new pet
-				</button>
+				<div className='flex flex-wrap gap-2'>
+					<button
+						type='button'
+						onClick={() => {
+							setEditingPet(null)
+							setIsCreating(true)
+							setIsBookingVisit(false)
+						}}
+						className='rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60'
+						disabled={isCreating || !!editingPet || isBookingVisit}
+					>
+						Add new pet
+					</button>
+
+					<button
+						type='button'
+						onClick={() => {
+							setIsBookingVisit(true)
+							setIsCreating(false)
+							setEditingPet(null)
+						}}
+						className='rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60'
+						disabled={
+							pets.length === 0 ||
+							isCreating ||
+							!!editingPet ||
+							isBookingVisit
+						}
+					>
+						Book visit
+					</button>
+				</div>
 			</ProtectedHeader>
+
 			<div className='page-content'>
 				{(isCreating || editingPet) && (
 					<PetForm
@@ -175,6 +205,14 @@ export function PetsPage() {
 						initialPet={editingPet ?? undefined}
 						onCancel={handleCancelForm}
 						onSaved={handleSavedPet}
+					/>
+				)}
+
+				{isBookingVisit && !isLoading && !error && pets.length > 0 && (
+					<VisitBookingForm
+						pets={pets}
+						onBooked={handleVisitBooked}
+						onCancel={() => setIsBookingVisit(false)}
 					/>
 				)}
 
@@ -199,12 +237,18 @@ export function PetsPage() {
 								pet={pet}
 								onEdit={() => {
 									setIsCreating(false)
+									setIsBookingVisit(false)
 									setEditingPet(pet)
 								}}
 								onDelete={() => {
 									void handleDeletePet(pet)
 								}}
-							/>
+							>
+								<PetVisitsSection
+									key={`${visitsRefreshKey}-${pet.id}`}
+									pet={pet}
+								/>
+							</PetCard>
 						))}
 					</div>
 				)}

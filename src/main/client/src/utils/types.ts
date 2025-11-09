@@ -67,3 +67,30 @@ export type VetTimeOffForm = {
 	endDate: string
 	reason: string
 }
+export type VisitStatus = 'SCHEDULED' | 'COMPLETED' | 'CANCELLED' | 'CONFIRMED'
+
+export type Visit = {
+	id: number
+	petId: number
+	petName: string
+	vetProfileId: number
+	vetFullName: string
+	date: string // ISO date: YYYY-MM-DD
+	startTime: string // HH:mm[:ss]
+	endTime: string // HH:mm[:ss]
+	status: VisitStatus
+	reason?: string | null
+	notes?: string | null
+}
+
+export type VetProfile = {
+	id: number
+	userId: number
+	fullName: string
+	username: string
+	email: string
+	bio: string | null
+	acceptsNewPatients: boolean
+	averageVisitLengthMinutes: number
+	specializations: string[]
+}

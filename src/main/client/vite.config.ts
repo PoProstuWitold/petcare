@@ -5,10 +5,10 @@ import { defineConfig } from 'vite'
 // https://vite.dev/config/
 export default defineConfig({
 	plugins: [react(), tailwindcss()],
-    build: {
-        outDir: '../resources/static/',
-        emptyOutDir: true
-    },
+	build: {
+		outDir: '../resources/static/',
+		emptyOutDir: true
+	},
 	server: {
 		proxy: {
 			'/api': {

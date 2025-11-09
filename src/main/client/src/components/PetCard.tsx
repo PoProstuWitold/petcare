@@ -1,12 +1,14 @@
+import type { ReactNode } from 'react'
 import type { Pet } from '../utils/types'
 
 interface PetCardProps {
 	pet: Pet
 	onEdit?: () => void
 	onDelete?: () => void
+	children?: ReactNode
 }
 
-export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
+export function PetCard({ pet, onEdit, onDelete, children }: PetCardProps) {
 	const showActions = onEdit || onDelete
 
 	return (
@@ -34,7 +36,11 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
 				{pet.birthDate && (
 					<div>
 						<p className='font-medium text-slate-800'>Birth date</p>
-						<p>{pet.birthDate}</p>
+						<p>
+							{new Date(pet.birthDate).toLocaleDateString(
+								'pl-PL'
+							)}
+						</p>
 					</div>
 				)}
 				{!pet.birthDate && pet.birthYear && (
@@ -59,6 +65,12 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
 				<div className='mt-2 rounded-md bg-slate-50 p-2 text-xs text-slate-700 sm:text-sm'>
 					<p className='font-medium text-slate-800'>Notes</p>
 					<p className='mt-0.5'>{pet.notes}</p>
+				</div>
+			)}
+
+			{children && (
+				<div className='mt-3 border-t border-slate-200 pt-3'>
+					{children}
 				</div>
 			)}
 
