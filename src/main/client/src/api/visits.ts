@@ -64,7 +64,7 @@ export async function createVisitForPet(
 		notes: payload.notes
 	}
 
-	const res = await fetch(`${BASE_URL}/visit`, {
+	const res = await fetch(`${BASE_URL}/visits`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',

@@ -13,7 +13,9 @@ import {
 	fetchVetVisitsForDate
 } from '../../api/visits'
 import { useAuth } from '../../context/AuthContext'
+import { ALL_SPECIALIZATIONS } from '../../utils/constants.ts'
 import type {
+	DayOfWeek,
 	Pet,
 	VetProfile,
 	VetScheduleEntry,
@@ -41,6 +43,56 @@ interface VisitFormState {
 	notes: string
 }
 
+const DAYS_AHEAD = 90
+
+const JS_DAY_TO_NAME: DayOfWeek[] = [
+	'SUNDAY', // 0
+	'MONDAY', // 1
+	'TUESDAY', // 2
+	'WEDNESDAY', // 3
+	'THURSDAY', // 4
+	'FRIDAY', // 5
+	'SATURDAY' // 6
+]
+
+function toDateOnlyString(date: Date): string {
+	const year = date.getFullYear()
+	const month = String(date.getMonth() + 1).padStart(2, '0')
+	const day = String(date.getDate()).padStart(2, '0')
+	return `${year}-${month}-${day}`
+}
+
+function computeAvailableDates(
+	schedule: VetScheduleEntry[],
+	timeOff: VetTimeOff[]
+): string[] {
+	if (!schedule.length) return []
+
+	const allowedDays = new Set(schedule.map((e) => e.dayOfWeek))
+	const today = new Date()
+	today.setHours(0, 0, 0, 0)
+
+	const result: string[] = []
+
+	for (let i = 0; i < DAYS_AHEAD; i++) {
+		const d = new Date(today)
+		d.setDate(today.getDate() + i)
+		const iso = toDateOnlyString(d)
+		const dayName = JS_DAY_TO_NAME[d.getDay()]
+
+		if (!allowedDays.has(dayName as DayOfWeek)) continue
+
+		const isInTimeOff = timeOff.some(
+			(period) => iso >= period.startDate && iso <= period.endDate
+		)
+		if (isInTimeOff) continue
+
+		result.push(iso)
+	}
+
+	return result
+}
+
 export function VisitBookingForm({
 	pets,
 	onBooked,
@@ -48,8 +100,14 @@ export function VisitBookingForm({
 }: VisitBookingFormProps) {
 	const { accessToken, user } = useAuth()
 	const [vets, setVets] = useState<VetProfile[]>([])
+
 	const [availableSlots, setAvailableSlots] = useState<Slot[]>([])
+	const [availableDates, setAvailableDates] = useState<string[]>([])
+	const [vetSchedule, setVetSchedule] = useState<VetScheduleEntry[]>([])
+	const [vetTimeOffPeriods, setVetTimeOffPeriods] = useState<VetTimeOff[]>([])
+
 	const [loadingSlots, setLoadingSlots] = useState(false)
+	const [loadingMeta, setLoadingMeta] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 	const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -61,8 +119,18 @@ export function VisitBookingForm({
 		reason: '',
 		notes: ''
 	}))
+	const selectedVet = useMemo(
+		() => vets.find((v) => v.id === Number(form.vetProfileId)),
+		[vets, form.vetProfileId]
+	)
 
 	const token = accessToken
+
+	const dayOfWeekName = useMemo(() => {
+		if (!form.date) return null
+		const jsDay = new Date(`${form.date}T00:00:00`).getDay()
+		return JS_DAY_TO_NAME[jsDay]
+	}, [form.date])
 
 	useEffect(() => {
 		if (!token) return
@@ -86,23 +154,68 @@ export function VisitBookingForm({
 		})()
 	}, [token])
 
-	const dayOfWeekName = useMemo(() => {
-		if (!form.date) return null
-		const jsDay = new Date(`${form.date}T00:00:00`).getDay()
-		const names = [
-			'SUNDAY',
-			'MONDAY',
-			'TUESDAY',
-			'WEDNESDAY',
-			'THURSDAY',
-			'FRIDAY',
-			'SATURDAY'
-		]
-		return names[jsDay]
-	}, [form.date])
+	useEffect(() => {
+		if (!token || !form.vetProfileId) {
+			setVetSchedule([])
+			setVetTimeOffPeriods([])
+			setAvailableDates([])
+			setAvailableSlots([])
+			setForm((prev) => ({ ...prev, date: '', startTime: '' }))
+			return
+		}
+
+		;(async () => {
+			setLoadingMeta(true)
+			setError(null)
+
+			try {
+				const vetId = Number(form.vetProfileId)
+
+				const [schedule, timeOff] = await Promise.all([
+					fetchVetSchedule(vetId, token),
+					fetchVetTimeOff(vetId, token)
+				])
+
+				setVetSchedule(schedule)
+				setVetTimeOffPeriods(timeOff)
+
+				const dates = computeAvailableDates(schedule, timeOff)
+				setAvailableDates(dates)
+
+				setAvailableSlots([])
+				setForm((prev) => ({
+					...prev,
+					date: dates[0] ?? '',
+					startTime: ''
+				}))
+			} catch (e) {
+				console.error(e)
+				setError('Could not load vet schedule')
+				setVetSchedule([])
+				setVetTimeOffPeriods([])
+				setAvailableDates([])
+				setAvailableSlots([])
+				setForm((prev) => ({ ...prev, date: '', startTime: '' }))
+			} finally {
+				setLoadingMeta(false)
+			}
+		})()
+	}, [token, form.vetProfileId])
 
 	useEffect(() => {
-		if (!token || !form.vetProfileId || !form.date || !dayOfWeekName) {
+		if (!token || !form.vetProfileId || !form.date) {
+			setAvailableSlots([])
+			setForm((prev) => ({ ...prev, startTime: '' }))
+			return
+		}
+
+		if (availableDates.length && !availableDates.includes(form.date)) {
+			setAvailableSlots([])
+			setForm((prev) => ({ ...prev, startTime: '' }))
+			return
+		}
+
+		if (!dayOfWeekName) {
 			setAvailableSlots([])
 			setForm((prev) => ({ ...prev, startTime: '' }))
 			return
@@ -115,18 +228,28 @@ export function VisitBookingForm({
 			try {
 				const vetId = Number(form.vetProfileId)
 
-				const [schedule, timeOff, visits] = await Promise.all([
-					fetchVetSchedule(vetId, token),
-					fetchVetTimeOff(vetId, token),
-					fetchVetVisitsForDate(vetId, form.date, token)
-				])
+				const visits = await fetchVetVisitsForDate(
+					vetId,
+					form.date,
+					token
+				)
 
-				const hasTimeOffThatDay = timeOff.some((period: VetTimeOff) => {
-					return (
+				const scheduleForDay = vetSchedule.filter(
+					(entry) => entry.dayOfWeek === dayOfWeekName
+				)
+
+				if (scheduleForDay.length === 0) {
+					setAvailableSlots([])
+					setForm((prev) => ({ ...prev, startTime: '' }))
+					setLoadingSlots(false)
+					return
+				}
+
+				const hasTimeOffThatDay = vetTimeOffPeriods.some(
+					(period) =>
 						form.date >= period.startDate &&
 						form.date <= period.endDate
-					)
-				})
+				)
 
 				if (hasTimeOffThatDay) {
 					setAvailableSlots([])
@@ -136,44 +259,37 @@ export function VisitBookingForm({
 				}
 
 				const takenStarts = new Set(
-					visits.map((v) => v.startTime.slice(0, 5))
+					visits.map((v: Visit) => v.startTime.slice(0, 5))
 				)
 
 				const slots: Slot[] = []
 
-				schedule
-					.filter(
-						(entry: VetScheduleEntry) =>
-							entry.dayOfWeek === dayOfWeekName
-					)
-					.forEach((entry) => {
-						const step = entry.slotLengthMinutes
-						const toMinutes = (time: string) => {
-							const [h, m] = time.split(':').map(Number)
-							return h * 60 + m
+				const toMinutes = (time: string) => {
+					const [h, m] = time.split(':').map(Number)
+					return h * 60 + m
+				}
+
+				scheduleForDay.forEach((entry) => {
+					const step = entry.slotLengthMinutes
+					let currentMinutes = toMinutes(entry.startTime.slice(0, 5))
+					const endMinutes = toMinutes(entry.endTime.slice(0, 5))
+
+					while (currentMinutes + step <= endMinutes) {
+						const h = Math.floor(currentMinutes / 60)
+							.toString()
+							.padStart(2, '0')
+						const m = (currentMinutes % 60)
+							.toString()
+							.padStart(2, '0')
+						const value = `${h}:${m}`
+
+						if (!takenStarts.has(value)) {
+							slots.push({ value, label: value })
 						}
 
-						let currentMinutes = toMinutes(
-							entry.startTime.slice(0, 5)
-						)
-						const endMinutes = toMinutes(entry.endTime.slice(0, 5))
-
-						while (currentMinutes + step <= endMinutes) {
-							const h = Math.floor(currentMinutes / 60)
-								.toString()
-								.padStart(2, '0')
-							const m = (currentMinutes % 60)
-								.toString()
-								.padStart(2, '0')
-							const value = `${h}:${m}`
-
-							if (!takenStarts.has(value)) {
-								slots.push({ value, label: value })
-							}
-
-							currentMinutes += step
-						}
-					})
+						currentMinutes += step
+					}
+				})
 
 				setAvailableSlots(slots)
 				setForm((prev) => ({
@@ -189,7 +305,15 @@ export function VisitBookingForm({
 				setLoadingSlots(false)
 			}
 		})()
-	}, [token, form.vetProfileId, form.date, dayOfWeekName])
+	}, [
+		token,
+		form.vetProfileId,
+		form.date,
+		dayOfWeekName,
+		vetSchedule,
+		vetTimeOffPeriods,
+		availableDates
+	])
 
 	const handleChange = (
 		event: ChangeEvent<
@@ -278,6 +402,12 @@ export function VisitBookingForm({
 
 	const title = 'Book a new visit'
 
+	const formatDateLabel = (iso: string) => {
+		const d = new Date(`${iso}T00:00:00`)
+		const dayName = JS_DAY_TO_NAME[d.getDay()]
+		return `${new Date(iso).toLocaleDateString('pl-PL')} (${dayName})`
+	}
+
 	return (
 		<form
 			onSubmit={handleSubmit}
@@ -345,15 +475,45 @@ export function VisitBookingForm({
 					>
 						Date
 					</label>
-					<input
+					<select
 						id='date'
-						type='date'
 						name='date'
 						value={form.date}
 						onChange={handleChange}
-						className='mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200'
+						disabled={
+							loadingMeta ||
+							!form.vetProfileId ||
+							availableDates.length === 0
+						}
+						className='mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200 disabled:cursor-not-allowed disabled:bg-slate-100'
 						required
-					/>
+					>
+						{!form.vetProfileId && (
+							<option value=''>Select vet first</option>
+						)}
+						{form.vetProfileId &&
+							!loadingMeta &&
+							availableDates.length === 0 && (
+								<option value=''>
+									No available days for this vet
+								</option>
+							)}
+						{form.vetProfileId &&
+							loadingMeta &&
+							availableDates.length === 0 && (
+								<option value=''>Loading days...</option>
+							)}
+						{availableDates.length > 0 && (
+							<>
+								<option value=''>Select date</option>
+								{availableDates.map((date) => (
+									<option key={date} value={date}>
+										{formatDateLabel(date)}
+									</option>
+								))}
+							</>
+						)}
+					</select>
 				</div>
 
 				<div className='sm:col-span-1'>
@@ -368,14 +528,23 @@ export function VisitBookingForm({
 						name='startTime'
 						value={form.startTime}
 						onChange={handleChange}
-						disabled={loadingSlots || availableSlots.length === 0}
+						disabled={
+							loadingSlots ||
+							availableSlots.length === 0 ||
+							!form.date
+						}
 						className='mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200 disabled:cursor-not-allowed disabled:bg-slate-100'
 						required
 					>
-						{loadingSlots && <option>Loading...</option>}
-						{!loadingSlots && availableSlots.length === 0 && (
-							<option>No free slots that day</option>
+						{!form.date && <option>Select date first</option>}
+						{form.date && loadingSlots && (
+							<option>Loading...</option>
 						)}
+						{form.date &&
+							!loadingSlots &&
+							availableSlots.length === 0 && (
+								<option>No free slots that day</option>
+							)}
 						{!loadingSlots &&
 							availableSlots.map((slot) => (
 								<option key={slot.value} value={slot.value}>
@@ -407,7 +576,39 @@ export function VisitBookingForm({
 						placeholder='e.g. vaccination, regular check-up...'
 					/>
 				</div>
+				<div className='sm:col-span-3'>
+					<span className='block text-xs font-medium uppercase tracking-wide text-slate-700'>
+						Selected Veterinarian Specializations
+					</span>
+					<div className='mt-2 flex flex-wrap gap-2'>
+						{selectedVet ? (
+							ALL_SPECIALIZATIONS.map((spec) => {
+								const selected =
+									selectedVet?.specializations?.includes(
+										spec.value
+									) ?? false
 
+								return (
+									<span
+										key={spec.value}
+										className={`rounded-full border px-3 py-1 text-xs font-medium ${
+											selected
+												? 'border-sky-300 bg-sky-100 text-sky-800'
+												: 'border-slate-300 bg-slate-100 text-slate-700'
+										}`}
+									>
+										{spec.label}
+									</span>
+								)
+							})
+						) : (
+							<p className='text-xs text-slate-500'>
+								Select a veterinarian to see their
+								specializations.
+							</p>
+						)}
+					</div>
+				</div>
 				<div className='sm:col-span-3'>
 					<label
 						htmlFor='notes'
@@ -444,6 +645,7 @@ export function VisitBookingForm({
 					disabled={
 						isSubmitting ||
 						loadingSlots ||
+						loadingMeta ||
 						!form.petId ||
 						!form.vetProfileId
 					}

@@ -17,17 +17,17 @@ import java.util.stream.Collectors;
  * REST controller exposing endpoints for booking and listing visits.
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/visits")
 @RequiredArgsConstructor
 public class VisitController {
 
     private final VisitService visitService;
 
     /**
-     * POST /api/visit
+     * POST /api/visits
      * Creates a new visit.
      */
-    @PostMapping("/visit")
+    @PostMapping()
     public ResponseEntity<VisitResponseDto> createVisit(
             @Valid @RequestBody VisitCreateCommand command
     ) {
@@ -39,7 +39,7 @@ public class VisitController {
      * GET /api/visits/by-pet/{petId}
      * Returns all visits for the given pet.
      */
-    @GetMapping("/visits/by-pet/{petId}")
+    @GetMapping("/by-pet/{petId}")
     public ResponseEntity<List<VisitResponseDto>> getVisitsForPet(@PathVariable Long petId) {
         List<VisitResponseDto> result = visitService.getVisitsForPet(petId).stream()
                 .map(VisitMapper::toDto)
@@ -53,7 +53,7 @@ public class VisitController {
      * Returns all visits for a given vet profile on a specific date.
      * Used by booking UI to block already taken slots.
      */
-    @GetMapping("/visits/by-vet/{vetProfileId}")
+    @GetMapping("/by-vet/{vetProfileId}")
     public ResponseEntity<List<VisitResponseDto>> getVisitsForVetAndDate(
             @PathVariable Long vetProfileId,
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date

@@ -114,7 +114,9 @@ export function VisitCard({
 						<p>{displayVetName}</p>
 					</div>
 					<div>
-						<p className='font-medium text-slate-800'>Date</p>
+						<p className='font-medium text-slate-800'>
+							Date & Time
+						</p>
 						<p>{displayDateTime}</p>
 					</div>
 					<div>
