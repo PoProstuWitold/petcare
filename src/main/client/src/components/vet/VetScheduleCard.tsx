@@ -1,7 +1,23 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { DAY_OPTIONS, normalizeTimeForInput } from '../../utils/constants'
-import type { VetScheduleEntry } from '../../utils/types'
+import type { DayOfWeek, VetScheduleEntry } from '../../utils/types'
+
+const DAY_ORDER: Record<DayOfWeek, number> = {
+	MONDAY: 0,
+	TUESDAY: 1,
+	WEDNESDAY: 2,
+	THURSDAY: 3,
+	FRIDAY: 4,
+	SATURDAY: 5,
+	SUNDAY: 6
+}
+
+function sortSchedule(entries: VetScheduleEntry[]): VetScheduleEntry[] {
+	return [...entries].sort(
+		(a, b) => DAY_ORDER[a.dayOfWeek] - DAY_ORDER[b.dayOfWeek]
+	)
+}
 
 export function VetScheduleCard() {
 	const { accessToken } = useAuth()
@@ -32,14 +48,14 @@ export function VetScheduleCard() {
 				const data: VetScheduleEntry[] = await res.json()
 				if (cancelled) return
 
-				setSchedule(
-					data.map((entry) => ({
-						...entry,
-						startTime: normalizeTimeForInput(entry.startTime),
-						endTime: normalizeTimeForInput(entry.endTime)
-					}))
-				)
-				// biome-ignore lint: no need
+				const normalized = data?.map((entry) => ({
+					...entry,
+					startTime: normalizeTimeForInput(entry.startTime),
+					endTime: normalizeTimeForInput(entry.endTime)
+				}))
+
+				setSchedule(sortSchedule(normalized))
+				// biome-ignore lint: no need to narrow down type
 			} catch (err: any) {
 				if (!cancelled) {
 					setError(err.message || 'Failed to load vet schedule')
@@ -49,7 +65,7 @@ export function VetScheduleCard() {
 			}
 		}
 
-		loadSchedule()
+		void loadSchedule()
 		return () => {
 			cancelled = true
 		}
@@ -75,20 +91,31 @@ export function VetScheduleCard() {
 			}
 
 			next[index] = row
-			return next
+			return sortSchedule(next)
 		})
 	}
 
 	function addRow() {
-		setSchedule((prev) => [
-			...prev,
-			{
-				dayOfWeek: 'MONDAY',
-				startTime: '09:00',
-				endTime: '13:00',
-				slotLengthMinutes: 30
-			}
-		])
+		setSchedule((prev) => {
+			const usedDays = new Set(prev.map((r) => r.dayOfWeek))
+			const freeDay = DAY_OPTIONS.find(
+				(opt) => !usedDays.has(opt.value as DayOfWeek)
+			)
+
+			if (!freeDay) return prev
+
+			const next: VetScheduleEntry[] = [
+				...prev,
+				{
+					dayOfWeek: freeDay.value as DayOfWeek,
+					startTime: '09:00',
+					endTime: '13:00',
+					slotLengthMinutes: 30
+				}
+			]
+
+			return sortSchedule(next)
+		})
 	}
 
 	function removeRow(index: number) {
@@ -126,14 +153,16 @@ export function VetScheduleCard() {
 
 			const updated: VetScheduleEntry[] = await res.json()
 			setSchedule(
-				updated.map((entry) => ({
-					...entry,
-					startTime: normalizeTimeForInput(entry.startTime),
-					endTime: normalizeTimeForInput(entry.endTime)
-				}))
+				sortSchedule(
+					updated.map((entry) => ({
+						...entry,
+						startTime: normalizeTimeForInput(entry.startTime),
+						endTime: normalizeTimeForInput(entry.endTime)
+					}))
+				)
 			)
 			setSuccess('Schedule saved successfully.')
-			// biome-ignore lint: no need
+			// biome-ignore lint: no need to narrow down type
 		} catch (err: any) {
 			setError(err.message || 'Failed to save schedule')
 		} finally {
@@ -202,89 +231,104 @@ export function VetScheduleCard() {
 									</tr>
 								)}
 
-								{schedule.map((row, index) => (
-									<tr key={`${row.dayOfWeek}-${index}`}>
-										<td className='whitespace-nowrap px-3 py-2'>
-											<select
-												className='block w-full rounded-lg border border-slate-300 bg-slate-50 px-2 py-1 text-xs text-slate-900 focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-sky-500'
-												value={row.dayOfWeek}
-												onChange={(e) =>
-													updateRow(
-														index,
-														'dayOfWeek',
-														e.target.value
-													)
-												}
-											>
-												{DAY_OPTIONS.map((opt) => (
-													<option
-														key={opt.value}
-														value={opt.value}
-													>
-														{opt.label}
-													</option>
-												))}
-											</select>
-										</td>
+								{schedule.map((row, index) => {
+									const usedDays = new Set(
+										schedule
+											.filter((_, i) => i !== index)
+											.map((r) => r.dayOfWeek)
+									)
 
-										<td className='whitespace-nowrap px-3 py-2'>
-											<input
-												type='time'
-												className='block w-full rounded-lg border border-slate-300 bg-slate-50 px-2 py-1 text-xs text-slate-900 focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-sky-500'
-												value={row.startTime}
-												onChange={(e) =>
-													updateRow(
-														index,
-														'startTime',
-														e.target.value
-													)
-												}
-											/>
-										</td>
+									return (
+										<tr key={`${row.dayOfWeek}-${index}`}>
+											<td className='whitespace-nowrap px-3 py-2'>
+												<select
+													className='block w-full rounded-lg border border-slate-300 bg-slate-50 px-2 py-1 text-xs text-slate-900 focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-sky-500'
+													value={row.dayOfWeek}
+													onChange={(e) =>
+														updateRow(
+															index,
+															'dayOfWeek',
+															e.target.value
+														)
+													}
+												>
+													{DAY_OPTIONS.map((opt) => (
+														<option
+															key={opt.value}
+															value={opt.value}
+															disabled={usedDays.has(
+																opt.value as DayOfWeek
+															)}
+														>
+															{opt.label}
+														</option>
+													))}
+												</select>
+											</td>
 
-										<td className='whitespace-nowrap px-3 py-2'>
-											<input
-												type='time'
-												className='block w-full rounded-lg border border-slate-300 bg-slate-50 px-2 py-1 text-xs text-slate-900 focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-sky-500'
-												value={row.endTime}
-												onChange={(e) =>
-													updateRow(
-														index,
-														'endTime',
-														e.target.value
-													)
-												}
-											/>
-										</td>
+											<td className='whitespace-nowrap px-3 py-2'>
+												<input
+													type='time'
+													className='block w-full rounded-lg border border-slate-300 bg-slate-50 px-2 py-1 text-xs text-slate-900 focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-sky-500'
+													value={row.startTime}
+													onChange={(e) =>
+														updateRow(
+															index,
+															'startTime',
+															e.target.value
+														)
+													}
+												/>
+											</td>
 
-										<td className='whitespace-nowrap px-3 py-2'>
-											<input
-												type='number'
-												min={5}
-												max={240}
-												className='block w-24 rounded-lg border border-slate-300 bg-slate-50 px-2 py-1 text-xs text-slate-900 focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-sky-500'
-												value={row.slotLengthMinutes}
-												onChange={(e) =>
-													updateRow(
-														index,
-														'slotLengthMinutes',
-														e.target.value
-													)
-												}
-											/>
-										</td>
+											<td className='whitespace-nowrap px-3 py-2'>
+												<input
+													type='time'
+													className='block w-full rounded-lg border border-slate-300 bg-slate-50 px-2 py-1 text-xs text-slate-900 focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-sky-500'
+													value={row.endTime}
+													onChange={(e) =>
+														updateRow(
+															index,
+															'endTime',
+															e.target.value
+														)
+													}
+												/>
+											</td>
 
-										<td className='whitespace-nowrap px-3 py-2 text-right'>
-											<button
-												type='button'
-												onClick={() => removeRow(index)}
-												className='text-xs font-medium text-red-600 hover:text-red-700'
-											>
-												Remove
-											</button>
-										</td>
-									</tr>
-								))}
+											<td className='whitespace-nowrap px-3 py-2'>
+												<input
+													type='number'
+													min={5}
+													max={240}
+													className='block w-24 rounded-lg border border-slate-300 bg-slate-50 px-2 py-1 text-xs text-slate-900 focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-sky-500'
+													value={
+														row.slotLengthMinutes
+													}
+													onChange={(e) =>
+														updateRow(
+															index,
+															'slotLengthMinutes',
+															e.target.value
+														)
+													}
+												/>
+											</td>
+
+											<td className='whitespace-nowrap px-3 py-2 text-right'>
+												<button
+													type='button'
+													onClick={() =>
+														removeRow(index)
+													}
+													className='text-xs font-medium text-red-600 hover:text-red-700'
+												>
+													Remove
+												</button>
+											</td>
+										</tr>
+									)
+								})}
 							</tbody>
 						</table>
 					</div>

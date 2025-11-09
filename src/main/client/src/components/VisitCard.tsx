@@ -75,7 +75,7 @@ export function VisitCard({
 		.join(' · ')
 
 	const displayPetName = pet?.name ?? 'Sara'
-	const displayPetMeta = generatedMeta || 'Dog · Female · 3 years'
+	const displayPetMeta = generatedMeta || 'DOG · FEMALE · 3 years'
 	const displayStatus = visit?.status ?? 'CONFIRMED'
 	const displayVetName = visit?.vetFullName ?? 'System Veterinarian'
 	const displayDateTime = formatDatePl(visit?.date, visit?.startTime)
@@ -86,7 +86,9 @@ export function VisitCard({
 	const address = 'PetCare Clinic'
 
 	return (
-		<div className='relative rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-lg backdrop-blur-sm'>
+		<div
+			className={`relative rounded-2xl border border-slate-200 bg-slate-100 p-5 ${!pet ? 'shadow-lg backdrop-blur-md' : ''}`}
+		>
 			<p className='text-xs font-semibold uppercase tracking-wide text-sky-700'>
 				{title}
 			</p>

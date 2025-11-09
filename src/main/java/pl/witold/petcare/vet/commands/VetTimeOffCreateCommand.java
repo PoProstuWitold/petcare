@@ -16,6 +16,7 @@ public record VetTimeOffCreateCommand(
         @NotNull(message = "End date is required")
         LocalDate endDate,
 
+        @NotNull(message = "Reason is required")
         @Size(max = 255, message = "Reason cannot exceed 255 characters")
         String reason
 ) {}

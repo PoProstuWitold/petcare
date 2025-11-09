@@ -64,8 +64,13 @@ export function VetTimeOffCard() {
 		e.preventDefault()
 		if (!accessToken) return
 
-		if (!form.startDate || !form.endDate) {
-			setError('Start date and end date are required.')
+		if (
+			!form.startDate ||
+			!form.endDate ||
+			!form.reason ||
+			form.reason.trim() === ''
+		) {
+			setError('Start date, end date and reason are required.')
 			return
 		}
 
@@ -194,7 +199,7 @@ export function VetTimeOffCard() {
 							htmlFor='reason'
 							className='block text-xs font-medium text-slate-700'
 						>
-							Reason (optional)
+							Reason
 						</label>
 						<input
 							name='reason'
@@ -242,11 +247,9 @@ export function VetTimeOffCard() {
 												).toLocaleDateString('pl-PL')
 											: `${new Date(item.startDate).toLocaleDateString('pl-PL')} – ${new Date(item.endDate).toLocaleDateString('pl-PL')}`}
 									</p>
-									{item.reason && (
-										<p className='text-xs text-slate-600'>
-											{item.reason}
-										</p>
-									)}
+									<p className='text-xs text-slate-600'>
+										{item.reason}
+									</p>
 								</div>
 								<button
 									type='button'

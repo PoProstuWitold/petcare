@@ -44,20 +44,20 @@ export function PetVisitsSection({ pet }: PetVisitsSectionProps) {
 	})
 
 	return (
-		<div className='text-xs'>
+		<div className='text-sm'>
 			<div className='mb-2 flex items-center justify-between gap-2'>
-				<h3 className='text-[11px] font-semibold uppercase tracking-wide text-slate-700'>
+				<h3 className='text-sm font-semibold uppercase tracking-wide text-slate-700'>
 					Visits
 				</h3>
-				<span className='rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-700'>
+				<span className='rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-slate-700'>
 					{loading ? 'Loading…' : `${visitCount} total`}
 				</span>
 			</div>
 
-			{error && <p className='text-xs text-red-600'>{error}</p>}
+			{error && <p className='text-sm text-red-600'>{error}</p>}
 
 			{!loading && !error && visitCount === 0 && (
-				<p className='text-xs text-slate-500'>
+				<p className='text-sm text-slate-500'>
 					No visits for this pet yet.
 				</p>
 			)}
@@ -67,9 +67,9 @@ export function PetVisitsSection({ pet }: PetVisitsSectionProps) {
 					<button
 						type='button'
 						onClick={() => setExpanded((v) => !v)}
-						className='mt-1 text-[11px] font-semibold text-sky-700 hover:underline'
+						className='mt-1 text-sm font-semibold text-sky-700 hover:underline'
 					>
-						{expanded ? 'Hide visits' : 'Show visits'}
+						{expanded ? 'Hide' : 'Show'}
 					</button>
 
 					{expanded && (

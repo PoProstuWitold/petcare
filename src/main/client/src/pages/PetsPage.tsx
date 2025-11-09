@@ -230,7 +230,7 @@ export function PetsPage() {
 				)}
 
 				{!isLoading && !error && pets.length > 0 && (
-					<div className='grid gap-4 md:grid-cols-2'>
+					<div className='grid gap-4 md:grid-cols-2 mb-10'>
 						{pets.map((pet) => (
 							<PetCard
 								key={pet.id}
