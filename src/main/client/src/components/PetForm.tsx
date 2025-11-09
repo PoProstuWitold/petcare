@@ -16,7 +16,7 @@ const SPECIES_OPTIONS = [
 	'OTHER'
 ] as const
 
-const SEX_OPTIONS = ['MALE', 'FEMALE', 'UNKNOWN'] as const
+const SEX_OPTIONS = ['UNKNOWN', 'MALE', 'FEMALE'] as const
 
 type PetFormMode = 'create' | 'edit'
 
@@ -228,7 +228,6 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 						onChange={handleChange}
 						className='mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200'
 					>
-						<option value=''>Unknown</option>
 						{SEX_OPTIONS.map((option) => (
 							<option key={option} value={option}>
 								{option}
