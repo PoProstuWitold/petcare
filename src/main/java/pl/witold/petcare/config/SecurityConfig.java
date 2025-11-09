@@ -76,8 +76,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/vets/**").hasAnyRole("USER", "VET", "ADMIN")
                         // Pets API – any authenticated domain role; ownership będzie sprawdzane później w guardach
                         .requestMatchers("/api/pets/**").hasAnyRole("USER", "VET", "ADMIN")
-                        // Everything else requires authentication
-                        .anyRequest().authenticated()
+                        // Everything else does not require authentication
+                        .anyRequest().permitAll()
                 )
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
