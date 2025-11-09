@@ -132,7 +132,7 @@ W nawiasie podano podprefiksy dla danej grupy endpointów.
   - `GET /{id}` - pobranie szczegółów zwierzęcia (USER: własne, VET/ADMIN: wszystkie),
   - `PUT /{id}` - aktualizacja danych zwierzęcia (USER: własne, VET/ADMIN: wszystkie),
   - `DELETE /{id}` - usunięcie zwierzęcia (USER: własne, VET/ADMIN: wszystkie).
-- **Appointments (`/appointments`)**: DO ZROBIENIA.
+- **Visits (`/visits`)**: DO ZROBIENIA.
 - **Medical Records (`/medical-records`)**: DO ZROBIENIA.
 
 <p align="right">(<a href="#top">przewiń do góry</a>)</p>
