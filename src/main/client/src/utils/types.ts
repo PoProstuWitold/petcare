@@ -94,3 +94,25 @@ export type VetProfile = {
 	averageVisitLengthMinutes: number
 	specializations: string[]
 }
+
+export type MedicalRecord = {
+	id: number
+	pet: Pet
+	vetProfile: VetProfileResponse
+	visit: Visit
+	title?: string | null
+	diagnosis?: string | null
+	treatment?: string | null
+	prescriptions?: string | null
+	notes?: string | null
+	createdAt: string
+}
+
+export type MedicalRecordForm = {
+	visitId: number
+	title?: string
+	diagnosis?: string
+	treatment?: string
+	prescriptions?: string
+	notes?: string
+}

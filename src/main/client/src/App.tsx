@@ -1,6 +1,7 @@
-import { BrowserRouter, Route, Routes } from 'react-router'
+import { BrowserRouter, Route, Routes, useSearchParams } from 'react-router'
 import { ToastContainer } from 'react-toastify'
 import { Footer } from './components/Footer'
+import { MedicalRecordForm } from './components/medical/MedicalRecordForm'
 import { Navbar } from './components/Navbar'
 import { AdminPage } from './pages/AdminPage'
 import { HomePage } from './pages/HomePage'
@@ -12,6 +13,33 @@ import { StatusPage } from './pages/StatusPage'
 import { UserProfilePage } from './pages/UserProfilePage'
 import { VetPage } from './pages/VetPage'
 import { ProtectedRoute } from './utils/ProtectedRoute'
+
+function NewMedicalRecordPage() {
+	const [params] = useSearchParams()
+	const visitIdStr = params.get('visitId')
+	const visitId = visitIdStr ? Number(visitIdStr) : Number.NaN
+	if (!visitId || Number.isNaN(visitId)) {
+		return (
+			<div className='page-container'>
+				<p className='text-sm text-rose-600'>
+					Missing or invalid visitId.
+				</p>
+			</div>
+		)
+	}
+	return (
+		<div className='page-container'>
+			<div className='page-content'>
+				<MedicalRecordForm
+					visitId={visitId}
+					onCreated={() => {
+						window.history.back()
+					}}
+				/>
+			</div>
+		</div>
+	)
+}
 
 function App() {
 	return (
@@ -46,6 +74,10 @@ function App() {
 							}
 						>
 							<Route path='/vet' element={<VetPage />} />
+							<Route
+								path='/vet/medical-records/new'
+								element={<NewMedicalRecordPage />}
+							/>
 						</Route>
 						{/* USER - any role; just need to be authenticated */}
 						<Route

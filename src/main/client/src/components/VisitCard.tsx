@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { fetchMedicalRecordByVisit } from '../api/medicalRecords'
+import { useAuth } from '../context/AuthContext'
 import type { Visit, VisitStatus } from '../utils/types.ts'
 import { Button } from './ui/Button'
 import { StatusPill } from './ui/StatusPill'
@@ -92,6 +94,22 @@ export function VisitCard({
 	const [draftStatus, setDraftStatus] = useState<VisitStatus | undefined>(
 		visit?.status
 	)
+	const { accessToken } = useAuth()
+	const [medicalRecordExists, setMedicalRecordExists] =
+		useState<boolean>(false)
+
+	useEffect(() => {
+		let ignore = false
+		if (!accessToken || !visit?.id) return
+		fetchMedicalRecordByVisit(visit.id, accessToken)
+			.then((r) => {
+				if (!ignore) setMedicalRecordExists(!!r)
+			})
+			.catch(() => {})
+		return () => {
+			ignore = true
+		}
+	}, [accessToken, visit?.id])
 
 	const ageText = formatAge(visit.pet.birthDate, visit.pet.birthYear)
 
@@ -247,7 +265,7 @@ export function VisitCard({
 							</>
 						)}
 
-						{onCreateMedicalRecord && (
+						{onCreateMedicalRecord && !medicalRecordExists && (
 							<Button
 								type='button'
 								variant='ghost'
@@ -255,6 +273,12 @@ export function VisitCard({
 							>
 								Create medical record
 							</Button>
+						)}
+
+						{onCreateMedicalRecord && medicalRecordExists && (
+							<span className='text-[10px] font-medium text-slate-500'>
+								Record already created
+							</span>
 						)}
 
 						{onViewPetDetails && (

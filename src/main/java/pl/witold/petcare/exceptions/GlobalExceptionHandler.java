@@ -52,6 +52,14 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.UNAUTHORIZED, ex, request);
     }
 
+    @ExceptionHandler(DuplicateMedicalRecordException.class)
+    public ResponseEntity<ApiErrorResponse> handleDuplicateMedicalRecord(
+            DuplicateMedicalRecordException ex,
+            HttpServletRequest request
+    ) {
+        return buildResponse(HttpStatus.CONFLICT, ex, request);
+    }
+
     // --- Validation ---
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

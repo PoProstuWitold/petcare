@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import { ErrorHandler } from '../components/ErrorHandler'
 import { Loader } from '../components/Loader'
+import { PetMedicalRecordsSection } from '../components/medical/PetMedicalRecordsSection'
 import { PetCard } from '../components/PetCard'
 import { PetForm } from '../components/PetForm'
 import { ProtectedHeader } from '../components/ProtectedHeader'
@@ -206,6 +207,7 @@ export function PetsPage() {
 									key={`${visitsRefreshKey}-${pet.id}`}
 									pet={pet}
 								/>
+								<PetMedicalRecordsSection pet={pet} />
 							</PetCard>
 						))}
 					</div>

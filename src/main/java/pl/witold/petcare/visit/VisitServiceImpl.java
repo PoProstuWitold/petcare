@@ -8,6 +8,8 @@ import pl.witold.petcare.exceptions.ResourceNotFoundException;
 import pl.witold.petcare.pet.Pet;
 import pl.witold.petcare.pet.PetAccessService;
 import pl.witold.petcare.pet.PetService;
+import pl.witold.petcare.user.Role;
+import pl.witold.petcare.security.CurrentUserService;
 import pl.witold.petcare.vet.VetProfile;
 import pl.witold.petcare.vet.VetScheduleEntry;
 import pl.witold.petcare.vet.service.VetProfileService;
@@ -40,6 +42,7 @@ public class VisitServiceImpl implements VisitService {
     private final VetProfileService vetProfileService;
     private final VetScheduleService vetScheduleService;
     private final VetTimeOffService vetTimeOffService;
+    private final CurrentUserService currentUserService;
 
     @Override
     public Visit createVisit(VisitCreateCommand command) {
@@ -104,6 +107,25 @@ public class VisitServiceImpl implements VisitService {
         visit.setStatus(status);
 
         return VisitMapper.toDto(visit);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Visit getById(Long visitId) {
+        Visit v = visitRepository
+                .findByIdWithRelations(visitId)
+                .orElseThrow(() -> new ResourceNotFoundException("Visit not found"));
+        // allow if current user is owner of pet, or has VET/ADMIN role
+        if (currentUserService.hasAnyRole(Role.ADMIN, Role.VET)) {
+            return v;
+        }
+        if (v.getPet() != null && v.getPet().getOwner() != null) {
+            Long ownerId = v.getPet().getOwner().getId();
+            if (ownerId != null && ownerId.equals(currentUserService.getCurrentUserId())) {
+                return v;
+            }
+        }
+        throw new IllegalArgumentException("You are not allowed to view this visit");
     }
 
     private VetScheduleEntry findMatchingScheduleEntry(

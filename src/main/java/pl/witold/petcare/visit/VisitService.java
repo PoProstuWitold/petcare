@@ -23,4 +23,6 @@ public interface VisitService {
     List<Visit> getVisitsForCurrentVet();
 
     VisitResponseDto updateVisitStatus(Long visitId, VisitStatus status);
+
+    Visit getById(Long visitId);
 }
