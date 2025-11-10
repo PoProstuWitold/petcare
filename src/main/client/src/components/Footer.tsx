@@ -33,10 +33,10 @@ export function Footer() {
 								Source Code
 							</a>
 							<Link
-								to='/privacy'
+								to='/swagger-ui/index.html#'
 								className='font-semibold text-slate-100 transition-colors hover:text-sky-200 text-sm'
 							>
-								Privacy Policy
+								Docs
 							</Link>
 							<Link
 								to='/terms'
