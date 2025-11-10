@@ -26,7 +26,7 @@ export function CardBody({
 	className?: string
 	children: ReactNode
 }) {
-	return <div className={`p-5 space-y-5 ${className}`}>{children}</div>
+	return <div className={`p-5 ${className}`}>{children}</div>
 }
 
 export function SectionBadge({

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
 	FaCheckCircle,
+	FaChevronDown,
 	FaClipboardList,
 	FaClock,
 	FaMapMarkerAlt,
@@ -21,6 +22,7 @@ import {
 	InfoGrid,
 	InfoItem
 } from './ui/Card'
+import { Collapsible } from './ui/Collapsible'
 import { StatusPill, visitStatusColor } from './ui/StatusPill'
 
 type VisitCardProps = {
@@ -91,6 +93,7 @@ export function VisitCard({
 	const { accessToken } = useAuth()
 	const [medicalRecordExists, setMedicalRecordExists] =
 		useState<boolean>(false)
+	const [isOpen, setIsOpen] = useState(false)
 
 	useEffect(() => {
 		let ignore = false
@@ -138,7 +141,7 @@ export function VisitCard({
 
 	return (
 		<Card className={`relative ${!demo ? 'shadow-sm' : ''}`}>
-			<CardBody className='space-y-4'>
+			<CardBody>
 				{title && (
 					<p className='mb-2 text-[11px] font-semibold uppercase tracking-wide text-sky-700'>
 						{title}
@@ -146,14 +149,30 @@ export function VisitCard({
 				)}
 
 				<header className='flex items-start justify-between gap-3'>
-					<div>
-						<p className='text-sm font-semibold text-slate-900 flex items-center gap-2'>
-							<FaPaw className='text-slate-500' />{' '}
-							{visit.pet.name}
-						</p>
-						<p className='text-xs text-slate-500'>
-							{generatedMeta}
-						</p>
+					<div className='flex items-center gap-2'>
+						<button
+							type='button'
+							aria-expanded={isOpen}
+							aria-controls={`visit-body-${visit.id}`}
+							onClick={() => setIsOpen((v) => !v)}
+							className='inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-300 text-slate-600 hover:bg-slate-50'
+							title={isOpen ? 'Collapse' : 'Expand'}
+						>
+							<FaChevronDown
+								className={`transition-transform ${
+									isOpen ? 'rotate-180' : 'rotate-0'
+								}`}
+							/>
+						</button>
+						<div>
+							<h2 className='flex items-center gap-2 text-xl font-semibold tracking-tight text-slate-900 md:text-2xl'>
+								<FaPaw className='text-slate-500' />{' '}
+								{visit.pet.name}
+							</h2>
+							<p className='text-[11px] md:text-xs font-medium text-slate-500'>
+								{generatedMeta}
+							</p>
+						</div>
 					</div>
 					{enableStatusEditing && isEditingStatus ? (
 						<select
@@ -180,112 +199,125 @@ export function VisitCard({
 					)}
 				</header>
 
-				<InfoGrid className='text-xs text-slate-600'>
-					<InfoItem
-						icon={<FaUser className='text-slate-500' />}
-						label='Owner'
-						value={visit.pet.ownerFullName}
-					/>
-					<InfoItem
-						icon={<FaStickyNote className='text-slate-500' />}
-						label='General Notes'
-						value={visit.pet.notes || 'No notes'}
-					/>
-					<InfoItem
-						icon={<FaUserMd className='text-slate-500' />}
-						label='Veterinarian'
-						value={visit.vetFullName}
-					/>
-					<InfoItem
-						icon={<FaClock className='text-slate-500' />}
-						label='Date & Time'
-						value={displayDateTime}
-					/>
-					<InfoItem
-						icon={<FaClipboardList className='text-slate-500' />}
-						label='Reason'
-						value={visit.reason}
-					/>
-					<InfoItem
-						icon={<FaMapMarkerAlt className='text-slate-500' />}
-						label='Address'
-						value={address}
-					/>
-				</InfoGrid>
+				<Collapsible open={isOpen}>
+					<div id={`visit-body-${visit.id}`} className='space-y-4'>
+						<InfoGrid className='text-xs text-slate-600'>
+							<InfoItem
+								icon={<FaUser className='text-slate-500' />}
+								label='Owner'
+								value={visit.pet.ownerFullName}
+							/>
+							<InfoItem
+								icon={
+									<FaStickyNote className='text-slate-500' />
+								}
+								label='General Notes'
+								value={visit.pet.notes || 'No notes'}
+							/>
+							<InfoItem
+								icon={<FaUserMd className='text-slate-500' />}
+								label='Veterinarian'
+								value={visit.vetFullName}
+							/>
+							<InfoItem
+								icon={<FaClock className='text-slate-500' />}
+								label='Date & Time'
+								value={displayDateTime}
+							/>
+							<InfoItem
+								icon={
+									<FaClipboardList className='text-slate-500' />
+								}
+								label='Reason'
+								value={visit.reason}
+							/>
+							<InfoItem
+								icon={
+									<FaMapMarkerAlt className='text-slate-500' />
+								}
+								label='Address'
+								value={address}
+							/>
+						</InfoGrid>
 
-				{visit?.notes && (
-					<div className='space-y-1 text-xs'>
-						<p className='font-medium flex items-center gap-1 text-slate-800'>
-							<FaStickyNote className='text-slate-500' /> Visit
-							Notes
-						</p>
-						<p className='text-slate-600'>{visit.notes}</p>
-					</div>
-				)}
+						{visit?.notes && (
+							<div className='space-y-1 text-xs'>
+								<p className='font-medium flex items-center gap-1 text-slate-800'>
+									<FaStickyNote className='text-slate-500' />{' '}
+									Visit Notes
+								</p>
+								<p className='text-slate-600'>{visit.notes}</p>
+							</div>
+						)}
 
-				{hasVetActions && visit && (
-					<div className='space-y-2'>
-						<CardDivider />
-						<CardActions>
-							{enableStatusEditing && !isEditingStatus && (
-								<Button
-									type='button'
-									variant='ghost'
-									onClick={handleStartEdit}
-									small
-								>
-									Edit status
-								</Button>
-							)}
-							{enableStatusEditing && isEditingStatus && (
-								<>
-									<Button
-										type='button'
-										variant='secondary'
-										onClick={handleSaveStatus}
-										small
-									>
-										Save status
-									</Button>
-									<Button
-										type='button'
-										variant='ghost'
-										onClick={handleCancelEdit}
-										small
-									>
-										Cancel
-									</Button>
-								</>
-							)}
-							{onCreateMedicalRecord && !medicalRecordExists && (
-								<Button
-									type='button'
-									variant='ghost'
-									onClick={onCreateMedicalRecord}
-									small
-								>
-									Create medical record
-								</Button>
-							)}
-							{onCreateMedicalRecord && medicalRecordExists && (
-								<span className='inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200'>
-									<FaCheckCircle className='text-emerald-600' />{' '}
-									Record already created
-								</span>
-							)}
-							{onViewPetDetails && (
-								<Button
-									type='button'
-									variant='ghost'
-									onClick={onViewPetDetails}
-									small
-								>
-									View pet details
-								</Button>
-							)}
-						</CardActions>
+						{hasVetActions && visit && (
+							<div className='space-y-2'>
+								<CardDivider />
+								<CardActions>
+									{enableStatusEditing &&
+										!isEditingStatus && (
+											<Button
+												type='button'
+												variant='ghost'
+												onClick={handleStartEdit}
+												small
+											>
+												Edit status
+											</Button>
+										)}
+									{enableStatusEditing && isEditingStatus && (
+										<>
+											<Button
+												type='button'
+												variant='secondary'
+												onClick={handleSaveStatus}
+												small
+											>
+												Save status
+											</Button>
+											<Button
+												type='button'
+												variant='ghost'
+												onClick={handleCancelEdit}
+												small
+											>
+												Cancel
+											</Button>
+										</>
+									)}
+									{onCreateMedicalRecord &&
+										!medicalRecordExists && (
+											<Button
+												type='button'
+												variant='ghost'
+												onClick={onCreateMedicalRecord}
+												small
+											>
+												Create medical record
+											</Button>
+										)}
+									{onCreateMedicalRecord &&
+										medicalRecordExists && (
+											<span className='inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200'>
+												<FaCheckCircle className='text-emerald-600' />{' '}
+												Record already created
+											</span>
+										)}
+									{onViewPetDetails && (
+										<Button
+											type='button'
+											variant='ghost'
+											onClick={onViewPetDetails}
+											small
+										>
+											View pet details
+										</Button>
+									)}
+								</CardActions>
+							</div>
+						)}
 					</div>
-				)}
+				</Collapsible>
 			</CardBody>
 		</Card>
 	)

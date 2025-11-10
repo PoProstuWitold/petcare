@@ -35,11 +35,11 @@ export function PetCard({ pet, onEdit, onDelete, children }: PetCardProps) {
 	return (
 		<Card className=''>
 			<CardBody className='space-y-4'>
-				<header className='flex items-baseline justify-between gap-2'>
-					<h2 className='text-lg font-semibold text-slate-900 flex items-center gap-2'>
+				<header className='flex items-start justify-between gap-2'>
+					<h2 className='flex items-center gap-2 text-xl font-semibold tracking-tight text-slate-900 md:text-2xl'>
 						<FaPaw className='text-slate-500' /> {pet.name}
 					</h2>
-					<p className='text-xs font-medium uppercase tracking-wide text-sky-700'>
+					<p className='text-[11px] md:text-xs font-medium uppercase tracking-wide text-sky-700'>
 						{pet.species}
 						{pet.sex ? ` · ${pet.sex}` : ''}
 					</p>
