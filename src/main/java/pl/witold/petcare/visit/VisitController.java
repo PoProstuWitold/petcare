@@ -192,4 +192,30 @@ public class VisitController {
         VisitResponseDto dto = visitService.updateVisitStatus(visitId, command.status());
         return ResponseEntity.ok(dto);
     }
+
+    /**
+     * GET /api/visits/{id}
+     * Returns the visit with the given id.
+     */
+    @Operation(
+            summary = "Get visit by ID",
+            description = "Returns the visit details for the given visit ID."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Visit details returned successfully",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = VisitResponseDto.class)
+            )
+    )
+    @ApiResponse(
+            responseCode = "404",
+            description = "Visit not found"
+    )
+    @GetMapping("/{visitId}")
+    public ResponseEntity<VisitResponseDto> getVisitById(@PathVariable Long visitId) {
+        Visit visit = visitService.getById(visitId);
+        return ResponseEntity.ok(VisitMapper.toDto(visit));
+    }
 }

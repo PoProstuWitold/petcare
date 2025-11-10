@@ -102,6 +102,7 @@ export function VetVisitsCard() {
 									onStatusChangeRequest={(status) =>
 										handleStatusChange(visit, status)
 									}
+									// onCreateMedicalRecord navigates to new medical record form route `/vet/medical-records/new?visitId=...`
 									onCreateMedicalRecord={() => {
 										window.location.href = `/vet/medical-records/new?visitId=${visit.id}`
 									}}
@@ -129,6 +130,7 @@ export function VetVisitsCard() {
 									onStatusChangeRequest={(status) =>
 										handleStatusChange(visit, status)
 									}
+									// onCreateMedicalRecord navigates to new medical record form route `/vet/medical-records/new?visitId=...`
 									onCreateMedicalRecord={() => {
 										window.location.href = `/vet/medical-records/new?visitId=${visit.id}`
 									}}

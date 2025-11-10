@@ -84,6 +84,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/pets/**").hasAnyRole("USER", "VET", "ADMIN")
                         // Visits API – authenticated domain roles only
                         .requestMatchers("/api/visits/**").hasAnyRole("USER", "VET", "ADMIN")
+                        // Medical Records API – authenticated domain roles only
+                        .requestMatchers("/api/medical-records/**").hasAnyRole("USER", "VET", "ADMIN")
                         // Everything else does not require authentication
                         .anyRequest().permitAll()
                 )

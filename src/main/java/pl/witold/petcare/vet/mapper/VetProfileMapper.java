@@ -4,6 +4,8 @@ import pl.witold.petcare.dto.VetProfileResponseDto;
 import pl.witold.petcare.user.User;
 import pl.witold.petcare.vet.VetProfile;
 
+import java.util.HashSet;
+
 /**
  * Mapper responsible for converting between VetProfile entity and VetProfileResponseDto.
  */
@@ -25,7 +27,7 @@ public final class VetProfileMapper {
                 profile.getBio(),
                 profile.isAcceptsNewPatients(),
                 profile.getAverageVisitLengthMinutes(),
-                profile.getSpecializations()
+                new HashSet<>(profile.getSpecializations())
         );
     }
 }

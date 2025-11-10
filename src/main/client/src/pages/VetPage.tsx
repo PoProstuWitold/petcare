@@ -1,4 +1,5 @@
 import { ProtectedHeader } from '../components/ProtectedHeader'
+import { VetMedicalRecordsCard } from '../components/vet/VetMedicalRecordsCard'
 import { VetProfileCard } from '../components/vet/VetProfileCard'
 import { VetScheduleCard } from '../components/vet/VetScheduleCard'
 import { VetTimeOffCard } from '../components/vet/VetTimeOffCard'
@@ -34,6 +35,7 @@ export function VetPage() {
 				description='Manage your profile, schedule, and time off.'
 			/>
 			<div className='page-content space-y-6'>
+				<VetMedicalRecordsCard />
 				<VetVisitsCard />
 				<VetProfileCard />
 				<VetScheduleCard />
