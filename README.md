@@ -34,11 +34,13 @@ Konta użytkowników:
 - **Weterynarz:** - username: `vet`, password: `vet12345678`,
 - **Użytkownik:** - username: `user`, password: `user12345678`.
 
-Przykładowe zwierzęta:
+Zwierzęta:
 - **Sara** - suczka, właściciel: user,
 - **Yuki** - kotka, właściciel: user,
 - **Abi** - suczka, właściciel: vet,
 - **Harry** - pies, właściciel: admin.
+
+Dodatkowo tworozny jest profil weterynarza oraz jego grafik pracy.
 
 <p align="right">(<a href="#top">przewiń do góry</a>)</p>
 
@@ -64,8 +66,12 @@ Aplikacja została stworzona w modelu **klient–serwer**:
 
 ### Moduły
 
-- **Zarządzanie użytkownikami:** rejestracja, logowanie, role.
-- **Zarządzanie zwierzętami:** dodawanie, edytowanie, usuwanie profili zwierząt.
+- **Status aplikacji:** sprawdzanie statusu działania aplikacji.
+- **Autentykacja i autoryzacja:** rejestracja, logowanie, zarządzanie sesjami.
+- **Użytkownicy:** dodawanie, edytowanie, usuwanie kont użytkowników.
+- **Zwierzęta:** dodawanie, edytowanie, usuwanie profili zwierząt.
+- **Wizyty:** umawianie, edytowanie, usuwanie wizyt u weterynarza.
+- **Historia medyczna:** przeglądanie i zarządzanie historią medyczną zwierząt (DO ZROBIENIA).
 
 <p align="right">(<a href="#top">przewiń do góry</a>)</p>
 
@@ -111,28 +117,15 @@ DO ZROBIENIA
 
 Wszystkie mają prefiks `/api`. 
 
-W nawiasie podano podprefiksy dla danej grupy endpointów.
+Dokumentacja API jest dostępna pod adresem: `http://localhost:8080/swagger-ui/index.html`.
 
-- **Status (`/status`)**:
-  - `GET /health` - sprawdzenie stanu aplikacji.
-- **Auth (`/auth`)**:
-  - `POST /login` - logowanie użytkownika,
-  - `POST /register` - rejestracja nowego użytkownika,
-  - `POST /logout` - wylogowanie użytkownika,
-  - `GET /me` - pobranie informacji o aktualnie zalogowanym użytkowniku.
-- **Users (`/users`)**:
-  - `POST /` - tworzenie nowego użytkownika (ADMIN),
-  - `GET /` - pobranie listy wszystkich użytkowników (ADMIN),
-  - `GET /{id}` - pobranie szczegółów użytkownika (ADMIN),
-  - `PUT /{id}` - aktualizacja danych użytkownika (ADMIN),
-  - `DELETE /{id}` - usunięcie użytkownika (ADMIN).
-- **Pets (`/pets`)**:
-  - `POST /` - dodanie nowego zwierzęcia (USER),
-  - `GET /` - pobranie listy zwierząt (USER: własne, VET/ADMIN: wszystkie),
-  - `GET /{id}` - pobranie szczegółów zwierzęcia (USER: własne, VET/ADMIN: wszystkie),
-  - `PUT /{id}` - aktualizacja danych zwierzęcia (USER: własne, VET/ADMIN: wszystkie),
-  - `DELETE /{id}` - usunięcie zwierzęcia (USER: własne, VET/ADMIN: wszystkie).
-- **Visits (`/visits`)**: DO ZROBIENIA.
-- **Medical Records (`/medical-records`)**: DO ZROBIENIA.
+W nawiasie podano podprefiksy dla danej grupy endpointów wraz z ich krótkim opisem.
+
+- **Status (`/status`)**: sprawdzenie statusu aplikacji.
+- **Auth (`/auth`)**: rejestracja, logowanie, obecnie zalogowany użytkownik.
+- **Users (`/users`)**: zarządzanie użytkownikami.
+- **Pets (`/pets`)**: zarządzanie profilami zwierząt.
+- **Visits (`/visits`)**: zarządzanie wizytami u weterynarza.
+- **Medical Records (`/medical-records`)**: DO ZROBIENIA zarządzanie historią medyczną zwierząt.
 
 <p align="right">(<a href="#top">przewiń do góry</a>)</p>
