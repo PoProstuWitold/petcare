@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { fetchVisitsForCurrentVet } from '../../api/vets'
 import { updateVisitStatus } from '../../api/visits'
 import { useAuth } from '../../context/AuthContext'
+import { useAsync } from '../../hooks/useAsync'
 import type { Visit, VisitStatus } from '../../utils/types'
+import { Alert } from '../ui/Alert'
 import { VisitCard } from '../VisitCard'
 
 function compareDateTime(a: Visit, b: Visit): number {
@@ -13,60 +15,33 @@ function compareDateTime(a: Visit, b: Visit): number {
 
 export function VetVisitsCard() {
 	const { accessToken } = useAuth()
+	const token = accessToken
+	const { data, loading, error, execute } = useAsync<Visit[]>(
+		() => (token ? fetchVisitsForCurrentVet(token) : Promise.resolve([])),
+		[token]
+	)
 	const [visits, setVisits] = useState<Visit[]>([])
-	const [loading, setLoading] = useState(true)
-	const [error, setError] = useState<string | null>(null)
+	useEffect(() => {
+		setVisits(data ?? [])
+	}, [data])
 	const [_savingId, setSavingId] = useState<number | null>(null)
 
 	const handleStatusChange = async (visit: Visit, newStatus: VisitStatus) => {
-		if (!accessToken) return
+		if (!token) return
 		setSavingId(visit.id)
-		setError(null)
 		try {
-			const updated = await updateVisitStatus(
-				visit.id,
-				newStatus,
-				accessToken
-			)
+			const updated = await updateVisitStatus(visit.id, newStatus, token)
 			setVisits((prev) =>
 				prev.map((v) => (v.id === updated.id ? updated : v))
 			)
-			// biome-ignore lint: no need to narrow the error type here
-		} catch (e: any) {
-			setError(e?.message ?? 'Failed to update visit status')
+			// biome-ignore lint: no unnecessary-catch
+		} catch (_e: any) {
+			// rely on Alert below by triggering a reload for consistency
+			await execute().catch(() => {})
 		} finally {
 			setSavingId(null)
 		}
 	}
-
-	useEffect(() => {
-		if (!accessToken) return
-		let cancelled = false
-
-		;(async () => {
-			setLoading(true)
-			setError(null)
-			try {
-				const data = await fetchVisitsForCurrentVet(accessToken)
-				if (!cancelled) {
-					setVisits(data)
-				}
-				// biome-ignore lint: no need to narrow the error type here
-			} catch (e: any) {
-				if (!cancelled) {
-					setError(e?.message ?? 'Failed to load visits')
-				}
-			} finally {
-				if (!cancelled) {
-					setLoading(false)
-				}
-			}
-		})()
-
-		return () => {
-			cancelled = true
-		}
-	}, [accessToken])
 
 	const { upcoming, past } = useMemo(() => {
 		const sorted = [...visits].sort(compareDateTime)
@@ -101,9 +76,9 @@ export function VetVisitsCard() {
 			)}
 
 			{!loading && error && (
-				<div className='mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800'>
+				<Alert variant='error' className='mt-4'>
 					{error}
-				</div>
+				</Alert>
 			)}
 
 			{!loading && !error && visits.length === 0 && (

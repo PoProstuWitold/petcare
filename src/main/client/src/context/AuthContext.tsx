@@ -7,7 +7,12 @@ import {
 	useMemo,
 	useState
 } from 'react'
-import { toast } from 'react-toastify'
+import {
+	authHeaders,
+	httpJson,
+	setHttpErrorInterceptor,
+	setUnauthorizedHandler
+} from '../utils/http'
 
 export type Role = 'USER' | 'VET' | 'ADMIN'
 
@@ -99,18 +104,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	// Helper to fetch current user using /api/auth/me
 	const fetchCurrentUser = useCallback(
 		async (accessToken: string): Promise<AuthUser> => {
-			const response = await fetch('/api/auth/me', {
-				method: 'GET',
-				headers: {
-					Authorization: `Bearer ${accessToken}`
-				}
+			const data = await httpJson<MeResponse>('/api/auth/me', {
+				headers: authHeaders(accessToken)
 			})
-
-			if (!response.ok) {
-				throw new Error('Failed to load current user')
-			}
-
-			const data = (await response.json()) as MeResponse
 			return mapMeToAuthUser(data)
 		},
 		[]
@@ -118,25 +114,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 	const login = useCallback(
 		async (payload: LoginPayload) => {
-			// 1. Get JWT from backend
-			const response = await fetch('/api/auth/login', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(payload)
-			})
+			const tokens = await httpJson<AuthTokensResponse>(
+				'/api/auth/login',
+				{
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(payload)
+				}
+			)
 
-			if (!response.ok) {
-				throw new Error('Invalid credentials or server error')
-			}
-
-			const tokens = (await response.json()) as AuthTokensResponse
-
-			// 2. Fetch user profile using /api/auth/me
 			const user = await fetchCurrentUser(tokens.accessToken)
 
-			// 3. Save both in state
 			setState({
 				user,
 				accessToken: tokens.accessToken
@@ -149,9 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		setState({ user: null, accessToken: null })
 		try {
 			window.localStorage.removeItem(STORAGE_KEY)
-			toast.success('Logged out successfully')
 		} catch (error) {
-			toast.error('Failed to log out properly')
 			console.error('Failed to clear auth state', error)
 		}
 	}, [])
@@ -183,7 +169,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 						user
 					}))
 				}
-			} catch (error) {
+				// biome-ignore lint: no unnecessary-catch
+			} catch (error: any) {
 				console.error('Failed to hydrate user from token', error)
 				if (!cancelled) {
 					setState({ user: null, accessToken: null })
@@ -200,6 +187,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			cancelled = true
 		}
 	}, [state.accessToken, state.user, fetchCurrentUser])
+
+	useEffect(() => {
+		setUnauthorizedHandler(() => {
+			logout()
+		})
+		setHttpErrorInterceptor((err) => {
+			if (err.status && (err.status === 401 || err.status === 403)) {
+				// handled by unauthorized handler
+				return
+			}
+		})
+		return () => {
+			setUnauthorizedHandler(null)
+			setHttpErrorInterceptor(null)
+		}
+	}, [logout])
 
 	const value: AuthContextValue = useMemo(
 		() => ({

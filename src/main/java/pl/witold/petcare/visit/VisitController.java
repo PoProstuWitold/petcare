@@ -22,7 +22,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * REST controller exposing endpoints for booking and listing visits.
@@ -97,7 +96,7 @@ public class VisitController {
     ) {
         List<VisitResponseDto> result = visitService.getVisitsForPet(petId).stream()
                 .map(VisitMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
 
         return ResponseEntity.ok(result);
     }
@@ -134,7 +133,7 @@ public class VisitController {
         List<VisitResponseDto> result =
                 visitService.getVisitsForVetAndDate(vetProfileId, date).stream()
                         .map(VisitMapper::toDto)
-                        .collect(Collectors.toList());
+                        .toList();
 
         return ResponseEntity.ok(result);
     }

@@ -5,13 +5,16 @@ import { Loader } from '../components/Loader'
 import { PetCard } from '../components/PetCard'
 import { PetForm } from '../components/PetForm'
 import { ProtectedHeader } from '../components/ProtectedHeader'
+import { Button } from '../components/ui/Button'
 import { PetVisitsSection } from '../components/visits/PetVisitsSection'
 import { VisitBookingForm } from '../components/visits/VisitBookingForm'
 import { useAuth } from '../context/AuthContext'
+import { useAuthFetch } from '../hooks/useAuthFetch'
 import type { Pet, Visit } from '../utils/types'
 
 export function PetsPage() {
 	const { accessToken, user } = useAuth()
+	const { json } = useAuthFetch()
 	const [pets, setPets] = useState<Pet[]>([])
 	const [isLoading, setIsLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
@@ -35,32 +38,8 @@ export function PetsPage() {
 			setError(null)
 
 			try {
-				const response = await fetch('/api/pets/me', {
-					method: 'GET',
-					headers: {
-						Authorization: `Bearer ${accessToken}`
-					},
-					signal: controller.signal
-				})
+				const data = await json<Pet[]>('/api/pets/me')
 
-				if (!response.ok) {
-					let message = 'Failed to load pets.'
-
-					try {
-						const body = await response.json()
-						if (body && typeof body.message === 'string') {
-							message = body.message
-						}
-					} catch {
-						// ignore JSON parse errors
-					}
-
-					setError(message)
-					toast.error(message)
-					return
-				}
-
-				const data = (await response.json()) as Pet[]
 				setPets(data)
 			} catch (err) {
 				if (err instanceof DOMException && err.name === 'AbortError') {
@@ -81,7 +60,7 @@ export function PetsPage() {
 		return () => {
 			controller.abort()
 		}
-	}, [accessToken])
+	}, [accessToken, json])
 
 	const handleCancelForm = () => {
 		setIsCreating(false)
@@ -120,28 +99,7 @@ export function PetsPage() {
 		}
 
 		try {
-			const response = await fetch(`/api/pets/${pet.id}`, {
-				method: 'DELETE',
-				headers: {
-					Authorization: `Bearer ${accessToken}`
-				}
-			})
-
-			if (!response.ok && response.status !== 204) {
-				let message = 'Failed to delete pet.'
-
-				try {
-					const body = await response.json()
-					if (body && typeof body.message === 'string') {
-						message = body.message
-					}
-				} catch {
-					// ignore JSON parse errors
-				}
-
-				toast.error(message)
-				return
-			}
+			await json<void>(`/api/pets/${pet.id}`, { method: 'DELETE' })
 
 			setPets((prev) => prev.filter((p) => p.id !== pet.id))
 
@@ -165,27 +123,27 @@ export function PetsPage() {
 				description='Here you can see and manage all pets assigned to your account.'
 			>
 				<div className='flex flex-wrap gap-2'>
-					<button
+					<Button
+						variant='primary'
 						type='button'
 						onClick={() => {
 							setEditingPet(null)
 							setIsCreating(true)
 							setIsBookingVisit(false)
 						}}
-						className='rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60'
 						disabled={isCreating || !!editingPet || isBookingVisit}
 					>
 						Add new pet
-					</button>
+					</Button>
 
-					<button
+					<Button
+						variant='secondary'
 						type='button'
 						onClick={() => {
 							setIsBookingVisit(true)
 							setIsCreating(false)
 							setEditingPet(null)
 						}}
-						className='rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60'
 						disabled={
 							pets.length === 0 ||
 							isCreating ||
@@ -194,7 +152,7 @@ export function PetsPage() {
 						}
 					>
 						Book visit
-					</button>
+					</Button>
 				</div>
 			</ProtectedHeader>
 

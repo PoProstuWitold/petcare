@@ -81,7 +81,7 @@ public class PetServiceImpl implements PetService {
     @Transactional(readOnly = true)
     public List<Pet> getAll() {
         // Only vets and admins are allowed to see all pets.
-        if (!currentUserService.hasRole(Role.ADMIN) && !currentUserService.hasRole(Role.VET)) {
+        if (!(currentUserService.hasRole(Role.ADMIN) || currentUserService.hasRole(Role.VET))) {
             throw new AccessDeniedException("You are not allowed to access all pets");
         }
         return petRepository.findAllWithOwner();
@@ -106,67 +106,40 @@ public class PetServiceImpl implements PetService {
                 .orElseThrow(() -> new PetNotFoundException("Pet with ID " + id + " not found"));
     }
 
-    /**
-     * Resolves the owner for a new pet.
-     * Admins and vets can create pets for any owner.
-     * Regular users can create pets only for themselves.
-     */
     private User resolveOwnerForCreate(Long requestedOwnerId) {
         User currentUser = currentUserService.getCurrentUser();
+        boolean elevated = currentUserService.hasRole(Role.ADMIN) || currentUserService.hasRole(Role.VET);
 
-        boolean isAdmin = currentUserService.hasRole(Role.ADMIN);
-        boolean isVet = currentUserService.hasRole(Role.VET);
-
-        if (isAdmin || isVet) {
+        if (elevated) {
             return getOwnerOrThrow(requestedOwnerId);
         }
 
         if (!currentUser.getId().equals(requestedOwnerId)) {
             throw new AccessDeniedException("You are not allowed to create pets for another user");
         }
-
         return currentUser;
     }
 
-    /**
-     * Resolves the owner when updating an existing pet.
-     * Admins and vets can reassign the pet to another owner.
-     * Regular users cannot change ownership and must keep themselves as owners.
-     */
     private User resolveOwnerForUpdate(Long requestedOwnerId, Pet pet) {
-        User currentUser = currentUserService.getCurrentUser();
-
-        boolean isAdmin = currentUserService.hasRole(Role.ADMIN);
-        boolean isVet = currentUserService.hasRole(Role.VET);
-
-        if (isAdmin || isVet) {
+        boolean elevated = currentUserService.hasRole(Role.ADMIN) || currentUserService.hasRole(Role.VET);
+        if (elevated) {
             if (!pet.getOwner().getId().equals(requestedOwnerId)) {
                 return getOwnerOrThrow(requestedOwnerId);
             }
             return pet.getOwner();
         }
-
-        // Regular users can only keep themselves as owners and cannot reassign the pet.
-        if (!pet.getOwner().getId().equals(currentUser.getId())
-                || !requestedOwnerId.equals(currentUser.getId())) {
+        User currentUser = currentUserService.getCurrentUser();
+        if (!pet.getOwner().getId().equals(currentUser.getId()) || !requestedOwnerId.equals(currentUser.getId())) {
             throw new AccessDeniedException("You are not allowed to change pet owner");
         }
-
         return pet.getOwner();
     }
 
-    /**
-     * Ensures that the current user is allowed to access pets for the given owner id.
-     * Admins and vets can access any owner's pets.
-     * Regular users can only access their own pets.
-     */
     private void enforceOwnerScope(Long ownerId) {
         User currentUser = currentUserService.getCurrentUser();
+        boolean elevated = currentUserService.hasRole(Role.ADMIN) || currentUserService.hasRole(Role.VET);
 
-        boolean isAdmin = currentUserService.hasRole(Role.ADMIN);
-        boolean isVet = currentUserService.hasRole(Role.VET);
-
-        if (!isAdmin && !isVet && !currentUser.getId().equals(ownerId)) {
+        if (!elevated && !currentUser.getId().equals(ownerId)) {
             throw new AccessDeniedException("You are not allowed to access pets for this owner");
         }
     }

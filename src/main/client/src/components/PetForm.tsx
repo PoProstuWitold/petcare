@@ -2,7 +2,9 @@ import type * as React from 'react'
 import { useState } from 'react'
 import { toast } from 'react-toastify'
 import { useAuth } from '../context/AuthContext'
+import { useAuthFetch } from '../hooks/useAuthFetch'
 import type { Pet } from '../utils/types'
+import { Button } from './ui/Button'
 
 const SPECIES_OPTIONS = [
 	'DOG',
@@ -40,6 +42,7 @@ interface PetFormState {
 
 export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 	const { accessToken, user } = useAuth()
+	const { json } = useAuthFetch()
 	const [isSubmitting, setIsSubmitting] = useState(false)
 
 	const [form, setForm] = useState<PetFormState>(() => ({
@@ -102,34 +105,10 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 		setIsSubmitting(true)
 
 		try {
-			const response = await fetch(url, {
+			const data = await json<Pet>(url, {
 				method,
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Bearer ${accessToken}`
-				},
 				body: JSON.stringify(payload)
 			})
-
-			if (!response.ok) {
-				let message = isEdit
-					? 'Failed to update pet.'
-					: 'Failed to create pet.'
-
-				try {
-					const body = await response.json()
-					if (body && typeof body.message === 'string') {
-						message = body.message
-					}
-				} catch {
-					// ignore JSON parse errors
-				}
-
-				toast.error(message)
-				return
-			}
-
-			const data = (await response.json()) as Pet
 
 			if (onSaved) {
 				onSaved(data)
@@ -331,20 +310,16 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 
 			<div className='mt-6 flex justify-end gap-3'>
 				{onCancel && (
-					<button
+					<Button
 						type='button'
+						variant='ghost'
 						onClick={onCancel}
-						className='rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50'
 						disabled={isSubmitting}
 					>
 						Cancel
-					</button>
+					</Button>
 				)}
-				<button
-					type='submit'
-					className='rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60'
-					disabled={isSubmitting}
-				>
+				<Button type='submit' variant='primary' disabled={isSubmitting}>
 					{isSubmitting
 						? mode === 'edit'
 							? 'Saving...'
@@ -352,7 +327,7 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 						: mode === 'edit'
 							? 'Save changes'
 							: 'Create pet'}
-				</button>
+				</Button>
 			</div>
 		</form>
 	)

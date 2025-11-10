@@ -29,4 +29,16 @@ public interface CurrentUserService {
      * @return true if the current user has the role, false otherwise
      */
     boolean hasRole(Role role);
+
+    /**
+     * Convenience helper returning true if the current user has any of the provided roles.
+     */
+    default boolean hasAnyRole(Role... roles) {
+        for (Role role : roles) {
+            if (hasRole(role)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

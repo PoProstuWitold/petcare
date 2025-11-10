@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link } from 'react-router'
 import { toast } from 'react-toastify'
+import { Button } from '../components/ui/Button'
+import { httpJson } from '../utils/http'
 
 type RegisterFormValues = {
 	fullName: string
@@ -39,16 +41,22 @@ export function RegisterPage() {
 
 		setIsSubmitting(true)
 		try {
-			// TODO: Replace with real API call to your Spring Boot backend
-			// Example:
-			// const response = await fetch('/api/auth/register', { ... })
-			// Handle success, redirect to login, etc.
-
-			console.log('Register form submitted:', values)
-			toast.success('Registration submitted. Check console for payload.')
-		} catch (error) {
-			console.error('Registration failed', error)
-			toast.error('Registration failed. Please try again.')
+			const payload = {
+				fullName: values.fullName.trim(),
+				email: values.email.trim(),
+				username: values.email.trim(), // fallback: treat email as username
+				password: values.password
+			}
+			await httpJson('/api/auth/register', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload)
+			})
+			toast.success('Account created. You can now log in.')
+			// biome-ignore lint: no unnecessary-catch
+		} catch (error: any) {
+			const message = error?.body?.message || 'Registration failed'
+			toast.error(message)
 		} finally {
 			setIsSubmitting(false)
 		}
@@ -188,15 +196,16 @@ export function RegisterPage() {
 						)}
 					</div>
 
-					<button
+					<Button
 						type='submit'
+						variant='primary'
+						className='w-full rounded-full'
 						disabled={isSubmitting}
-						className='mt-2 flex w-full items-center justify-center rounded-full bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-70'
 					>
 						{isSubmitting
 							? 'Creating account...'
 							: 'Create account'}
-					</button>
+					</Button>
 				</form>
 
 				<p className='mt-4 text-center text-xs text-slate-600'>

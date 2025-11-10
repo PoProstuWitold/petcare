@@ -1,8 +1,12 @@
 import type * as React from 'react'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { useAsync } from '../../hooks/useAsync'
+import { useAuthFetch } from '../../hooks/useAuthFetch'
 import { DAY_OPTIONS, normalizeTimeForInput } from '../../utils/constants'
 import type { DayOfWeek, VetScheduleEntry } from '../../utils/types'
+import { Alert } from '../ui/Alert'
+import { Button } from '../ui/Button'
 
 const DAY_ORDER: Record<DayOfWeek, number> = {
 	MONDAY: 0,
@@ -22,55 +26,31 @@ function sortSchedule(entries: VetScheduleEntry[]): VetScheduleEntry[] {
 
 export function VetScheduleCard() {
 	const { accessToken } = useAuth()
-	const [loading, setLoading] = useState(true)
+	const { json } = useAuthFetch()
 	const [saving, setSaving] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 	const [success, setSuccess] = useState<string | null>(null)
 	const [schedule, setSchedule] = useState<VetScheduleEntry[]>([])
 
+	const {
+		data,
+		loading,
+		error: loadError,
+		execute
+	} = useAsync<VetScheduleEntry[]>(
+		() => json<VetScheduleEntry[]>('/api/vets/me/schedule'),
+		[accessToken]
+	)
+
 	useEffect(() => {
-		if (!accessToken) return
-		let cancelled = false
-
-		async function loadSchedule() {
-			setLoading(true)
-			setError(null)
-			setSuccess(null)
-
-			try {
-				const res = await fetch('/api/vets/me/schedule', {
-					headers: { Authorization: `Bearer ${accessToken}` }
-				})
-
-				if (!res.ok) {
-					new Error('Failed to load vet schedule')
-				}
-
-				const data: VetScheduleEntry[] = await res.json()
-				if (cancelled) return
-
-				const normalized = data?.map((entry) => ({
-					...entry,
-					startTime: normalizeTimeForInput(entry.startTime),
-					endTime: normalizeTimeForInput(entry.endTime)
-				}))
-
-				setSchedule(sortSchedule(normalized))
-				// biome-ignore lint: no need to narrow down type
-			} catch (err: any) {
-				if (!cancelled) {
-					setError(err.message || 'Failed to load vet schedule')
-				}
-			} finally {
-				if (!cancelled) setLoading(false)
-			}
-		}
-
-		void loadSchedule()
-		return () => {
-			cancelled = true
-		}
-	}, [accessToken])
+		if (!data) return
+		const normalized = data.map((entry) => ({
+			...entry,
+			startTime: normalizeTimeForInput(entry.startTime),
+			endTime: normalizeTimeForInput(entry.endTime)
+		}))
+		setSchedule(sortSchedule(normalized))
+	}, [data])
 
 	function updateRow(
 		index: number,
@@ -139,20 +119,13 @@ export function VetScheduleCard() {
 				slotLengthMinutes: row.slotLengthMinutes
 			}))
 
-			const res = await fetch('/api/vets/me/schedule', {
-				method: 'PUT',
-				headers: {
-					Authorization: `Bearer ${accessToken}`,
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(body)
-			})
-
-			if (!res.ok) {
-				new Error('Failed to save schedule')
-			}
-
-			const updated: VetScheduleEntry[] = await res.json()
+			const updated = await json<VetScheduleEntry[]>(
+				'/api/vets/me/schedule',
+				{
+					method: 'PUT',
+					body: JSON.stringify(body)
+				}
+			)
 			setSchedule(
 				sortSchedule(
 					updated.map((entry) => ({
@@ -163,6 +136,7 @@ export function VetScheduleCard() {
 				)
 			)
 			setSuccess('Schedule saved successfully.')
+			await execute().catch(() => {})
 			// biome-ignore lint: no need to narrow down type
 		} catch (err: any) {
 			setError(err.message || 'Failed to save schedule')
@@ -186,16 +160,22 @@ export function VetScheduleCard() {
 				</p>
 			)}
 
+			{loadError && (
+				<Alert variant='error' className='mt-4'>
+					{loadError}
+				</Alert>
+			)}
+
 			{error && (
-				<div className='mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800'>
+				<Alert variant='error' className='mt-4'>
 					{error}
-				</div>
+				</Alert>
 			)}
 
 			{success && (
-				<div className='mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800'>
+				<Alert variant='success' className='mt-4'>
 					{success}
-				</div>
+				</Alert>
 			)}
 
 			{!loading && (
@@ -335,21 +315,17 @@ export function VetScheduleCard() {
 					</div>
 
 					<div className='flex justify-between'>
-						<button
-							type='button'
-							onClick={addRow}
-							className='inline-flex items-center rounded-xl border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-800 shadow-sm hover:bg-slate-100'
-						>
+						<Button type='button' variant='ghost' onClick={addRow}>
 							Add working block
-						</button>
+						</Button>
 
-						<button
+						<Button
 							type='submit'
+							variant='primary'
 							disabled={saving}
-							className='inline-flex items-center rounded-xl bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-70'
 						>
 							{saving ? 'Saving...' : 'Save schedule'}
-						</button>
+						</Button>
 					</div>
 				</form>
 			)}

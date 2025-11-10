@@ -1,11 +1,15 @@
 import type * as React from 'react'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { useAsync } from '../../hooks/useAsync'
+import { useAuthFetch } from '../../hooks/useAuthFetch'
 import type { VetTimeOff, VetTimeOffForm } from '../../utils/types'
+import { Alert } from '../ui/Alert'
+import { Button } from '../ui/Button'
 
 export function VetTimeOffCard() {
 	const { accessToken } = useAuth()
-	const [loading, setLoading] = useState(true)
+	const { json } = useAuthFetch()
 	const [saving, setSaving] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 	const [success, setSuccess] = useState<string | null>(null)
@@ -16,43 +20,18 @@ export function VetTimeOffCard() {
 		reason: ''
 	})
 
+	const {
+		data,
+		loading,
+		error: loadError
+	} = useAsync<VetTimeOff[]>(
+		() => json<VetTimeOff[]>('/api/vets/me/time-off'),
+		[accessToken]
+	)
+
 	useEffect(() => {
-		if (!accessToken) return
-		let cancelled = false
-
-		async function loadTimeOff() {
-			setLoading(true)
-			setError(null)
-			setSuccess(null)
-
-			try {
-				const res = await fetch('/api/vets/me/time-off', {
-					headers: { Authorization: `Bearer ${accessToken}` }
-				})
-
-				if (!res.ok) {
-					new Error('Failed to load time-off entries')
-				}
-
-				const data: VetTimeOff[] = await res.json()
-				if (cancelled) return
-
-				setItems(data)
-				// biome-ignore lint: no need
-			} catch (err: any) {
-				if (!cancelled) {
-					setError(err.message || 'Failed to load time-off entries')
-				}
-			} finally {
-				if (!cancelled) setLoading(false)
-			}
-		}
-
-		loadTimeOff()
-		return () => {
-			cancelled = true
-		}
-	}, [accessToken])
+		if (data) setItems(data)
+	}, [data])
 
 	function updateFormField<K extends keyof VetTimeOffForm>(
 		field: K,
@@ -80,24 +59,14 @@ export function VetTimeOffCard() {
 		setSuccess(null)
 
 		try {
-			const res = await fetch('/api/vets/me/time-off', {
+			const created = await json<VetTimeOff>('/api/vets/me/time-off', {
 				method: 'POST',
-				headers: {
-					Authorization: `Bearer ${accessToken}`,
-					'Content-Type': 'application/json'
-				},
 				body: JSON.stringify({
 					startDate: form.startDate,
 					endDate: form.endDate,
 					reason: form.reason || null
 				})
 			})
-
-			if (!res.ok) {
-				new Error('Failed to create time-off entry')
-			}
-
-			const created: VetTimeOff = await res.json()
 			setItems((prev) => [...prev, created])
 			setForm({ startDate: '', endDate: '', reason: '' })
 			setSuccess('Time-off entry created.')
@@ -115,14 +84,9 @@ export function VetTimeOffCard() {
 		setSuccess(null)
 
 		try {
-			const res = await fetch(`/api/vets/me/time-off/${id}`, {
-				method: 'DELETE',
-				headers: { Authorization: `Bearer ${accessToken}` }
+			await json<void>(`/api/vets/me/time-off/${id}`, {
+				method: 'DELETE'
 			})
-
-			if (!res.ok && res.status !== 204) {
-				new Error('Failed to delete time-off entry')
-			}
 
 			setItems((prev) => prev.filter((item) => item.id !== id))
 			setSuccess('Time-off entry deleted.')
@@ -143,15 +107,15 @@ export function VetTimeOffCard() {
 			</p>
 
 			{error && (
-				<div className='mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800'>
+				<Alert variant='error' className='mt-4'>
 					{error}
-				</div>
+				</Alert>
 			)}
 
 			{success && (
-				<div className='mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800'>
+				<Alert variant='success' className='mt-4'>
 					{success}
-				</div>
+				</Alert>
 			)}
 
 			<div className='mt-4 space-y-4'>
@@ -215,15 +179,21 @@ export function VetTimeOffCard() {
 					</div>
 
 					<div className='flex items-end justify-end'>
-						<button
+						<Button
 							type='submit'
+							variant='primary'
 							disabled={saving}
-							className='inline-flex items-center rounded-xl bg-sky-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-70'
 						>
 							{saving ? 'Adding...' : 'Add'}
-						</button>
+						</Button>
 					</div>
 				</form>
+
+				{loadError && (
+					<Alert variant='error' className='mt-4'>
+						{loadError}
+					</Alert>
+				)}
 
 				{loading ? (
 					<p className='text-sm text-slate-600'>

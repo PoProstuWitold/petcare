@@ -21,7 +21,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * REST controller for managing pets.
@@ -91,7 +90,7 @@ public class PetController {
         List<PetResponseDto> result = petService.getAll()
                 .stream()
                 .map(PetMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(result);
     }
 
@@ -148,7 +147,7 @@ public class PetController {
         List<PetResponseDto> result = petService.getByOwnerId(ownerId)
                 .stream()
                 .map(PetMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(result);
     }
 
@@ -177,7 +176,7 @@ public class PetController {
         List<PetResponseDto> result = petService.getByOwnerId(currentUser.getId())
                 .stream()
                 .map(PetMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(result);
     }
 

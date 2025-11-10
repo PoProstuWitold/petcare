@@ -51,37 +51,14 @@ public class VisitServiceImpl implements VisitService {
         LocalDate date = command.date();
         LocalTime requestedStart = command.startTime();
 
-        if (date == null || requestedStart == null) {
-            throw new IllegalArgumentException("Visit date and start time must be provided");
-        }
+        validateRequired(date, requestedStart);
+        validateNotPast(date);
 
-        if (date.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Visit date cannot be in the past");
-        }
-
-        // Check if vet works on that day and find matching schedule entry
         VetScheduleEntry scheduleEntry = findMatchingScheduleEntry(vetProfile, date, requestedStart);
-
         LocalTime endTime = requestedStart.plusMinutes(scheduleEntry.getSlotLengthMinutes());
 
-        // Check vet time-off
-        if (vetTimeOffService.isVetOnTimeOffOnDate(vetProfile, date)) {
-            throw new IllegalArgumentException("Vet is on time off on the selected date");
-        }
-
-        // Check for overlapping visits
-        boolean hasConflict = visitRepository
-                .existsByVetProfileAndDateAndStatusInAndStartTimeLessThanAndEndTimeGreaterThan(
-                        vetProfile,
-                        date,
-                        BLOCKING_STATUSES,
-                        endTime,
-                        requestedStart
-                );
-
-        if (hasConflict) {
-            throw new IllegalArgumentException("Selected time slot is already taken");
-        }
+        validateNotOnTimeOff(vetProfile, date);
+        validateNoConflict(vetProfile, date, requestedStart, endTime);
 
         Visit visit = new Visit(
                 pet,
@@ -155,5 +132,42 @@ public class VisitServiceImpl implements VisitService {
         long minutesFromBlockStart =
                 java.time.Duration.between(blockStart, requestedStart).toMinutes();
         return minutesFromBlockStart % slotLengthMinutes == 0;
+    }
+
+    private void validateRequired(LocalDate date, LocalTime start) {
+        if (date == null || start == null) {
+            throw new IllegalArgumentException("Visit date and start time must be provided");
+        }
+    }
+
+    private void validateNotPast(LocalDate date) {
+        if (date.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Visit date cannot be in the past");
+        }
+    }
+
+    private void validateNotOnTimeOff(VetProfile vetProfile, LocalDate date) {
+        if (vetTimeOffService.isVetOnTimeOffOnDate(vetProfile, date)) {
+            throw new IllegalArgumentException("Vet is on time off on the selected date");
+        }
+    }
+
+    private void validateNoConflict(
+            VetProfile vetProfile,
+            LocalDate date,
+            LocalTime start,
+            LocalTime end
+    ) {
+        boolean hasConflict = visitRepository
+                .existsByVetProfileAndDateAndStatusInAndStartTimeLessThanAndEndTimeGreaterThan(
+                        vetProfile,
+                        date,
+                        BLOCKING_STATUSES,
+                        end,
+                        start
+                );
+        if (hasConflict) {
+            throw new IllegalArgumentException("Selected time slot is already taken");
+        }
     }
 }

@@ -19,7 +19,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * REST controller for managing users.
@@ -81,7 +80,7 @@ public class UserController {
         List<UserResponseDto> users = userService.getAll()
                 .stream()
                 .map(UserMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(users);
     }
 

@@ -36,13 +36,10 @@ public class PetAccessServiceImpl implements PetAccessService {
         if (pet == null) {
             return false;
         }
-
-        User currentUser = currentUserService.getCurrentUser();
-
-        if (hasAnyRole(Role.ADMIN, Role.VET)) {
+        if (currentUserService.hasAnyRole(Role.ADMIN, Role.VET)) {
             return true;
         }
-
+        User currentUser = currentUserService.getCurrentUser();
         return pet.getOwner().getId().equals(currentUser.getId());
     }
 
@@ -51,24 +48,10 @@ public class PetAccessServiceImpl implements PetAccessService {
         if (pet == null) {
             return false;
         }
-
-        User currentUser = currentUserService.getCurrentUser();
-
-        // Admin and vet can modify any pet
-        if (hasAnyRole(Role.ADMIN, Role.VET)) {
+        if (currentUserService.hasAnyRole(Role.ADMIN, Role.VET)) {
             return true;
         }
-
-        // Regular user can modify only their own pet
+        User currentUser = currentUserService.getCurrentUser();
         return pet.getOwner().getId().equals(currentUser.getId());
-    }
-
-    private boolean hasAnyRole(Role... roles) {
-        for (Role role : roles) {
-            if (currentUserService.hasRole(role)) {
-                return true;
-            }
-        }
-        return false;
     }
 }

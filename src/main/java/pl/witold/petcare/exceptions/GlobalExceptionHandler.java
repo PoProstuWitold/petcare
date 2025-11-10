@@ -25,23 +25,16 @@ public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    // --- Not Found (unified) ---
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleNotFound(
+            NotFoundException ex,
+            HttpServletRequest request
+    ) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex, request);
+    }
+
     // --- Custom domain exceptions ---
-
-    @ExceptionHandler(VetProfileNotFoundException.class)
-    public ResponseEntity<ApiErrorResponse> handleVetProfileNotFound(
-            VetProfileNotFoundException ex,
-            HttpServletRequest request
-    ) {
-        return buildResponse(HttpStatus.NOT_FOUND, ex, request);
-    }
-
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ApiErrorResponse> handleUserNotFound(
-            UserNotFoundException ex,
-            HttpServletRequest request
-    ) {
-        return buildResponse(HttpStatus.NOT_FOUND, ex, request);
-    }
 
     @ExceptionHandler(FieldIsAlreadyTakenException.class)
     public ResponseEntity<ApiErrorResponse> handleFieldTaken(
@@ -84,7 +77,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiErrorResponse> handleAccessDenied(
-            AccessDeniedException ex,
+            AccessDeniedException ignored,
             HttpServletRequest request
     ) {
         return buildResponse(HttpStatus.FORBIDDEN, "Access denied: insufficient permissions", request);
@@ -97,8 +90,8 @@ public class GlobalExceptionHandler {
     ) {
         HttpStatus status = HttpStatus.FORBIDDEN;
         String message = switch (ex) {
-            case ExpiredJwtException e -> "JWT token has expired";
-            case SignatureException e -> "Invalid JWT signature";
+            case ExpiredJwtException ignored -> "JWT token has expired";
+            case SignatureException ignored -> "Invalid JWT signature";
             default -> "Invalid or expired JWT token";
         };
 

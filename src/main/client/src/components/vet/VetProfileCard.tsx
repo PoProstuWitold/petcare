@@ -1,16 +1,20 @@
 import type * as React from 'react'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { useAsync } from '../../hooks/useAsync'
+import { useAuthFetch } from '../../hooks/useAuthFetch'
 import { ALL_SPECIALIZATIONS } from '../../utils/constants'
 import type {
 	VetProfileForm,
 	VetProfileResponse,
 	VetSpecialization
 } from '../../utils/types'
+import { Alert } from '../ui/Alert'
+import { Button } from '../ui/Button'
 
 export function VetProfileCard() {
 	const { accessToken } = useAuth()
-	const [loading, setLoading] = useState(true)
+	const { json } = useAuthFetch()
 	const [saving, setSaving] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 	const [success, setSuccess] = useState<string | null>(null)
@@ -19,42 +23,40 @@ export function VetProfileCard() {
 	)
 	const [form, setForm] = useState<VetProfileForm | null>(null)
 
+	const {
+		data,
+		loading,
+		error: loadError,
+		execute
+	} = useAsync<VetProfileResponse>(
+		() => json<VetProfileResponse>('/api/vets/me/profile'),
+		[accessToken]
+	)
+
+	useEffect(() => {
+		if (data) {
+			setProfileInfo(data)
+			setForm({
+				bio: data.bio ?? '',
+				acceptsNewPatients: data.acceptsNewPatients,
+				averageVisitLengthMinutes: data.averageVisitLengthMinutes ?? 30,
+				specializations: data.specializations ?? []
+			})
+		}
+	}, [data])
+
 	useEffect(() => {
 		if (!accessToken) return
 		let cancelled = false
 
 		async function loadProfile() {
-			setLoading(true)
-			setError(null)
-			setSuccess(null)
-
 			try {
-				const res = await fetch('/api/vets/me/profile', {
-					headers: { Authorization: `Bearer ${accessToken}` }
-				})
-
-				if (!res.ok) {
-					new Error('Failed to load vet profile')
-				}
-
-				const data: VetProfileResponse = await res.json()
-				if (cancelled) return
-
-				setProfileInfo(data)
-				setForm({
-					bio: data.bio ?? '',
-					acceptsNewPatients: data.acceptsNewPatients,
-					averageVisitLengthMinutes:
-						data.averageVisitLengthMinutes ?? 30,
-					specializations: data.specializations ?? []
-				})
+				await execute().catch(() => {})
 				// biome-ignore lint: no need
 			} catch (err: any) {
 				if (!cancelled) {
 					setError(err.message || 'Failed to load vet profile')
 				}
-			} finally {
-				if (!cancelled) setLoading(false)
 			}
 		}
 
@@ -62,7 +64,7 @@ export function VetProfileCard() {
 		return () => {
 			cancelled = true
 		}
-	}, [accessToken])
+	}, [accessToken, execute])
 
 	function updateField<K extends keyof VetProfileForm>(
 		field: K,
@@ -91,26 +93,20 @@ export function VetProfileCard() {
 		setSuccess(null)
 
 		try {
-			const res = await fetch('/api/vets/me/profile', {
-				method: 'PUT',
-				headers: {
-					Authorization: `Bearer ${accessToken}`,
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					bio: form.bio,
-					acceptsNewPatients: form.acceptsNewPatients,
-					averageVisitLengthMinutes:
-						form.averageVisitLengthMinutes || 30,
-					specializations: form.specializations
-				})
-			})
+			const updated = await json<VetProfileResponse>(
+				'/api/vets/me/profile',
+				{
+					method: 'PUT',
+					body: JSON.stringify({
+						bio: form.bio,
+						acceptsNewPatients: form.acceptsNewPatients,
+						averageVisitLengthMinutes:
+							form.averageVisitLengthMinutes || 30,
+						specializations: form.specializations
+					})
+				}
+			)
 
-			if (!res.ok) {
-				new Error('Failed to save vet profile')
-			}
-
-			const updated: VetProfileResponse = await res.json()
 			setProfileInfo(updated)
 			setForm({
 				bio: updated.bio ?? '',
@@ -120,6 +116,7 @@ export function VetProfileCard() {
 				specializations: updated.specializations ?? []
 			})
 			setSuccess('Profile saved successfully.')
+			await execute().catch(() => {})
 			// biome-ignore lint: no need
 		} catch (err: any) {
 			setError(err.message || 'Failed to save vet profile')
@@ -143,16 +140,22 @@ export function VetProfileCard() {
 				</p>
 			)}
 
+			{loadError && (
+				<Alert variant='error' className='mt-4'>
+					{loadError}
+				</Alert>
+			)}
+
 			{error && (
-				<div className='mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800'>
+				<Alert variant='error' className='mt-4'>
 					{error}
-				</div>
+				</Alert>
 			)}
 
 			{success && (
-				<div className='mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800'>
+				<Alert variant='success' className='mt-4'>
 					{success}
-				</div>
+				</Alert>
 			)}
 
 			{!loading && form && (
@@ -266,13 +269,13 @@ export function VetProfileCard() {
 					</div>
 
 					<div className='flex justify-end'>
-						<button
+						<Button
 							type='submit'
+							variant='primary'
 							disabled={saving}
-							className='inline-flex items-center rounded-xl bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-70'
 						>
 							{saving ? 'Saving...' : 'Save profile'}
-						</button>
+						</Button>
 					</div>
 				</form>
 			)}

@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react'
-import { ErrorHandler } from '../components/ErrorHandler'
+import { useEffect } from 'react'
 import { Loader } from '../components/Loader'
 import { ProtectedHeader } from '../components/ProtectedHeader'
+import { Alert } from '../components/ui/Alert'
+import { useAsync } from '../hooks/useAsync'
+import { useAuthFetch } from '../hooks/useAuthFetch'
 
 type HealthStatus = {
 	timestamp: string
@@ -44,47 +46,23 @@ function getStatusColor(status: string): string {
 }
 
 export function StatusPage() {
-	const [health, setHealth] = useState<HealthStatus | null>(null)
-	const [loading, setLoading] = useState(true)
-	const [error, setError] = useState<string | null>(null)
+	const { json } = useAuthFetch()
+	const {
+		data: health,
+		loading,
+		error,
+		execute
+	} = useAsync<HealthStatus>(
+		() => json<HealthStatus>('/api/status/health'),
+		[]
+	)
 
 	useEffect(() => {
-		let isMounted = true
-
-		const fetchHealth = async () => {
-			try {
-				if (!isMounted) return
-
-				setError(null)
-				const res = await fetch('/api/status/health')
-
-				if (!res.ok) {
-					new Error(`Request failed with status ${res.status}`)
-				}
-
-				const data = (await res.json()) as HealthStatus
-				if (isMounted) {
-					setHealth(data)
-					setLoading(false)
-				}
-			} catch (_err) {
-				if (!isMounted) return
-				setError('Failed to load application status')
-				setLoading(false)
-			}
-		}
-
-		// Initial fetch
-		fetchHealth()
-
-		// Optional: auto-refresh every 15 seconds
-		const intervalId = setInterval(fetchHealth, 15000)
-
-		return () => {
-			isMounted = false
-			clearInterval(intervalId)
-		}
-	}, [])
+		const id = setInterval(() => {
+			void execute()
+		}, 15000)
+		return () => clearInterval(id)
+	}, [execute])
 
 	const status = health?.status ?? 'DOWN'
 	const dbStatus = health?.details?.db ?? 'DOWN'
@@ -118,7 +96,7 @@ export function StatusPage() {
 			</ProtectedHeader>
 			<div className='page-content'>
 				{loading && <Loader message='Loading status...' />}
-				{error && !loading && <ErrorHandler message={error} />}
+				{error && !loading && <Alert variant='error'>{error}</Alert>}
 
 				{!loading && !error && health && (
 					<section className='grid gap-4 sm:grid-cols-3'>

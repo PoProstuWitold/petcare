@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import type { Visit, VisitStatus } from '../utils/types.ts'
+import { Button } from './ui/Button'
+import { StatusPill } from './ui/StatusPill'
 
 type VisitCardProps = {
 	title?: string
@@ -62,36 +64,20 @@ function formatDatePl(date?: string, time?: string): string {
 	return `${day}.${month}.${year} · ${hour}`
 }
 
-function getStatusPillClasses(status: VisitStatus | undefined): string {
-	const base =
-		'inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset'
-
+function statusColor(status?: VisitStatus): string {
 	switch (status) {
 		case 'SCHEDULED':
-			return `${base} bg-sky-200 text-sky-700 ring-sky-200`
+			return 'bg-sky-200 text-sky-700 ring-sky-200'
 		case 'CONFIRMED':
-			return `${base} bg-emerald-200 text-emerald-700 ring-emerald-200`
+			return 'bg-emerald-200 text-emerald-700 ring-emerald-200'
 		case 'COMPLETED':
-			return `${base} bg-slate-900 text-slate-50 ring-slate-900/10`
+			return 'bg-slate-900 text-slate-50 ring-slate-900/10'
 		case 'CANCELLED':
-			return `${base} bg-rose-200 text-rose-700 ring-rose-200`
+			return 'bg-rose-200 text-rose-700 ring-rose-200'
 		default:
-			return `${base} bg-slate-200 text-slate-700 ring-slate-200`
+			return 'bg-slate-200 text-slate-700 ring-slate-200'
 	}
 }
-
-const btnBase =
-	'inline-flex items-center justify-center gap-1 rounded-xl px-3.5 py-1.5 text-xs font-semibold tracking-tight ' +
-	'cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 ' +
-	'focus-visible:ring-sky-500 disabled:cursor-not-allowed disabled:opacity-60'
-
-const btnPrimary =
-	`${btnBase} bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 hover:shadow-md ` +
-	'active:translate-y-px active:shadow-sm'
-
-const btnGhost =
-	`${btnBase} border border-slate-300 bg-white text-slate-800 shadow-sm hover:bg-slate-50 hover:border-slate-400 ` +
-	'hover:shadow-md active:bg-slate-100 active:translate-y-px'
 
 export function VisitCard({
 	title,
@@ -182,9 +168,9 @@ export function VisitCard({
 							</select>
 						</div>
 					) : (
-						<span className={getStatusPillClasses(visit.status)}>
+						<StatusPill color={statusColor(visit.status)}>
 							{visit.status}
-						</span>
+						</StatusPill>
 					)}
 				</div>
 
@@ -233,52 +219,52 @@ export function VisitCard({
 				{hasVetActions && visit && (
 					<div className='mt-3 flex flex-wrap gap-2'>
 						{enableStatusEditing && !isEditingStatus && (
-							<button
+							<Button
 								type='button'
+								variant='ghost'
 								onClick={handleStartEdit}
-								className={btnGhost}
 							>
 								Edit status
-							</button>
+							</Button>
 						)}
 
 						{enableStatusEditing && isEditingStatus && (
 							<>
-								<button
+								<Button
 									type='button'
+									variant='secondary'
 									onClick={handleSaveStatus}
-									className={btnPrimary}
 								>
 									Save status
-								</button>
-								<button
+								</Button>
+								<Button
 									type='button'
+									variant='ghost'
 									onClick={handleCancelEdit}
-									className={btnGhost}
 								>
 									Cancel
-								</button>
+								</Button>
 							</>
 						)}
 
 						{onCreateMedicalRecord && (
-							<button
+							<Button
 								type='button'
+								variant='ghost'
 								onClick={onCreateMedicalRecord}
-								className={btnGhost}
 							>
 								Create medical record
-							</button>
+							</Button>
 						)}
 
 						{onViewPetDetails && (
-							<button
+							<Button
 								type='button'
+								variant='ghost'
 								onClick={onViewPetDetails}
-								className={btnGhost}
 							>
 								View pet details
-							</button>
+							</Button>
 						)}
 					</div>
 				)}

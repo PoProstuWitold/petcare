@@ -22,6 +22,7 @@ import type {
 	VetTimeOff,
 	Visit
 } from '../../utils/types'
+import { Button } from '../ui/Button'
 
 type VisitBookingFormProps = {
 	pets: Pet[]
@@ -630,18 +631,18 @@ export function VisitBookingForm({
 
 			<div className='mt-6 flex justify-end gap-3'>
 				{onCancel && (
-					<button
+					<Button
+						variant='ghost'
 						type='button'
 						onClick={onCancel}
-						className='rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50'
 						disabled={isSubmitting}
 					>
 						Cancel
-					</button>
+					</Button>
 				)}
-				<button
+				<Button
+					variant='secondary'
 					type='submit'
-					className='rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60'
 					disabled={
 						isSubmitting ||
 						loadingSlots ||
@@ -651,7 +652,7 @@ export function VisitBookingForm({
 					}
 				>
 					{isSubmitting ? 'Booking...' : 'Book visit'}
-				</button>
+				</Button>
 			</div>
 		</form>
 	)

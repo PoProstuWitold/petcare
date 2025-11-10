@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { fetchPetVisits } from '../../api/visits'
 import { useAuth } from '../../context/AuthContext'
+import { useAsync } from '../../hooks/useAsync'
 import type { Pet, Visit } from '../../utils/types'
+import { Alert } from '../ui/Alert'
 import { VisitCard } from '../VisitCard'
 
 type PetVisitsSectionProps = {
@@ -10,32 +12,16 @@ type PetVisitsSectionProps = {
 
 export function PetVisitsSection({ pet }: PetVisitsSectionProps) {
 	const { accessToken } = useAuth()
-	const [visits, setVisits] = useState<Visit[]>([])
-	const [loading, setLoading] = useState(false)
-	const [error, setError] = useState<string | null>(null)
-	const [expanded, setExpanded] = useState(false)
-
 	const token = accessToken
+	const { data, loading, error } = useAsync<Visit[]>(
+		() => (token ? fetchPetVisits(pet.id, token) : Promise.resolve([])),
+		[token, pet.id]
+	)
 
-	useEffect(() => {
-		if (!token) return
-
-		;(async () => {
-			setLoading(true)
-			setError(null)
-			try {
-				const data = await fetchPetVisits(pet.id, token)
-				setVisits(data)
-			} catch (e) {
-				console.error(e)
-				setError('Could not load visits for this pet')
-			} finally {
-				setLoading(false)
-			}
-		})()
-	}, [token, pet.id])
-
+	const visits = data ?? []
 	const visitCount = visits.length
+
+	const [expanded, setExpanded] = useState(false)
 
 	const sortedVisits = [...visits].sort((a, b) => {
 		const aKey = `${a.date}T${a.startTime}`
@@ -54,7 +40,7 @@ export function PetVisitsSection({ pet }: PetVisitsSectionProps) {
 				</span>
 			</div>
 
-			{error && <p className='text-sm text-red-600'>{error}</p>}
+			{error && <Alert variant='error'>{error}</Alert>}
 
 			{!loading && !error && visitCount === 0 && (
 				<p className='text-sm text-slate-500'>
