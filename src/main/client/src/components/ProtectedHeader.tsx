@@ -1,3 +1,5 @@
+import type * as React from 'react'
+
 interface ProtectedHeaderProps {
 	user?: { fullName: string } | null
 	title: string
