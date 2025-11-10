@@ -26,7 +26,7 @@ public class VetProfile {
     private User user;
 
     @Setter
-    @Column(length = 255)
+    @Column()
     private String bio;
 
     @Setter

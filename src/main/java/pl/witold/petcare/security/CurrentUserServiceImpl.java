@@ -37,6 +37,7 @@ public class CurrentUserServiceImpl implements CurrentUserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Long getCurrentUserId() {
         return getCurrentUser().getId();
     }

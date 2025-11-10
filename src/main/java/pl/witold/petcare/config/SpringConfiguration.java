@@ -3,6 +3,7 @@ package pl.witold.petcare.config;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
+import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.resource.PathResourceResolver;
@@ -16,26 +17,24 @@ import static java.util.Objects.nonNull;
 public class SpringConfiguration implements WebMvcConfigurer {
 
     @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        this.serveDirectory(registry, "/", "classpath:/static/");
+    public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
+        this.serveDirectory(registry);
     }
 
-    private void serveDirectory(ResourceHandlerRegistry registry, String endpoint, String location) {
-        String[] endpointPatterns = endpoint.endsWith("/")
-                ? new String[]{endpoint.substring(0, endpoint.length() - 1), endpoint, endpoint + "**"}
-                : new String[]{endpoint, endpoint + "/", endpoint + "/**"};
+    private void serveDirectory(ResourceHandlerRegistry registry) {
+        String[] endpointPatterns = new String[]{"/".substring(0, 0), "/", "/" + "**"};
 
         registry
                 .addResourceHandler(endpointPatterns)
-                .addResourceLocations(location.endsWith("/") ? location : location + "/")
+                .addResourceLocations("classpath:/static/")
                 .resourceChain(false)
                 .addResolver(new PathResourceResolver() {
                     @Override
                     public Resource resolveResource(
                             HttpServletRequest request,
-                            String requestPath,
-                            List<? extends Resource> locations,
-                            ResourceResolverChain chain
+                            @NonNull String requestPath,
+                            @NonNull List<? extends Resource> locations,
+                            @NonNull ResourceResolverChain chain
                     ) {
                         Resource resource = super.resolveResource(request, requestPath, locations, chain);
                         if (nonNull(resource)) {

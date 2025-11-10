@@ -33,7 +33,7 @@ public class VetTimeOff {
     private LocalDate endDate;
 
     @Setter
-    @Column(length = 255)
+    @Column()
     private String reason;
 
     public VetTimeOff() {

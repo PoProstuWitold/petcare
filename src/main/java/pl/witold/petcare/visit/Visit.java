@@ -50,7 +50,7 @@ public class Visit {
     private VisitStatus status = VisitStatus.SCHEDULED;
 
     @Setter
-    @Column(name = "reason", length = 255)
+    @Column(name = "reason")
     private String reason;
 
     @Setter
@@ -75,7 +75,6 @@ public class Visit {
         this.date = date;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.status = VisitStatus.SCHEDULED;
         this.reason = reason;
         this.notes = notes;
     }
