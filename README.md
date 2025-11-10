@@ -40,7 +40,7 @@ Zwierzęta:
 - **Abi** - suczka, właściciel: vet,
 - **Harry** - pies, właściciel: admin.
 
-Dodatkowo tworozny jest profil weterynarza oraz jego grafik pracy.
+Dodatkowo tworzony jest profil weterynarza oraz jego grafik pracy.
 
 <p align="right">(<a href="#top">przewiń do góry</a>)</p>
 
