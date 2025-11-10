@@ -1,3 +1,4 @@
+import { ManageUsersCard } from '../components/admin/ManageUsersCard'
 import { ProtectedHeader } from '../components/ProtectedHeader'
 import { useAuth } from '../context/AuthContext'
 
@@ -15,7 +16,9 @@ export function AdminPage() {
 				title={'Admin Panel'}
 				description={'Manage PetCare system settings and users.'}
 			/>
-			<div className='page-content' />
+			<div className='page-content space-y-6'>
+				<ManageUsersCard />
+			</div>
 		</div>
 	)
 }

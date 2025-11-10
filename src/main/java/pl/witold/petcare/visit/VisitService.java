@@ -1,5 +1,6 @@
 package pl.witold.petcare.visit;
 
+import pl.witold.petcare.dto.VisitResponseDto;
 import pl.witold.petcare.visit.commands.VisitCreateCommand;
 
 import java.time.LocalDate;
@@ -15,4 +16,11 @@ public interface VisitService {
     List<Visit> getVisitsForPet(Long petId);
 
     List<Visit> getVisitsForVetAndDate(Long vetProfileId, LocalDate date);
+
+    /**
+     * Returns all visits for currently authenticated vet.
+     */
+    List<Visit> getVisitsForCurrentVet();
+
+    VisitResponseDto updateVisitStatus(Long visitId, VisitStatus status);
 }

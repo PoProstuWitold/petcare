@@ -71,15 +71,15 @@ export type VisitStatus = 'SCHEDULED' | 'COMPLETED' | 'CANCELLED' | 'CONFIRMED'
 
 export type Visit = {
 	id: number
-	petId: number
-	petName: string
+	pet: Pet
 	vetProfileId: number
+	vetUserId: number
 	vetFullName: string
-	date: string // ISO date: YYYY-MM-DD
-	startTime: string // HH:mm[:ss]
-	endTime: string // HH:mm[:ss]
+	date: string
+	startTime: string
+	endTime: string
 	status: VisitStatus
-	reason?: string | null
+	reason: string | null
 	notes?: string | null
 }
 

@@ -1,4 +1,9 @@
-import type { VetProfile, VetScheduleEntry, VetTimeOff } from '../utils/types'
+import type {
+	VetProfile,
+	VetScheduleEntry,
+	VetTimeOff,
+	Visit
+} from '../utils/types'
 
 const BASE_URL = '/api'
 
@@ -51,4 +56,20 @@ export async function fetchVetTimeOff(
 
 	const data = await res.json()
 	return Array.isArray(data) ? data : []
+}
+
+export async function fetchVisitsForCurrentVet(
+	token: string
+): Promise<Visit[]> {
+	const res = await fetch(`${BASE_URL}/visits/me`, {
+		headers: {
+			Authorization: `Bearer ${token}`
+		}
+	})
+
+	if (!res.ok) {
+		throw new Error('Failed to load vet visits')
+	}
+
+	return (await res.json()) as Visit[]
 }

@@ -5,9 +5,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import pl.witold.petcare.dto.VisitResponseDto;
 import pl.witold.petcare.visit.commands.VisitCreateCommand;
+import pl.witold.petcare.visit.commands.VisitStatusUpdateCommand;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -54,6 +56,7 @@ public class VisitController {
      * Used by booking UI to block already taken slots.
      */
     @GetMapping("/by-vet/{vetProfileId}")
+    @Transactional(readOnly = true)
     public ResponseEntity<List<VisitResponseDto>> getVisitsForVetAndDate(
             @PathVariable Long vetProfileId,
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
@@ -64,5 +67,23 @@ public class VisitController {
                         .collect(Collectors.toList());
 
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<List<VisitResponseDto>> getMyVisits() {
+        List<VisitResponseDto> result = visitService.getVisitsForCurrentVet().stream()
+                .map(VisitMapper::toDto)
+                .toList();
+
+        return ResponseEntity.ok(result);
+    }
+
+    @PatchMapping("/{visitId}/status")
+    public ResponseEntity<VisitResponseDto> updateStatus(
+            @PathVariable Long visitId,
+            @RequestBody @Valid VisitStatusUpdateCommand command
+    ) {
+        VisitResponseDto dto = visitService.updateVisitStatus(visitId, command.status());
+        return ResponseEntity.ok(dto);
     }
 }

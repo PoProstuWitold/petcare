@@ -1,4 +1,4 @@
-import type { Visit } from '../utils/types'
+import type { Visit, VisitStatus } from '../utils/types'
 
 const BASE_URL = '/api'
 
@@ -78,6 +78,28 @@ export async function createVisitForPet(
 		throw new Error(
 			`Failed to create visit: ${res.status} ${res.statusText} ${text}`
 		)
+	}
+
+	return (await res.json()) as Visit
+}
+
+export async function updateVisitStatus(
+	visitId: number,
+	status: VisitStatus,
+	token: string
+): Promise<Visit> {
+	const res = await fetch(`/api/visits/${visitId}/status`, {
+		method: 'PATCH',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${token}`
+		},
+		body: JSON.stringify({ status })
+	})
+
+	if (!res.ok) {
+		const text = await res.text()
+		throw new Error(text || 'Failed to update visit status')
 	}
 
 	return (await res.json()) as Visit

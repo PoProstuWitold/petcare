@@ -10,9 +10,9 @@ import java.time.LocalTime;
  */
 public record VisitResponseDto(
         Long id,
-        Long petId,
-        String petName,
+        PetResponseDto pet,
         Long vetProfileId,
+        Long vetUserId,
         String vetFullName,
         LocalDate date,
         LocalTime startTime,

@@ -1,4 +1,5 @@
 import { VisitCard } from '../components/VisitCard.tsx'
+import { mockVisit } from '../utils/mocks.ts'
 
 export function HomePage() {
 	return (
@@ -62,7 +63,11 @@ export function HomePage() {
 				<div className='mt-8 flex flex-1 justify-center lg:mt-0'>
 					<div className='relative w-full max-w-md'>
 						<div className='absolute -inset-4 rounded-3xl bg-sky-100/60 blur-xl' />
-						<VisitCard title='Visit Card - Vet Preview' />
+						<VisitCard
+							demo
+							title='Visit Card - Vet Preview'
+							visit={mockVisit}
+						/>
 					</div>
 				</div>
 			</section>

@@ -3,6 +3,8 @@ package pl.witold.petcare.visit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.witold.petcare.dto.VisitResponseDto;
+import pl.witold.petcare.exceptions.ResourceNotFoundException;
 import pl.witold.petcare.pet.Pet;
 import pl.witold.petcare.pet.PetAccessService;
 import pl.witold.petcare.pet.PetService;
@@ -107,6 +109,24 @@ public class VisitServiceImpl implements VisitService {
     public List<Visit> getVisitsForVetAndDate(Long vetProfileId, LocalDate date) {
         VetProfile profile = vetProfileService.getById(vetProfileId);
         return visitRepository.findByVetProfileAndDateOrderByStartTimeAsc(profile, date);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Visit> getVisitsForCurrentVet() {
+        VetProfile profile = vetProfileService.getOrCreateCurrentVetProfile();
+        return visitRepository.findByVetProfileOrderByDateAscStartTimeAsc(profile);
+    }
+
+    @Override
+    public VisitResponseDto updateVisitStatus(Long visitId, VisitStatus status) {
+        Visit visit = visitRepository
+                .findByIdWithRelations(visitId)
+                .orElseThrow(() -> new ResourceNotFoundException("Visit not found"));
+
+        visit.setStatus(status);
+
+        return VisitMapper.toDto(visit);
     }
 
     private VetScheduleEntry findMatchingScheduleEntry(

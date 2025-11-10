@@ -73,15 +73,9 @@ export function PetVisitsSection({ pet }: PetVisitsSectionProps) {
 					</button>
 
 					{expanded && (
-						<div className='mt-3 space-y-3'>
+						<div className='mt-2 space-y-2'>
 							{sortedVisits.map((visit) => (
-								<VisitCard
-									key={visit.id}
-									title='Visit'
-									pet={pet}
-									visit={visit}
-									showButton={false}
-								/>
+								<VisitCard key={visit.id} visit={visit} />
 							))}
 						</div>
 					)}

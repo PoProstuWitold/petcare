@@ -2,6 +2,7 @@ import { ProtectedHeader } from '../components/ProtectedHeader'
 import { VetProfileCard } from '../components/vet/VetProfileCard'
 import { VetScheduleCard } from '../components/vet/VetScheduleCard'
 import { VetTimeOffCard } from '../components/vet/VetTimeOffCard'
+import { VetVisitsCard } from '../components/vet/VetVisitsCard'
 import { useAuth } from '../context/AuthContext'
 
 export function VetPage() {
@@ -33,6 +34,7 @@ export function VetPage() {
 				description='Manage your profile, schedule, and time off.'
 			/>
 			<div className='page-content space-y-6'>
+				<VetVisitsCard />
 				<VetProfileCard />
 				<VetScheduleCard />
 				<VetTimeOffCard />
