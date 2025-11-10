@@ -67,6 +67,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
                         // Public status/health endpoints
                         .requestMatchers("/api/status/**").permitAll()
+                        // Swagger / OpenAPI documentation
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
                         // Admin-only areas
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -74,7 +80,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/vets/me/**").hasRole("VET")
                         // Vet listing – available for authenticated domain users
                         .requestMatchers("/api/vets/**").hasAnyRole("USER", "VET", "ADMIN")
-                        // Pets API – any authenticated domain role; ownership będzie sprawdzane później w guardach
+                        // Pets API – any authenticated domain role; ownership will be validated in guards
                         .requestMatchers("/api/pets/**").hasAnyRole("USER", "VET", "ADMIN")
                         // Everything else does not require authentication
                         .anyRequest().permitAll()
