@@ -65,7 +65,7 @@ export function HomePage() {
 						<div className='absolute -inset-4 rounded-3xl bg-sky-100/60 blur-xl' />
 						<VisitCard
 							demo
-							title='Visit Card - Vet Preview'
+							title='Visit Card - Preview'
 							visit={mockVisit}
 						/>
 					</div>
