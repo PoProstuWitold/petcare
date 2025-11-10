@@ -1,11 +1,17 @@
 import {
 	FaClipboardList,
-	FaClock,
-	FaPaw,
+	FaFileMedical,
+	FaNotesMedical,
+	FaPills,
+	FaStickyNote,
+	FaSyringe,
 	FaUser,
 	FaUserMd
 } from 'react-icons/fa'
+import { formatDateTimePl } from '../../utils/date'
 import type { MedicalRecord } from '../../utils/types'
+import { Card, CardBody, CardDivider, SectionBadge } from '../ui/Card'
+import { StatusPill, visitStatusColor } from '../ui/StatusPill'
 
 type Props = {
 	record: MedicalRecord
@@ -16,132 +22,138 @@ export function MedicalRecordCard({ record: r }: Props) {
 	const visitReason = r.visit.reason || '—'
 	const visitNotes = r.visit.notes
 	const recordNotes = r.notes
+	const titleText = r.title || 'Medical Record'
+	const dateTime = formatDateTimePl(r.visit.date, r.visit.startTime)
 
 	return (
-		<div className='space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm'>
-			{/* CONTEXT SECTION */}
-			<section className='rounded-xl border border-slate-200 bg-slate-50/70 backdrop-blur-sm p-4 space-y-4'>
-				<header className='flex items-center gap-2'>
-					<span className='inline-flex items-center rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-slate-700'>
-						CONTEXT
-					</span>
-					<h3 className='text-sm font-semibold text-slate-800'>
-						Visit / Pet / Owner / Vet
-					</h3>
-				</header>
-				<div className='grid grid-cols-2 gap-4 text-xs'>
-					<div className='flex flex-col gap-1'>
-						<p className='font-medium text-slate-800 flex items-center gap-1'>
-							<FaPaw className='text-slate-500' /> Pet
-						</p>
-						<p className='text-slate-700'>
-							{r.pet.name} · {r.pet.species}
+		<Card>
+			<CardBody className='space-y-8 md:space-y-10'>
+				{/* HEADER */}
+				<div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
+					<div className='space-y-1'>
+						<h2 className='flex items-center gap-2 text-xl font-semibold tracking-tight text-slate-900 md:text-2xl'>
+							<FaFileMedical className='text-sky-600' />{' '}
+							{titleText}
+						</h2>
+						<p className='text-[11px] md:text-xs text-slate-500 font-medium'>
+							{r.pet.name} · {r.pet.species} · {dateTime}
 						</p>
 					</div>
-					<div className='flex flex-col gap-1'>
-						<p className='font-medium text-slate-800 flex items-center gap-1'>
-							<FaUser className='text-slate-500' /> Owner
-						</p>
-						<p className='text-slate-700'>{ownerName}</p>
-					</div>
-					<div className='flex flex-col gap-1'>
-						<p className='font-medium text-slate-800 flex items-center gap-1'>
-							<FaUserMd className='text-slate-500' /> Veterinarian
-						</p>
-						<p className='text-slate-700'>
-							{r.vetProfile.fullName}
-						</p>
-					</div>
-					<div className='flex flex-col gap-1'>
-						<p className='font-medium text-slate-800 flex items-center gap-1'>
-							<FaClock className='text-slate-500' /> Date & Time
-						</p>
-						<p className='text-slate-700'>
-							{r.visit.date} · {r.visit.startTime?.slice(0, 5)}
-						</p>
-					</div>
+					<StatusPill
+						color={
+							visitStatusColor[r.visit.status] ||
+							visitStatusColor.DEFAULT
+						}
+					>
+						{r.visit.status}
+					</StatusPill>
 				</div>
-				<div className='grid grid-cols-1 md:grid-cols-2 gap-4 text-xs'>
-					<div className='flex flex-col gap-1'>
-						<p className='font-medium text-slate-800 flex items-center gap-1'>
-							<FaClipboardList className='text-slate-500' />{' '}
-							Status
-						</p>
-						<p className='text-slate-700'>{r.visit.status}</p>
-					</div>
-					<div className='flex flex-col gap-1'>
-						<p className='font-medium text-slate-800 flex items-center gap-1'>
-							<FaClipboardList className='text-slate-500' />{' '}
-							Reason
-						</p>
-						<p className='text-slate-700'>{visitReason}</p>
-					</div>
-				</div>
-				{visitNotes && (
-					<div className='flex flex-col gap-1 text-xs'>
-						<p className='font-medium text-slate-800 flex items-center gap-1'>
-							<FaClipboardList className='text-slate-500' /> Visit
-							Notes
-						</p>
-						<p className='text-slate-600'>{visitNotes}</p>
-					</div>
-				)}
-			</section>
 
-			{/* MEDICAL RECORD SECTION */}
-			<section className='space-y-4 rounded-xl border border-sky-200 bg-sky-50/60 p-4'>
-				<header className='flex items-center gap-2'>
-					<span className='inline-flex items-center rounded-full bg-sky-200 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-sky-800'>
-						MEDICAL RECORD
-					</span>
-					<h3 className='text-sm font-semibold text-sky-900'>
-						Details
-					</h3>
-				</header>
-				<div className='grid grid-cols-2 gap-4 text-xs text-slate-700'>
-					<div className='flex flex-col gap-1'>
-						<p className='font-medium text-sky-900 flex items-center gap-1'>
-							<FaClipboardList className='text-sky-600' /> Title
-						</p>
-						<p>{r.title || '—'}</p>
+				<CardDivider />
+
+				{/* CONTEXT (no duplicate pet/date/time) */}
+				<section className='space-y-5'>
+					<div className='flex items-center gap-2 flex-wrap'>
+						<SectionBadge>CONTEXT</SectionBadge>
+						<h3 className='text-base md:text-lg font-semibold text-slate-800'>
+							Owner · Veterinarian · Reason
+						</h3>
 					</div>
-					<div className='flex flex-col gap-1'>
-						<p className='font-medium text-sky-900 flex items-center gap-1'>
-							<FaClipboardList className='text-sky-600' />{' '}
-							Diagnosis
-						</p>
-						<p>{r.diagnosis || '—'}</p>
+					<div className='grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs md:text-sm'>
+						<div className='flex flex-col gap-0.5'>
+							<p className='flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600'>
+								<FaUser className='text-slate-500' /> Owner
+							</p>
+							<p className='text-slate-800 font-medium'>
+								{ownerName}
+							</p>
+						</div>
+						<div className='flex flex-col gap-0.5'>
+							<p className='flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600'>
+								<FaUserMd className='text-slate-500' />{' '}
+								Veterinarian
+							</p>
+							<p className='text-slate-800 font-medium'>
+								{r.vetProfile.fullName}
+							</p>
+						</div>
+						<div className='flex flex-col gap-0.5 sm:col-span-2'>
+							<p className='flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600'>
+								<FaClipboardList className='text-slate-500' />{' '}
+								Reason
+							</p>
+							<p className='text-slate-800 font-medium line-clamp-3'>
+								{visitReason}
+							</p>
+						</div>
+						{visitNotes && (
+							<div className='flex flex-col gap-0.5 sm:col-span-2'>
+								<p className='flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600'>
+									<FaClipboardList className='text-slate-500' />{' '}
+									Visit Notes
+								</p>
+								<p className='text-slate-700 line-clamp-4'>
+									{visitNotes}
+								</p>
+							</div>
+						)}
 					</div>
-					<div className='flex flex-col gap-1'>
-						<p className='font-medium text-sky-900 flex items-center gap-1'>
-							<FaClipboardList className='text-sky-600' />{' '}
-							Treatment
-						</p>
-						<p>{r.treatment || '—'}</p>
+				</section>
+
+				<CardDivider />
+
+				{/* RECORD DETAILS */}
+				<section className='space-y-5'>
+					<div className='flex items-center gap-2 flex-wrap'>
+						<SectionBadge tone='sky'>DETAILS</SectionBadge>
+						<h3 className='text-base md:text-lg font-semibold text-sky-900'>
+							Record Details
+						</h3>
 					</div>
-					<div className='flex flex-col gap-1'>
-						<p className='font-medium text-sky-900 flex items-center gap-1'>
-							<FaClipboardList className='text-sky-600' />{' '}
-							Prescriptions
-						</p>
-						<p>{r.prescriptions || '—'}</p>
+					<div className='grid grid-cols-1 md:grid-cols-2 gap-4 text-xs md:text-sm bg-sky-50/50 rounded-xl p-4 border border-sky-100'>
+						<div className='flex flex-col gap-0.5'>
+							<p className='flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-sky-700'>
+								<FaNotesMedical className='text-sky-600' />{' '}
+								Diagnosis
+							</p>
+							<p className='text-slate-800 font-medium line-clamp-4'>
+								{r.diagnosis || '—'}
+							</p>
+						</div>
+						<div className='flex flex-col gap-0.5'>
+							<p className='flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-sky-700'>
+								<FaSyringe className='text-sky-600' /> Treatment
+							</p>
+							<p className='text-slate-800 font-medium whitespace-pre-line line-clamp-6'>
+								{r.treatment || '—'}
+							</p>
+						</div>
+						<div className='flex flex-col gap-0.5'>
+							<p className='flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-sky-700'>
+								<FaPills className='text-sky-600' />{' '}
+								Prescriptions
+							</p>
+							<p className='text-slate-800 font-medium whitespace-pre-line line-clamp-6'>
+								{r.prescriptions || '—'}
+							</p>
+						</div>
+						<div className='flex flex-col gap-0.5'>
+							<p className='flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-sky-700'>
+								<FaStickyNote className='text-sky-600' /> Record
+								Notes
+							</p>
+							<p className='text-slate-800 font-medium whitespace-pre-line line-clamp-6'>
+								{recordNotes || '—'}
+							</p>
+						</div>
 					</div>
-				</div>
-				{recordNotes && (
-					<div className='flex flex-col gap-1 text-xs'>
-						<p className='font-medium text-sky-900 flex items-center gap-1'>
-							<FaClipboardList className='text-sky-600' /> Record
-							Notes
-						</p>
-						<p className='text-slate-600'>{recordNotes}</p>
+					<div className='flex justify-end pt-1'>
+						<span className='rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-slate-700'>
+							ID #{r.id}
+						</span>
 					</div>
-				)}
-				<div className='flex justify-end'>
-					<span className='rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-slate-700'>
-						ID #{r.id}
-					</span>
-				</div>
-			</section>
-		</div>
+				</section>
+			</CardBody>
+		</Card>
 	)
 }

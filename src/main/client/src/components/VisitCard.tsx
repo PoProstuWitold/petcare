@@ -1,9 +1,27 @@
 import { useEffect, useState } from 'react'
+import {
+	FaCheckCircle,
+	FaClipboardList,
+	FaClock,
+	FaMapMarkerAlt,
+	FaPaw,
+	FaStickyNote,
+	FaUser,
+	FaUserMd
+} from 'react-icons/fa'
 import { fetchMedicalRecordByVisit } from '../api/medicalRecords'
 import { useAuth } from '../context/AuthContext'
 import type { Visit, VisitStatus } from '../utils/types.ts'
 import { Button } from './ui/Button'
-import { StatusPill } from './ui/StatusPill'
+import {
+	Card,
+	CardActions,
+	CardBody,
+	CardDivider,
+	InfoGrid,
+	InfoItem
+} from './ui/Card'
+import { StatusPill, visitStatusColor } from './ui/StatusPill'
 
 type VisitCardProps = {
 	title?: string
@@ -20,11 +38,9 @@ function formatAge(
 	birthYear?: number | null
 ): string | null {
 	const now = new Date()
-
 	let year: number | null = null
 	let month = 0
 	let day = 1
-
 	if (birthDate) {
 		const [y, m, d] = birthDate.split('-').map(Number)
 		if (!Number.isNaN(y) && !Number.isNaN(m) && !Number.isNaN(d)) {
@@ -35,16 +51,13 @@ function formatAge(
 	} else if (birthYear) {
 		year = birthYear
 	}
-
 	if (year === null) return null
-
 	const birth = new Date(year, month, day)
 	let age = now.getFullYear() - birth.getFullYear()
 	const mDiff = now.getMonth() - birth.getMonth()
 	if (mDiff < 0 || (mDiff === 0 && now.getDate() < birth.getDate())) {
 		age--
 	}
-
 	if (age <= 0) return '< 1 year'
 	if (age === 1) return '1 year'
 	return `${age} years`
@@ -52,33 +65,14 @@ function formatAge(
 
 function formatDatePl(date?: string, time?: string): string {
 	if (!date || !date.includes('-')) {
-		// fallback demo
 		return '10.11.2025 · 14:30'
 	}
-
 	const [y, m, d] = date.split('-')
 	const day = d?.padStart(2, '0')
 	const month = m?.padStart(2, '0')
 	const year = y
-
 	const hour = time ? time.slice(0, 5) : '14:30'
-
 	return `${day}.${month}.${year} · ${hour}`
-}
-
-function statusColor(status?: VisitStatus): string {
-	switch (status) {
-		case 'SCHEDULED':
-			return 'bg-sky-200 text-sky-700 ring-sky-200'
-		case 'CONFIRMED':
-			return 'bg-emerald-200 text-emerald-700 ring-emerald-200'
-		case 'COMPLETED':
-			return 'bg-slate-900 text-slate-50 ring-slate-900/10'
-		case 'CANCELLED':
-			return 'bg-rose-200 text-rose-700 ring-rose-200'
-		default:
-			return 'bg-slate-200 text-slate-700 ring-slate-200'
-	}
 }
 
 export function VisitCard({
@@ -112,16 +106,13 @@ export function VisitCard({
 	}, [accessToken, visit?.id])
 
 	const ageText = formatAge(visit.pet.birthDate, visit.pet.birthYear)
-
-	const generatedMeta = [
+	const metaParts = [
 		visit.pet.species,
 		visit.pet.sex,
 		ageText,
 		`${visit.pet.weight} kg`
-	]
-		.filter(Boolean)
-		.join(' · ')
-
+	].filter(Boolean)
+	const generatedMeta = metaParts.join(' · ')
 	const displayDateTime = formatDatePl(visit?.date, visit?.startTime)
 	const address = 'PetCare Clinic'
 
@@ -135,12 +126,10 @@ export function VisitCard({
 		setDraftStatus(visit.status)
 		setIsEditingStatus(true)
 	}
-
 	const handleCancelEdit = () => {
 		setIsEditingStatus(false)
 		setDraftStatus(visit?.status)
 	}
-
 	const handleSaveStatus = () => {
 		if (!visit || !draftStatus || !onStatusChangeRequest) return
 		onStatusChangeRequest(draftStatus)
@@ -148,151 +137,156 @@ export function VisitCard({
 	}
 
 	return (
-		<div
-			className={`relative rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm ${!demo ? 'shadow-lg backdrop-blur-md' : ''}`}
-		>
-			{title && (
-				<p className='mb-4 text-xs font-semibold uppercase tracking-wide text-sky-700'>
-					{title}
-				</p>
-			)}
+		<Card className={`relative ${!demo ? 'shadow-sm' : ''}`}>
+			<CardBody className='space-y-4'>
+				{title && (
+					<p className='mb-2 text-[11px] font-semibold uppercase tracking-wide text-sky-700'>
+						{title}
+					</p>
+				)}
 
-			<div className='space-y-4 text-sm'>
-				<div className='flex items-start justify-between gap-3'>
+				<header className='flex items-start justify-between gap-3'>
 					<div>
-						<p className='text-sm font-semibold text-slate-900'>
+						<p className='text-sm font-semibold text-slate-900 flex items-center gap-2'>
+							<FaPaw className='text-slate-500' />{' '}
 							{visit.pet.name}
 						</p>
 						<p className='text-xs text-slate-500'>
 							{generatedMeta}
 						</p>
 					</div>
-
 					{enableStatusEditing && isEditingStatus ? (
-						<div className='flex items-center gap-2'>
-							<select
-								className='rounded-full border border-slate-300 bg-white px-2 py-1 text-xs text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500'
-								value={draftStatus}
-								onChange={(e) =>
-									setDraftStatus(
-										e.target.value as VisitStatus
-									)
-								}
-							>
-								<option value='SCHEDULED'>SCHEDULED</option>
-								<option value='CONFIRMED'>CONFIRMED</option>
-								<option value='COMPLETED'>COMPLETED</option>
-								<option value='CANCELLED'>CANCELLED</option>
-							</select>
-						</div>
+						<select
+							className='rounded-full border border-slate-300 bg-white px-2 py-1 text-xs text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500'
+							value={draftStatus}
+							onChange={(e) =>
+								setDraftStatus(e.target.value as VisitStatus)
+							}
+						>
+							<option value='SCHEDULED'>SCHEDULED</option>
+							<option value='CONFIRMED'>CONFIRMED</option>
+							<option value='COMPLETED'>COMPLETED</option>
+							<option value='CANCELLED'>CANCELLED</option>
+						</select>
 					) : (
-						<StatusPill color={statusColor(visit.status)}>
+						<StatusPill
+							color={
+								visitStatusColor[visit.status] ||
+								visitStatusColor.DEFAULT
+							}
+						>
 							{visit.status}
 						</StatusPill>
 					)}
-				</div>
+				</header>
 
-				<div className='grid grid-cols-2 gap-3 text-xs text-slate-600'>
-					<div>
-						<p className='font-medium text-slate-800'>Owner</p>
-						<p>{visit.pet.ownerFullName}</p>
-					</div>
-					<div>
-						<p className='font-medium text-slate-800'>
-							General Pet Notes
-						</p>
-						<p>{visit.pet.notes || 'No notes'}</p>
-					</div>
-					<div>
-						<p className='font-medium text-slate-800'>
-							Veterinarian
-						</p>
-						<p>{visit.vetFullName}</p>
-					</div>
-					<div>
-						<p className='font-medium text-slate-800'>
-							Date & Time
-						</p>
-						<p>{displayDateTime}</p>
-					</div>
-					<div>
-						<p className='font-medium text-slate-800'>Reason</p>
-						<p>{visit.reason}</p>
-					</div>
-					<div>
-						<p className='font-medium text-slate-800'>Address</p>
-						<p>{address}</p>
-					</div>
-				</div>
+				<InfoGrid className='text-xs text-slate-600'>
+					<InfoItem
+						icon={<FaUser className='text-slate-500' />}
+						label='Owner'
+						value={visit.pet.ownerFullName}
+					/>
+					<InfoItem
+						icon={<FaStickyNote className='text-slate-500' />}
+						label='General Notes'
+						value={visit.pet.notes || 'No notes'}
+					/>
+					<InfoItem
+						icon={<FaUserMd className='text-slate-500' />}
+						label='Veterinarian'
+						value={visit.vetFullName}
+					/>
+					<InfoItem
+						icon={<FaClock className='text-slate-500' />}
+						label='Date & Time'
+						value={displayDateTime}
+					/>
+					<InfoItem
+						icon={<FaClipboardList className='text-slate-500' />}
+						label='Reason'
+						value={visit.reason}
+					/>
+					<InfoItem
+						icon={<FaMapMarkerAlt className='text-slate-500' />}
+						label='Address'
+						value={address}
+					/>
+				</InfoGrid>
 
 				{visit?.notes && (
-					<div className='text-xs'>
-						<p className='font-medium text-slate-800'>
-							Visit Notes
+					<div className='space-y-1 text-xs'>
+						<p className='font-medium flex items-center gap-1 text-slate-800'>
+							<FaStickyNote className='text-slate-500' /> Visit
+							Notes
 						</p>
-						<p className='text-xs text-slate-600'>{visit.notes}</p>
+						<p className='text-slate-600'>{visit.notes}</p>
 					</div>
 				)}
 
 				{hasVetActions && visit && (
-					<div className='mt-3 flex flex-wrap gap-2'>
-						{enableStatusEditing && !isEditingStatus && (
-							<Button
-								type='button'
-								variant='ghost'
-								onClick={handleStartEdit}
-							>
-								Edit status
-							</Button>
-						)}
-
-						{enableStatusEditing && isEditingStatus && (
-							<>
-								<Button
-									type='button'
-									variant='secondary'
-									onClick={handleSaveStatus}
-								>
-									Save status
-								</Button>
+					<div className='space-y-2'>
+						<CardDivider />
+						<CardActions>
+							{enableStatusEditing && !isEditingStatus && (
 								<Button
 									type='button'
 									variant='ghost'
-									onClick={handleCancelEdit}
+									onClick={handleStartEdit}
+									small
 								>
-									Cancel
+									Edit status
 								</Button>
-							</>
-						)}
-
-						{onCreateMedicalRecord && !medicalRecordExists && (
-							<Button
-								type='button'
-								variant='ghost'
-								onClick={onCreateMedicalRecord}
-							>
-								Create medical record
-							</Button>
-						)}
-
-						{onCreateMedicalRecord && medicalRecordExists && (
-							<span className='text-[10px] font-medium text-slate-500'>
-								Record already created
-							</span>
-						)}
-
-						{onViewPetDetails && (
-							<Button
-								type='button'
-								variant='ghost'
-								onClick={onViewPetDetails}
-							>
-								View pet details
-							</Button>
-						)}
+							)}
+							{enableStatusEditing && isEditingStatus && (
+								<>
+									<Button
+										type='button'
+										variant='secondary'
+										onClick={handleSaveStatus}
+										small
+									>
+										Save status
+									</Button>
+									<Button
+										type='button'
+										variant='ghost'
+										onClick={handleCancelEdit}
+										small
+									>
+										Cancel
+									</Button>
+								</>
+							)}
+							{onCreateMedicalRecord && !medicalRecordExists && (
+								<Button
+									type='button'
+									variant='ghost'
+									onClick={onCreateMedicalRecord}
+									small
+								>
+									Create medical record
+								</Button>
+							)}
+							{onCreateMedicalRecord && medicalRecordExists && (
+								<span className='inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200'>
+									<FaCheckCircle className='text-emerald-600' />{' '}
+									Record already created
+								</span>
+							)}
+							{onViewPetDetails && (
+								<Button
+									type='button'
+									variant='ghost'
+									onClick={onViewPetDetails}
+									small
+								>
+									View pet details
+								</Button>
+							)}
+						</CardActions>
 					</div>
 				)}
-			</div>
-		</div>
+			</CardBody>
+		</Card>
 	)
 }

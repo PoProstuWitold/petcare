@@ -2,13 +2,19 @@ import { useEffect, useState } from 'react'
 import {
 	FaClipboardList,
 	FaClock,
+	FaFileMedical,
+	FaNotesMedical,
 	FaPaw,
+	FaPills,
+	FaStickyNote,
+	FaSyringe,
 	FaUser,
 	FaUserMd
 } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import { createMedicalRecord } from '../../api/medicalRecords'
 import { useAuth } from '../../context/AuthContext'
+import { formatDateTimePl } from '../../utils/date'
 import { authHeaders, httpJson } from '../../utils/http'
 import type {
 	MedicalRecordForm as MedicalRecordPayload,
@@ -16,6 +22,7 @@ import type {
 } from '../../utils/types'
 import { Alert } from '../ui/Alert'
 import { Button } from '../ui/Button'
+import { StatusPill, visitStatusColor } from '../ui/StatusPill'
 
 interface Props {
 	visitId: number
@@ -133,21 +140,30 @@ export function MedicalRecordForm({ visitId, onCreated, defaultTitle }: Props) {
 								Time
 							</p>
 							<p className='text-slate-700'>
-								{visit.date} · {visit.startTime.slice(0, 5)}
+								{formatDateTimePl(visit.date, visit.startTime)}
 							</p>
 						</div>
 					</div>
 					<div className='grid grid-cols-1 md:grid-cols-2 gap-4 text-xs'>
 						<div className='flex flex-col gap-1'>
 							<p className='font-medium text-slate-800 flex items-center gap-1'>
-								<FaClipboardList className='text-slate-500' />{' '}
+								<FaClipboardList className='text-slate-500' />
 								Status
 							</p>
-							<p className='text-slate-700'>{visit.status}</p>
+							<p className='text-slate-700'>
+								<StatusPill
+									color={
+										visitStatusColor[visit.status] ||
+										visitStatusColor.DEFAULT
+									}
+								>
+									{visit.status}
+								</StatusPill>
+							</p>
 						</div>
 						<div className='flex flex-col gap-1'>
 							<p className='font-medium text-slate-800 flex items-center gap-1'>
-								<FaClipboardList className='text-slate-500' />{' '}
+								<FaClipboardList className='text-slate-500' />
 								Reason
 							</p>
 							<p className='text-slate-700'>
@@ -184,22 +200,31 @@ export function MedicalRecordForm({ visitId, onCreated, defaultTitle }: Props) {
 							htmlFor='record-title'
 							className='text-xs font-medium flex items-center gap-1'
 						>
-							<FaClipboardList className='text-sky-600' /> Title
+							<FaFileMedical className='text-sky-600' /> Record
+							Title
 						</label>
 						<input
 							id='record-title'
 							name='title'
 							value={form.title || ''}
 							onChange={handleChange}
+							placeholder='e.g. Post-surgery follow-up'
+							aria-describedby='desc-title'
 							className='rounded border border-slate-300 px-2 py-1 text-sm focus:border-sky-500 focus:ring-sky-500'
 						/>
+						<p
+							id='desc-title'
+							className='mt-1 text-[11px] text-slate-600 leading-snug pl-2 border-l border-slate-200'
+						>
+							Short name summarizing the record.
+						</p>
 					</div>
 					<div className='flex flex-col gap-1'>
 						<label
 							htmlFor='record-diagnosis'
 							className='text-xs font-medium flex items-center gap-1'
 						>
-							<FaClipboardList className='text-sky-600' />{' '}
+							<FaNotesMedical className='text-sky-600' />{' '}
 							Diagnosis
 						</label>
 						<input
@@ -207,40 +232,62 @@ export function MedicalRecordForm({ visitId, onCreated, defaultTitle }: Props) {
 							name='diagnosis'
 							value={form.diagnosis || ''}
 							onChange={handleChange}
+							placeholder='e.g. Conjunctivitis'
+							aria-describedby='desc-diagnosis'
 							className='rounded border border-slate-300 px-2 py-1 text-sm focus:border-sky-500 focus:ring-sky-500'
 						/>
+						<p
+							id='desc-diagnosis'
+							className='mt-1 text-[11px] text-slate-600 leading-snug pl-2 border-l border-slate-200'
+						>
+							Clinical diagnosis or suspected condition.
+						</p>
 					</div>
 					<div className='flex flex-col gap-1'>
 						<label
 							htmlFor='record-treatment'
 							className='text-xs font-medium flex items-center gap-1'
 						>
-							<FaClipboardList className='text-sky-600' />{' '}
-							Treatment
+							<FaSyringe className='text-sky-600' /> Treatment
 						</label>
 						<input
 							id='record-treatment'
 							name='treatment'
 							value={form.treatment || ''}
 							onChange={handleChange}
+							placeholder='e.g. Saline eye rinsing'
+							aria-describedby='desc-treatment'
 							className='rounded border border-slate-300 px-2 py-1 text-sm focus:border-sky-500 focus:ring-sky-500'
 						/>
+						<p
+							id='desc-treatment'
+							className='mt-1 text-[11px] text-slate-600 leading-snug pl-2 border-l border-slate-200'
+						>
+							Procedures performed or care instructions.
+						</p>
 					</div>
 					<div className='flex flex-col gap-1'>
 						<label
 							htmlFor='record-prescriptions'
 							className='text-xs font-medium flex items-center gap-1'
 						>
-							<FaClipboardList className='text-sky-600' />{' '}
-							Prescriptions
+							<FaPills className='text-sky-600' /> Prescriptions
 						</label>
 						<input
 							id='record-prescriptions'
 							name='prescriptions'
 							value={form.prescriptions || ''}
 							onChange={handleChange}
+							placeholder='e.g. Dexa eye drops – 2x daily for 5 days'
+							aria-describedby='desc-prescriptions'
 							className='rounded border border-slate-300 px-2 py-1 text-sm focus:border-sky-500 focus:ring-sky-500'
 						/>
+						<p
+							id='desc-prescriptions'
+							className='mt-1 text-[11px] text-slate-600 leading-snug pl-2 border-l border-slate-200'
+						>
+							List medications with dosage and duration.
+						</p>
 					</div>
 				</div>
 				<div className='flex flex-col gap-1'>
@@ -248,7 +295,8 @@ export function MedicalRecordForm({ visitId, onCreated, defaultTitle }: Props) {
 						htmlFor='record-notes'
 						className='text-xs font-medium flex items-center gap-1'
 					>
-						<FaClipboardList className='text-sky-600' /> Notes
+						<FaStickyNote className='text-sky-600' /> Additional
+						Notes
 					</label>
 					<textarea
 						id='record-notes'
@@ -256,8 +304,16 @@ export function MedicalRecordForm({ visitId, onCreated, defaultTitle }: Props) {
 						value={form.notes || ''}
 						onChange={handleChange}
 						rows={4}
+						placeholder='e.g. Monitor redness, re-check in 7 days'
+						aria-describedby='desc-notes'
 						className='rounded border border-slate-300 px-2 py-1 text-sm focus:border-sky-500 focus:ring-sky-500'
 					/>
+					<p
+						id='desc-notes'
+						className='mt-1 text-[11px] text-slate-600 leading-snug pl-2 border-l border-slate-200'
+					>
+						Any owner guidance or internal remarks.
+					</p>
 				</div>
 				<div className='flex gap-2 pt-1'>
 					<Button type='submit' variant='primary' disabled={loading}>
