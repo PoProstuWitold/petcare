@@ -30,6 +30,8 @@ dependencies {
     // JPA + DB
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     runtimeOnly 'com.h2database:h2:2.2.224'
+    implementation 'org.flywaydb:flyway-database-postgresql'
+    implementation 'org.postgresql:postgresql:42.7.8'
     implementation 'org.flywaydb:flyway-core'
 
     // Validation
@@ -51,8 +53,6 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.34'
     testCompileOnly 'org.projectlombok:lombok:1.18.34'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
-
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
 test {

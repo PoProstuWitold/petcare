@@ -1,0 +1,37 @@
+services:
+  petcare_db:
+    image: postgres:17
+    container_name: petcare_db
+    environment:
+      POSTGRES_DB: petcare
+      POSTGRES_USER: petcare
+      POSTGRES_PASSWORD: petcare
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - petcare-net
+
+  petcare:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SKIP_TESTS: "true"
+    container_name: petcare
+    restart: unless-stopped
+    depends_on:
+      - petcare_db
+    ports:
+      - "8080:8080"
+    networks:
+      - petcare-net
+
+volumes:
+  pgdata:
+
+networks:
+  petcare-net:
+    driver: bridge
