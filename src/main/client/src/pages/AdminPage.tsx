@@ -1,4 +1,7 @@
-import { ManageUsersCard } from '../components/admin/ManageUsersCard'
+import { ManageMedicalRecords } from '../components/admin/ManageMedicalRecords'
+import { ManagePets } from '../components/admin/ManagePets'
+import { ManageUsers } from '../components/admin/ManageUsers'
+import { ManageVisits } from '../components/admin/ManageVisits'
 import { ProtectedHeader } from '../components/ProtectedHeader'
 import { useAuth } from '../context/AuthContext'
 
@@ -16,8 +19,11 @@ export function AdminPage() {
 				title={'Admin Panel'}
 				description={'Manage PetCare system settings and users.'}
 			/>
-			<div className='page-content space-y-6'>
-				<ManageUsersCard />
+			<div className='page-content'>
+				<ManageUsers />
+				<ManagePets />
+				<ManageVisits />
+				<ManageMedicalRecords />
 			</div>
 		</div>
 	)

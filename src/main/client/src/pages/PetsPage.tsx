@@ -110,9 +110,10 @@ export function PetsPage() {
 			setIsCreating(false)
 
 			toast.success('Pet deleted successfully.')
-		} catch (error) {
+			// biome-ignore lint: no needed
+		} catch (error: any) {
 			console.error('ErrorHandler while deleting pet', error)
-			toast.error('Unexpected error while deleting pet.')
+			toast.error(error.message)
 		}
 	}
 

@@ -116,3 +116,25 @@ export type MedicalRecordForm = {
 	prescriptions?: string
 	notes?: string
 }
+
+export type User = {
+	id: number
+	username: string
+	email: string
+	fullName: string
+	roles: Role[]
+}
+
+export type NewUserForm = {
+	username: string
+	email: string
+	fullName: string
+	password: string
+	roles: Role[]
+}
+
+export type PasswordChangePayload = {
+	newPassword: string
+}
+
+export type Role = 'USER' | 'VET' | 'ADMIN'

@@ -5,6 +5,7 @@ import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -24,6 +25,25 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiErrorResponse> handleDataIntegrity(DataIntegrityViolationException ex, HttpServletRequest request) {
+        String rootMessage = ex.getRootCause() != null ? ex.getRootCause().getMessage() : ex.getMessage();
+        String message;
+        if (rootMessage != null && rootMessage.contains("FK_VET_PROFILES_ON_USER")) {
+            message = "Cannot delete user: a veterinarian profile still references this account.";
+        } else if (rootMessage != null && rootMessage.contains("FK_PETS_ON_OWNER")) {
+            message = "Cannot delete user: pets are still assigned to this owner.";
+        } else if (rootMessage != null && rootMessage.toLowerCase().contains("users") && rootMessage.toLowerCase().contains("unique")) {
+            message = "User with the same username or email already exists.";
+        } else if (rootMessage != null && rootMessage.contains("UK_")) {
+            message = "Unique constraint violated. A record with the same unique value already exists.";
+        } else {
+            message = "Data integrity violation – operation blocked by related data.";
+        }
+        ApiErrorResponse body = ApiErrorResponse.of(HttpStatus.CONFLICT, message, request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    }
 
     // --- Not Found (unified) ---
     @ExceptionHandler(NotFoundException.class)
