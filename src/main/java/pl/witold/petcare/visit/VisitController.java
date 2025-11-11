@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import pl.witold.petcare.dto.VisitResponseDto;
 import pl.witold.petcare.visit.commands.VisitCreateCommand;
 import pl.witold.petcare.visit.commands.VisitStatusUpdateCommand;
+import pl.witold.petcare.visit.commands.VisitPartialUpdateCommand;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -217,5 +218,44 @@ public class VisitController {
     public ResponseEntity<VisitResponseDto> getVisitById(@PathVariable Long visitId) {
         Visit visit = visitService.getById(visitId);
         return ResponseEntity.ok(VisitMapper.toDto(visit));
+    }
+
+    @Operation(
+            summary = "Delete visit",
+            description = "Deletes a visit by id. Admin/Vet only."
+    )
+    @ApiResponse(responseCode = "204", description = "Visit deleted successfully")
+    @ApiResponse(responseCode = "404", description = "Visit not found")
+    @DeleteMapping("/{visitId}")
+    public ResponseEntity<Void> deleteVisit(
+            @Parameter(description = "Visit id", example = "1")
+            @PathVariable Long visitId
+    ) {
+        visitService.deleteById(visitId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(
+            summary = "Update visit notes/reason",
+            description = "Updates editable fields (reason, notes) of a visit. Admin/Vet only."
+    )
+    @ApiResponse(responseCode = "200", description = "Visit updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = VisitResponseDto.class)))
+    @ApiResponse(responseCode = "404", description = "Visit not found")
+    @PatchMapping("/{visitId}")
+    public ResponseEntity<VisitResponseDto> updateVisitFields(
+            @Parameter(description = "Visit id", example = "1")
+            @PathVariable Long visitId,
+            @Valid
+            @RequestBody(
+                    description = "Partial update payload for visit reason/notes",
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = VisitPartialUpdateCommand.class)
+                    )
+            )
+            @org.springframework.web.bind.annotation.RequestBody VisitPartialUpdateCommand command
+    ) {
+        VisitResponseDto dto = visitService.updateVisitFields(visitId, command.reason(), command.notes());
+        return ResponseEntity.ok(dto);
     }
 }

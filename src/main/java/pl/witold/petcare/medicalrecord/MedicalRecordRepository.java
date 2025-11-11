@@ -16,4 +16,7 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Lo
 
     @EntityGraph(attributePaths = {"pet", "pet.owner", "vetProfile", "vetProfile.user", "vetProfile.specializations", "visit"})
     List<MedicalRecord> findByVetProfileIdOrderByCreatedAtDesc(Long vetProfileId);
+
+    @EntityGraph(attributePaths = {"pet", "pet.owner", "vetProfile", "vetProfile.user", "vetProfile.specializations", "visit"})
+    List<MedicalRecord> findAllByOrderByCreatedAtDesc();
 }

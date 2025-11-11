@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.witold.petcare.dto.MedicalRecordResponseDto;
 import pl.witold.petcare.medicalrecord.commands.MedicalRecordCreateCommand;
+import pl.witold.petcare.medicalrecord.commands.MedicalRecordUpdateCommand;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,5 +41,26 @@ public class MedicalRecordController {
     public ResponseEntity<MedicalRecordResponseDto> getByVisit(@PathVariable Long visitId) {
         Optional<MedicalRecordResponseDto> opt = medicalRecordService.getByVisitId(visitId);
         return opt.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<MedicalRecordResponseDto> update(
+            @PathVariable Long id,
+            @Valid @RequestBody MedicalRecordUpdateCommand command
+    ) {
+        MedicalRecordResponseDto updated = medicalRecordService.update(id, command);
+        return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        medicalRecordService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<List<MedicalRecordResponseDto>> getAll() {
+        List<MedicalRecordResponseDto> list = medicalRecordService.getAll();
+        return ResponseEntity.ok(list);
     }
 }

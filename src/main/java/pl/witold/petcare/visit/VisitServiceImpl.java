@@ -128,6 +128,23 @@ public class VisitServiceImpl implements VisitService {
         throw new IllegalArgumentException("You are not allowed to view this visit");
     }
 
+    @Override
+    public void deleteById(Long visitId) {
+        Visit v = visitRepository.findByIdWithRelations(visitId)
+                .orElseThrow(() -> new ResourceNotFoundException("Visit not found"));
+        visitRepository.delete(v);
+    }
+
+    @Override
+    public VisitResponseDto updateVisitFields(Long visitId, String reason, String notes) {
+        Visit visit = visitRepository
+                .findByIdWithRelations(visitId)
+                .orElseThrow(() -> new ResourceNotFoundException("Visit not found"));
+        if (reason != null) visit.setReason(reason);
+        if (notes != null) visit.setNotes(notes);
+        return VisitMapper.toDto(visit);
+    }
+
     private VetScheduleEntry findMatchingScheduleEntry(
             VetProfile vetProfile,
             LocalDate date,

@@ -77,7 +77,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         // Vet profile & schedule – only vets can manage their own data
-                        .requestMatchers("/api/vets/me/**").hasRole("VET")
+                        .requestMatchers("/api/vets/me/**").hasAnyRole("VET", "ADMIN")
                         // Vet listing – available for authenticated domain users
                         .requestMatchers("/api/vets/**").hasAnyRole("USER", "VET", "ADMIN")
                         // Pets API – any authenticated domain role; ownership will be validated in guards

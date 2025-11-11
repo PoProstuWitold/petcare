@@ -25,4 +25,8 @@ public interface VisitService {
     VisitResponseDto updateVisitStatus(Long visitId, VisitStatus status);
 
     Visit getById(Long visitId);
+
+    void deleteById(Long visitId);
+
+    VisitResponseDto updateVisitFields(Long visitId, String reason, String notes);
 }

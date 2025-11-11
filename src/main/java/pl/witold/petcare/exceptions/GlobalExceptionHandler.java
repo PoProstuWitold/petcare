@@ -151,4 +151,30 @@ public class GlobalExceptionHandler {
         ApiErrorResponse body = ApiErrorResponse.of(status, message, request.getRequestURI());
         return ResponseEntity.status(status).body(body);
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiErrorResponse> handleIllegalArgument(
+            IllegalArgumentException ex,
+            HttpServletRequest request
+    ) {
+        // Business rule violations -> 422, generic bad arguments -> 400
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        String msg = ex.getMessage();
+        if (msg != null) {
+            if (msg.contains("Medical record can be created only for confirmed or completed visits")
+                    || msg.contains("Requested time is outside vet working hours")
+                    || msg.contains("Selected time slot is already taken")
+                    || msg.contains("Visit date cannot be in the past")
+                    || msg.contains("Vet is on time off on the selected date")
+                    || msg.contains("You can only create records for your own visits")
+                    || msg.contains("You can only update records you created")
+                    || msg.contains("You can only delete records you created")
+            ) {
+                status = HttpStatus.UNPROCESSABLE_ENTITY; // 422 for domain rule violations
+            } else if (msg.contains("You are not allowed to view this visit")) {
+                status = HttpStatus.FORBIDDEN;
+            }
+        }
+        return buildResponse(status, ex, request);
+    }
 }

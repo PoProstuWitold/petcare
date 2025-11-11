@@ -126,7 +126,7 @@ export function ManageUsers() {
 				body: JSON.stringify(createForm)
 			})
 			resetForms()
-			loadUsers()
+			await loadUsers()
 		} catch (e) {
 			setError(e instanceof Error ? e.message : 'Failed to create user')
 		} finally {
@@ -193,7 +193,7 @@ export function ManageUsers() {
 				body: JSON.stringify(rolesDraft)
 			})
 			resetForms()
-			loadUsers()
+			await loadUsers()
 		} catch (e) {
 			setError(e instanceof Error ? e.message : 'Failed to update roles')
 		} finally {

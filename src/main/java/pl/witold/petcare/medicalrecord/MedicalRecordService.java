@@ -15,4 +15,10 @@ public interface MedicalRecordService {
     List<MedicalRecordResponseDto> getForCurrentVet();
 
     Optional<MedicalRecordResponseDto> getByVisitId(Long visitId);
+
+    MedicalRecordResponseDto update(Long id, pl.witold.petcare.medicalrecord.commands.MedicalRecordUpdateCommand command);
+
+    void delete(Long id);
+
+    List<MedicalRecordResponseDto> getAll();
 }

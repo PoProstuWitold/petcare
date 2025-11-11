@@ -96,8 +96,9 @@ export function VisitCard({
 	const [isOpen, setIsOpen] = useState(false)
 
 	useEffect(() => {
+		// Skip fetching for demo preview cards, when no auth token, no visit id, or when create action isn't relevant
+		if (demo || !accessToken || !visit?.id || !onCreateMedicalRecord) return
 		let ignore = false
-		if (!accessToken || !visit?.id) return
 		fetchMedicalRecordByVisit(visit.id, accessToken)
 			.then((r) => {
 				if (!ignore) setMedicalRecordExists(!!r)
@@ -106,7 +107,7 @@ export function VisitCard({
 		return () => {
 			ignore = true
 		}
-	}, [accessToken, visit?.id])
+	}, [demo, accessToken, visit?.id, onCreateMedicalRecord])
 
 	const ageText = formatAge(visit.pet.birthDate, visit.pet.birthYear)
 	const metaParts = [

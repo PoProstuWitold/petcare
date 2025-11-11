@@ -7,6 +7,7 @@ import pl.witold.petcare.dto.MedicalRecordResponseDto;
 import pl.witold.petcare.exceptions.DuplicateMedicalRecordException;
 import pl.witold.petcare.exceptions.ResourceNotFoundException;
 import pl.witold.petcare.medicalrecord.commands.MedicalRecordCreateCommand;
+import pl.witold.petcare.medicalrecord.commands.MedicalRecordUpdateCommand;
 import pl.witold.petcare.pet.Pet;
 import pl.witold.petcare.pet.PetAccessService;
 import pl.witold.petcare.pet.PetService;
@@ -15,6 +16,8 @@ import pl.witold.petcare.vet.service.VetProfileService;
 import pl.witold.petcare.visit.Visit;
 import pl.witold.petcare.visit.VisitRepository;
 import pl.witold.petcare.visit.VisitStatus;
+import pl.witold.petcare.security.CurrentUserService;
+import pl.witold.petcare.user.Role;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -36,6 +39,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     private final PetAccessService petAccessService;
     private final VetProfileService vetProfileService;
     private final VisitRepository visitRepository;
+    private final CurrentUserService currentUserService;
 
     @Override
     public MedicalRecordResponseDto create(MedicalRecordCreateCommand command) {
@@ -44,8 +48,9 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
         // Ensure only vet owning visit can create record and visit is COMPLETED or CONFIRMED
         VetProfile vetProfile = visit.getVetProfile();
-        VetProfile currentVetProfile = vetProfileService.getOrCreateCurrentVetProfile();
-        if (!vetProfile.getId().equals(currentVetProfile.getId())) {
+        boolean isAdmin = currentUserService.hasAnyRole(Role.ADMIN);
+        VetProfile currentVetProfile = isAdmin ? null : vetProfileService.getOrCreateCurrentVetProfile();
+        if (!isAdmin && (currentVetProfile == null || !vetProfile.getId().equals(currentVetProfile.getId()))) {
             throw new IllegalArgumentException("You can only create records for your own visits");
         }
 
@@ -99,5 +104,42 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     @Transactional(readOnly = true)
     public Optional<MedicalRecordResponseDto> getByVisitId(Long visitId) {
         return medicalRecordRepository.findByVisitId(visitId).map(MedicalRecordMapper::toDto);
+    }
+
+    @Override
+    public MedicalRecordResponseDto update(Long id, MedicalRecordUpdateCommand command) {
+        MedicalRecord record = medicalRecordRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Medical record not found"));
+        // For simplicity allow vet who owns visit or ADMIN (reuse vetProfile match)
+        boolean isAdmin = currentUserService.hasAnyRole(Role.ADMIN);
+        VetProfile currentVetProfile = isAdmin ? null : vetProfileService.getOrCreateCurrentVetProfile();
+        if (!isAdmin && (currentVetProfile == null || !record.getVetProfile().getId().equals(currentVetProfile.getId()))) {
+            throw new IllegalArgumentException("You can only update records you created");
+        }
+        if (command.title() != null) record.setTitle(command.title());
+        if (command.diagnosis() != null) record.setDiagnosis(command.diagnosis());
+        if (command.treatment() != null) record.setTreatment(command.treatment());
+        if (command.prescriptions() != null) record.setPrescriptions(command.prescriptions());
+        if (command.notes() != null) record.setNotes(command.notes());
+        return MedicalRecordMapper.toDto(record);
+    }
+
+    @Override
+    public void delete(Long id) {
+        MedicalRecord record = medicalRecordRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Medical record not found"));
+        boolean isAdmin = currentUserService.hasAnyRole(Role.ADMIN);
+        VetProfile currentVetProfile = isAdmin ? null : vetProfileService.getOrCreateCurrentVetProfile();
+        if (!isAdmin && (currentVetProfile == null || !record.getVetProfile().getId().equals(currentVetProfile.getId()))) {
+            throw new IllegalArgumentException("You can only delete records you created");
+        }
+        medicalRecordRepository.delete(record);
+    }
+
+    @Override
+    public List<MedicalRecordResponseDto> getAll() {
+        return medicalRecordRepository.findAllByOrderByCreatedAtDesc().stream()
+                .map(MedicalRecordMapper::toDto)
+                .toList();
     }
 }
