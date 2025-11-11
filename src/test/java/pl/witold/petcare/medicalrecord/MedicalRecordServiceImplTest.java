@@ -9,6 +9,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import pl.witold.petcare.exceptions.DuplicateMedicalRecordException;
 import pl.witold.petcare.exceptions.ResourceNotFoundException;
 import pl.witold.petcare.medicalrecord.commands.MedicalRecordCreateCommand;
+import pl.witold.petcare.security.CurrentUserService;
+import pl.witold.petcare.user.Role;
 import pl.witold.petcare.vet.VetProfile;
 import pl.witold.petcare.vet.service.VetProfileService;
 import pl.witold.petcare.visit.Visit;
@@ -26,6 +28,7 @@ class MedicalRecordServiceImplTest {
     @Mock private MedicalRecordRepository medicalRecordRepository;
     @Mock private VetProfileService vetProfileService;
     @Mock private VisitRepository visitRepository;
+    @Mock private CurrentUserService currentUserService;
 
     @InjectMocks private MedicalRecordServiceImpl medicalRecordService;
 
@@ -45,6 +48,7 @@ class MedicalRecordServiceImplTest {
         when(visitRepository.findByIdWithRelations(10L)).thenReturn(Optional.of(visit));
         when(visit.getVetProfile()).thenReturn(profile);
         when(vetProfileService.getOrCreateCurrentVetProfile()).thenReturn(profile);
+        when(currentUserService.hasAnyRole(Role.ADMIN)).thenReturn(false); // simulate non-admin vet
         when(profile.getId()).thenReturn(22L);
         when(visit.getStatus()).thenReturn(VisitStatus.SCHEDULED); // not allowed
         MedicalRecordCreateCommand cmd = new MedicalRecordCreateCommand(10L, null, null, null, null, null);
@@ -60,6 +64,7 @@ class MedicalRecordServiceImplTest {
         when(visitRepository.findByIdWithRelations(15L)).thenReturn(Optional.of(visit));
         when(visit.getVetProfile()).thenReturn(profile);
         when(vetProfileService.getOrCreateCurrentVetProfile()).thenReturn(profile);
+        when(currentUserService.hasAnyRole(Role.ADMIN)).thenReturn(false); // vet branch
         when(profile.getId()).thenReturn(30L);
         when(visit.getStatus()).thenReturn(VisitStatus.CONFIRMED); // allowed
         when(visit.getId()).thenReturn(15L);
