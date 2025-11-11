@@ -1,10 +1,18 @@
-import {useCallback, useEffect, useMemo, useState} from 'react'
-import {FaClipboardList, FaEdit, FaNotesMedical, FaPaw, FaPlus, FaSync, FaTrash} from 'react-icons/fa'
-import {useAuth} from '../../context/AuthContext'
-import {authHeaders, httpJson} from '../../utils/http'
-import type {MedicalRecord, Pet} from '../../utils/types'
-import {Alert} from '../ui/Alert'
-import {Button} from '../ui/Button'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+	FaClipboardList,
+	FaEdit,
+	FaNotesMedical,
+	FaPaw,
+	FaPlus,
+	FaSync,
+	FaTrash
+} from 'react-icons/fa'
+import { useAuth } from '../../context/AuthContext'
+import { authHeaders, httpJson } from '../../utils/http'
+import type { MedicalRecord, Pet } from '../../utils/types'
+import { Alert } from '../ui/Alert'
+import { Button } from '../ui/Button'
 
 type RecordFormState = {
 	visitId: string
@@ -61,10 +69,9 @@ export function ManageMedicalRecords() {
 		setError(null)
 		try {
 			// Fetch all records once
-            let list = await httpJson<MedicalRecord[]>(
-                '/api/medical-records',
-                {headers: authHeaders(accessToken)}
-            )
+			let list = await httpJson<MedicalRecord[]>('/api/medical-records', {
+				headers: authHeaders(accessToken)
+			})
 			// Client-side filters
 			if (filterVisitId) {
 				list = list.filter((r) => String(r.visit.id) === filterVisitId)
