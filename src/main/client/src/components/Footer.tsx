@@ -32,18 +32,14 @@ export function Footer() {
 							>
 								Source Code
 							</a>
-							<Link
-								to='/swagger-ui/index.html#'
+							<a
+								target='_blank'
+								href='/swagger-ui/index.html#'
 								className='font-semibold text-slate-100 transition-colors hover:text-sky-200 text-sm'
+								rel='noopener'
 							>
 								Docs
-							</Link>
-							<Link
-								to='/terms'
-								className='font-semibold text-slate-100 transition-colors hover:text-sky-200 text-sm'
-							>
-								Terms of Service
-							</Link>
+							</a>
 							<Link
 								to='/contact'
 								className='font-semibold text-slate-100 transition-colors hover:text-sky-200 text-sm'
