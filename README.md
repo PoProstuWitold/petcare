@@ -14,7 +14,7 @@ System do zarządzania wizytami u weterynarza i profilami zwierząt.
 1. [Opis, architektura i uruchomienie](#opis-architektura-i-uruchomienie)
 2. [Technologie](#technologie)
 3. [REST API](#rest-api)
-4. [Import / Export JSON](#import--export-json)
+4. [Serializacja danych](#serializacja-danych)
 5. [Zasady SOLID i czysty kod](#zasady-solid-i-czysty-kod)
 6. [Testy](#testy)
 7. [Docker](#docker)
@@ -102,7 +102,7 @@ Wszystkie endpointy mają prefiks `/api`. Dokumentacja OpenAPI jest dostępna w 
 
 ---
 
-## Import / Export JSON
+## Serializacja danych
 
 - **Endpointy:** 
   - `POST /api/pets/me/export`, 
