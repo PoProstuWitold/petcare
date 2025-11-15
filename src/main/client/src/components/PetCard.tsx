@@ -1,11 +1,17 @@
 import type { ReactNode } from 'react'
 import {
 	FaBirthdayCake,
+	FaCarrot,
+	FaCat,
+	FaDog,
+	FaOtter,
 	FaPaw,
 	FaStickyNote,
 	FaUser,
 	FaWeight
 } from 'react-icons/fa'
+import { GiRabbit } from 'react-icons/gi'
+import { LuBird, LuPawPrint, LuTurtle } from 'react-icons/lu'
 import type { Pet } from '../utils/types'
 import { Button } from './ui/Button'
 import {
@@ -24,12 +30,36 @@ interface PetCardProps {
 	children?: ReactNode
 }
 
+function getSpeciesIcon(species: string) {
+	const key = (species || '').toUpperCase()
+	switch (key) {
+		case 'DOG':
+			return <FaDog className='text-slate-500' />
+		case 'CAT':
+			return <FaCat className='text-slate-500' />
+		case 'RABBIT':
+			return <GiRabbit className='text-slate-500' />
+		case 'GUINEA_PIG':
+			return <FaCarrot className='text-slate-500' />
+		case 'HAMSTER':
+			return <LuPawPrint className='text-slate-500' />
+		case 'BIRD':
+			return <LuBird className='text-slate-500' />
+		case 'TURTLE':
+			return <LuTurtle className='text-slate-500' />
+		case 'FERRET':
+			return <FaOtter className='text-slate-500' />
+		default:
+			return <FaPaw className='text-slate-500' />
+	}
+}
+
 export function PetCard({ pet, onEdit, onDelete, children }: PetCardProps) {
 	const showActions = onEdit || onDelete
 	const birthDisplay = pet.birthDate
 		? new Date(pet.birthDate).toLocaleDateString('pl-PL')
 		: pet.birthYear
-			? `Rok: ${pet.birthYear}`
+			? `Year: ${pet.birthYear}`
 			: '—'
 
 	return (
@@ -37,7 +67,7 @@ export function PetCard({ pet, onEdit, onDelete, children }: PetCardProps) {
 			<CardBody className='space-y-4'>
 				<header className='flex items-start justify-between gap-2'>
 					<h2 className='flex items-center gap-2 text-xl font-semibold tracking-tight text-slate-900 md:text-2xl'>
-						<FaPaw className='text-slate-500' /> {pet.name}
+						{getSpeciesIcon(pet.species)} {pet.name}
 					</h2>
 					<p className='text-[11px] md:text-xs font-medium uppercase tracking-wide text-sky-700'>
 						{pet.species}
