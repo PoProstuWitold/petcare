@@ -154,8 +154,8 @@ export function MedicalRecordCard({ record: r }: Props) {
 								</p>
 							</div>
 						</div>
-						<div className='flex justify-end pt-1'>
-							<span className='rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-slate-700'>
+						<div className='flex justify-end pb-1'>
+							<span className='rounded-full bg-slate-200 px-2 text-lg font-semibold tracking-wide text-slate-700'>
 								ID #{r.id}
 							</span>
 						</div>

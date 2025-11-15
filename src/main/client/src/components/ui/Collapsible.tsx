@@ -19,23 +19,36 @@ export function Collapsible({
 	const innerRef = useRef<HTMLDivElement>(null)
 	const [contentHeight, setContentHeight] = useState<number>(0)
 
+	// Measure on mount, when toggling, and when content resizes
 	useLayoutEffect(() => {
-		if (innerRef.current) {
-			setContentHeight(innerRef.current.scrollHeight)
-		}
-	}, [])
+		const el = innerRef.current
+		if (!el) return
 
-	// If closed set maxHeight to 0, if open to measured height (fallback large value if 0)
-	const maxHeight = open ? contentHeight || 9999 : 0
+		const measure = () => setContentHeight(el.scrollHeight)
+		measure()
+
+		if (typeof ResizeObserver !== 'undefined') {
+			const ro = new ResizeObserver(() => measure())
+			ro.observe(el)
+			return () => ro.disconnect()
+		}
+
+		const onResize = () => measure()
+		window.addEventListener('resize', onResize)
+		return () => window.removeEventListener('resize', onResize)
+	}, [open])
+
+	// If closed set maxHeight to 0, if open to measured height (+ buffer to avoid clipping)
+	const maxHeight = open ? (contentHeight > 0 ? contentHeight + 8 : 9999) : 0
 
 	return (
 		<div
 			id={id}
 			aria-hidden={!open}
 			className={`overflow-hidden transition-[max-height] ease-in-out ${open ? 'mt-4' : ''} ${className}`}
-			style={{ maxHeight, transitionDuration: `${durationMs}ms` }}
+			style={{ maxHeight, transitionDuration: `${durationMs}ms`, willChange: 'max-height' }}
 		>
-			<div ref={innerRef}>{children}</div>
+			<div ref={innerRef} className='pb-1'>{children}</div>
 		</div>
 	)
 }

@@ -29,7 +29,7 @@ function NewMedicalRecordPage() {
 	}
 	return (
 		<div className='page-container'>
-			<div className='page-content'>
+			<div className='page-content my-10'>
 				<MedicalRecordForm
 					visitId={visitId}
 					onCreated={() => {
