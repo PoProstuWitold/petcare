@@ -95,7 +95,7 @@ Wszystkie endpointy mają prefiks `/api`. Dokumentacja OpenAPI jest dostępna w 
 - **Pets (`/pets`):** zarządzanie profilami zwierząt.
 - **Vets (`/vets`):** zarządzanie profilami weterynarzy, harmonogramem i urlopami.
 - **Visits (`/visits`):** zarządzanie wizytami (slots, konflikty, time-off).
-- **Medical Records (`/medical-records`):** (w toku) zarządzanie historią medyczną.
+- **Medical Records (`/medical-records`):** zarządzanie historią medyczną.
 
 **Serializacja danych:**
 
@@ -193,7 +193,7 @@ Poniżej znajdują się kluczowe cechy i uzasadnienia zastosowanych rozwiązań:
   - **Minimalny runtime:** `eclipse-temurin:21-jre-alpine` (brak narzędzi buildowych), szybki start i niski narzut rozmiaru; łatwe, szybkie aktualizacje bazowego JRE.
   - **Least privilege:** uruchamianie jako nie-root (`USER app`) – zgodnie z zasadami bezpieczeństwa kontenerów.
   - **Healthcheck:** wbudowany `HEALTHCHECK` na `/api/status/health`.
-  - *Zmienne środowiskowe:** konfiguracja przez zmienne środowiskowe; SEKRETY należy podawać w runtime (env/secrets), nie zapisywać w obrazie.
+  - **Zmienne środowiskowe:** konfiguracja przez zmienne środowiskowe; SEKRETY należy podawać w runtime (env/secrets), nie zapisywać w obrazie.
 
 Uruchomienie środowiska (API + Postgres):
 ```bash
