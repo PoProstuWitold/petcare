@@ -162,4 +162,26 @@ class VisitServiceImplTest {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> visitService.createVisit(cmd));
         assertTrue(ex.getMessage().toLowerCase().contains("taken"));
     }
+
+    @Test
+    @DisplayName("Reject same-day past start time")
+    void rejectPastStartTimeToday() {
+        Pet pet = mock(Pet.class);
+        when(petService.getById(1L)).thenReturn(pet);
+        doNothing().when(petAccessService).checkCanModify(pet);
+        VetProfile vetProfile = mock(VetProfile.class);
+        when(vetProfileService.getById(2L)).thenReturn(vetProfile);
+
+        LocalDate today = LocalDate.now();
+        // Ensure a time safely in the past for the current day without wrapping issues.
+        LocalTime pastStart = LocalTime.now().minusMinutes(30);
+        if (pastStart.isAfter(LocalTime.now())) { // Fallback if clock skew causes wrap condition
+            pastStart = LocalTime.now().minusHours(1);
+        }
+
+        // Since validation triggers before schedule/time-off checks for past time, no additional stubbing is needed.
+        VisitCreateCommand cmd = new VisitCreateCommand(1L, 2L, today, pastStart, "Reason", null);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> visitService.createVisit(cmd));
+        assertTrue(ex.getMessage().toLowerCase().contains("start time"));
+    }
 }

@@ -285,6 +285,17 @@ export function VisitBookingForm({
 						const value = `${h}:${m}`
 
 						if (!takenStarts.has(value)) {
+							// Exclude past times if date is today
+							if (form.date === toDateOnlyString(new Date())) {
+								const now = new Date()
+								const slotDate = new Date(
+									`${form.date}T${value}:00`
+								)
+								if (slotDate.getTime() <= now.getTime()) {
+									currentMinutes += step
+									continue
+								}
+							}
 							slots.push({ value, label: value })
 						}
 

@@ -55,7 +55,7 @@ public class VisitServiceImpl implements VisitService {
         LocalTime requestedStart = command.startTime();
 
         validateRequired(date, requestedStart);
-        validateNotPast(date);
+        validateNotPast(date, requestedStart); // updated to include time validation
 
         VetScheduleEntry scheduleEntry = findMatchingScheduleEntry(vetProfile, date, requestedStart);
         LocalTime endTime = requestedStart.plusMinutes(scheduleEntry.getSlotLengthMinutes());
@@ -179,9 +179,16 @@ public class VisitServiceImpl implements VisitService {
         }
     }
 
-    private void validateNotPast(LocalDate date) {
-        if (date.isBefore(LocalDate.now())) {
+    private void validateNotPast(LocalDate date, LocalTime startTime) {
+        LocalDate today = LocalDate.now();
+        if (date.isBefore(today)) {
             throw new IllegalArgumentException("Visit date cannot be in the past");
+        }
+        if (date.isEqual(today)) {
+            LocalTime now = LocalTime.now();
+            if (startTime.isBefore(now)) {
+                throw new IllegalArgumentException("Visit start time cannot be in the past");
+            }
         }
     }
 
