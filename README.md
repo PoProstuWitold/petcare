@@ -1,91 +1,88 @@
 <a id="top"></a>
 
-# [PL] PetCare
-## System do zarządzania wizytami u weterynarza i profilami zwierząt.
+# PetCare
 
-**Autor:** Witold Zawada (indywidualny projekt)
+System do zarządzania wizytami u weterynarza i profilami zwierząt.
 
-**Technologia:** Spring Boot + Spring Security + React (Vite) + H2 (Flyway)  
-
-**Wersja Java oraz JDK:** 21
+- Autor: Witold Zawada (projekt indywidualny)
+- Stos technologiczny: Spring Boot, Spring Security, JPA, Flyway, React (Vite), JWT
+- Wersja JDK: 21
 
 ---
 
 ## Spis treści
-1. [Opis projektu](#opis-projektu)
-2. [Architektura](#architektura)
-3. [Aplikacja](#aplikacja)
-4. [Zasady SOLID](#zasady-solid)
-5. [Testy](#testy)
-6. [Technologie](#technologie)
-7. [REST API](#rest-api)
+1. [Opis, architektura i uruchomienie](#opis-architektura-i-uruchomienie)
+2. [REST API](#rest-api)
+3. [Testy](#testy)
+4. [Zasady SOLID i czysty kod](#zasady-solid-i-czysty-kod)
+5. [Technologie](#technologie)
+6. [Docker](#docker)
+7. [Import / Export JSON](#import--export-json)
+8. [Harmonogram rozwoju](#harmonogram-rozwoju)
 
 ---
 
-## Opis projektu
+## Opis, architektura i uruchomienie
 
-**PetCare** to aplikacja webowa w architekturze **klient–serwer**, której celem jest zarządzanie zwierzętami, ich profilami oraz wizytami u weterynarza. System umożliwia logowanie, przeglądanie oraz zarządzanie danymi przez różne role użytkowników (`USER`, `VET`, `ADMIN`).
+PetCare to aplikacja webowa w architekturze klient-serwer. 
+Umożliwia rejestrację/logowanie, zarządzanie zwierzętami 
+i umawianie wizyt do weterynarza z walidacją konfliktów 
+oraz czasu.
 
-**Konta testowe i dane przykładowe**
-Aby szybciej rozpocząć pracę z aplikacją, w trybie deweloperskim automatycznie tworzone są konta testowe oraz przykładowe dane.
+- **Architektura:**
+  - **Klient: React (Vite)**, komunikacja z REST API przez fetch.
+  - **Serwer:** Spring Boot (kontrolery, serwisy domenowe, repozytoria JPA).
+  - **Baza danych:** H2 (dev) / Postgres (prod) z migracjami Flyway.
 
-Konta użytkowników:
-- **Administrator:** - username: `admin`, password: `admin12345678`,
-- **Weterynarz:** - username: `vet`, password: `vet12345678`,
-- **Użytkownik:** - username: `user`, password: `user12345678`.
+- **Role i uprawnienia:**
+  - **USER** – właściciel zwierząt; zarządza swoimi danymi i wizytami.
+  - **VET** – weterynarz; widzi wszystkie zwierzęta i wizyty, zarządza grafikiem.
+  - **ADMIN** – administrator; pełne uprawnienia administracyjne.
 
-Zwierzęta:
-- **Sara** - suczka, właściciel: user,
-- **Yuki** - kotka, właściciel: user,
-- **Abi** - suczka, właściciel: vet,
-- **Harry** - pies, właściciel: admin.
+- **Moduły funkcjonalne:**
+  - Status aplikacji, Autentykacja i autoryzacja (JWT), Użytkownicy, Zwierzęta, Wizyty, Historia medyczna (w toku).
 
-Dodatkowo tworzony jest profil weterynarza oraz jego grafik pracy.
+- **Konta testowe (dev):**
+  - admin/admin12345678, vet/vet12345678, user/user12345678
 
+- **Wymagania systemowe:**
+  - JDK v21, Java v21, Node.js v24+ (frontend), Docker i Docker Compose (opcjonalnie)
+
+## Uruchomienie
+
+- **Development:**
+  - **Backend:**
+    ```bash
+    ./gradlew clean bootRun
+    ```
+  - **Frontend:**
+    ```bash
+    cd src/main/client
+    pnpm install
+    pnpm dev
+    ```
+  - **Adresy:**
+    - API: http://localhost:8080
+    - Swagger UI: http://localhost:8080/swagger-ui/index.html
+    - Frontend: http://localhost:5173
+- **Produkcja:**
+    ```bash
+    docker compose up -d
+    ```
 <p align="right">(<a href="#top">przewiń do góry</a>)</p>
 
 ---
 
-## Architektura
+## REST API
 
-Aplikacja została stworzona w modelu **klient–serwer**:
-- **Klient:** aplikacja React (Vite) komunikująca się z serwerem za pomocą REST API,
-- **Serwer:** aplikacja Spring Boot,
-- **Baza danych:** H2 (z migracjami Flyway).
+Wszystkie endpointy mają prefiks `/api`. Dokumentacja OpenAPI jest dostępna w Swagger UI: `http://localhost:8080/swagger-ui/index.html`.
 
-<p align="right">(<a href="#top">przewiń do góry</a>)</p>
-
----
-
-## Aplikacja
-
-### Role
-- `USER` – właściciel zwierząt, może przeglądać i dodawać swoje zwierzaki oraz wizyty.
-- `VET` – weterynarz (pełni też rolę recepcjonisty), widzi wszystkie zwierzęta, wizyty i ich historię.
-- `ADMIN` – administrator systemu, zarządza użytkownikami i danymi.
-
-### Moduły
-
-- **Status aplikacji:** sprawdzanie statusu działania aplikacji.
-- **Autentykacja i autoryzacja:** rejestracja, logowanie, zarządzanie sesjami.
-- **Użytkownicy:** dodawanie, edytowanie, usuwanie kont użytkowników.
-- **Zwierzęta:** dodawanie, edytowanie, usuwanie profili zwierząt.
-- **Wizyty:** umawianie, edytowanie, usuwanie wizyt u weterynarza.
-- **Historia medyczna:** przeglądanie i zarządzanie historią medyczną zwierząt (DO ZROBIENIA).
-
-<p align="right">(<a href="#top">przewiń do góry</a>)</p>
-
----
-
-## Zasady SOLID
-
-Projekt został zaprojektowany zgodnie z zasadami SOLID, co zapewnia jego elastyczność, skalowalność i łatwość utrzymania. Poniżej przedstawiono, jak każda z zasad została zaimplementowana:
-- **S - Single Responsibility Principle (SRP):** Każda klasa ma jedną odpowiedzialność, np. serwisy zajmują się logiką biznesową, a kontrolery obsługują żądania HTTP.
-- **O - Open/Closed Principle (OCP):** System jest otwarty na rozszerzenia (np. dodawanie nowych funkcji), ale zamknięty na modyfikacje istniejącego kodu.
-- **L - Liskov Substitution Principle (LSP):** Podklasy mogą być używane zamiast swoich nadklas bez zmiany poprawności programu.
-- **I - Interface Segregation Principle (ISP):** Interfejsy są podzielone na mniejsze, bardziej specyficzne, co pozwala na implementację tylko tych metod, które są potrzebne.
-- **D - Dependency Inversion Principle (DIP):** Moduły wysokiego poziomu nie zależą od modułów niskiego poziomu; oba zależą od abstrakcji.
-
+- **Status (`/status`):** sprawdzenie zdrowia aplikacji.
+- **Auth (`/auth`):** rejestracja, logowanie, bieżący użytkownik.
+- **Users (`/users`):** zarządzanie użytkownikami.
+- **Pets (`/pets`):** zarządzanie profilami zwierząt.
+- **Visits (`/visits`):** zarządzanie wizytami (slots, konflikty, time-off).
+- **Medical Records (`/medical-records`):** (w toku) zarządzanie historią medyczną.
 
 <p align="right">(<a href="#top">przewiń do góry</a>)</p>
 
@@ -93,7 +90,47 @@ Projekt został zaprojektowany zgodnie z zasadami SOLID, co zapewnia jego elasty
 
 ## Testy
 
-DO ZROBIENIA
+Zakres testowania obejmuje poziomy jednostkowe i integracyjne.
+
+- **Strategia:**
+  - **Jednostkowe:** logika domenowa (walidacje czasu, konflikty slotów, statusy rekordów).
+  - **Integracyjne (MockMvc):** statusy HTTP, kontrakty JSON, autoryzacja.
+
+- **Uruchamianie testów:**
+  ```bash
+  ./gradlew test
+  ```
+  Raport HTML: `build/reports/tests/test/index.html`
+
+- **Przykładowe obszary pokrycia:**
+  - `VisitServiceImplTest`: data w przeszłości, slot zajęty, day-off, startTime dziś < teraz.
+  - `MedicalRecordServiceImplTest`: status wizyty niedozwolony, duplikat rekordu.
+
+<p align="right">(<a href="#top">przewiń do góry</a>)</p>
+
+---
+
+## Zasady SOLID i czysty kod
+
+- **SRP – pojedyncza odpowiedzialność:**
+  - `VisitServiceImpl`: wyłącznie logika wizyt (walidacje czasu, konflikty, tworzenie encji).
+  - `MedicalRecordServiceImpl`: tworzenie/aktualizacja rekordów medycznych.
+  - `GlobalExceptionHandler`: konwersja wyjątków → spójne odpowiedzi HTTP.
+
+- **OCP – otwarte na rozszerzenia, zamknięte na modyfikacje:**
+  - Dodanie nowego statusu/zasady to dopisanie walidacji/wyjątku bez zmiany interfejsów.
+
+- **LSP** – implementacje serwisów są wymienialne przez interfejsy (`PetService`, `VisitService`, ...).
+
+- **ISP** – wyspecjalizowane interfejsy (`VetScheduleService`, `VetTimeOffService`) bez zbędnych metod.
+
+- **DIP** – kontrolery zależą od abstrakcji serwisów, serwisy od repozytoriów JPA.
+
+- **Czysty kod – wybrane zasady:**
+  - Nazwy metod: czasownik + obiekt (`createVisit`, `updateVisitStatus`).
+  - Prywatne helpery redukują duplikacje (np. `validateTemporal`, `assertCanModifyForVet`).
+  - Spójne wyjątki domenowe: `MedicalRecordStatusNotAllowedException`, `DuplicateMedicalRecordException`.
+  - Krótkie klasy i czytelne odpowiedzialności, indeksy w encjach (np. `Visit`).
 
 <p align="right">(<a href="#top">przewiń do góry</a>)</p>
 
@@ -101,31 +138,79 @@ DO ZROBIENIA
 
 ## Technologie
 
-- **Spring Boot v3.5.6**
-- **Spring Security**
-- **React v19**
-- **JPA**
-- **Flyway (migracje)**
-- **H2 Database**
-- **Docker**
+- Spring Boot v3.5.6, Spring Security
+- JPA/Hibernate, Flyway, H2/PostgreSQL
+- JWT (jjwt)
+- React (Vite)
+- Docker
+- Springdoc OpenAPI (Swagger UI)
 
 <p align="right">(<a href="#top">przewiń do góry</a>)</p>
 
 ---
 
-## REST API
+## Docker
 
-Wszystkie mają prefiks `/api`. 
+Budowa obrazu backendu:
+```bash
+docker build -t petcare:latest .
+```
+Uruchomienie środowiska (API + Postgres):
+```bash
+docker compose up -d
+```
 
-Dokumentacja API jest dostępna pod adresem: `http://localhost:8080/swagger-ui/index.html`.
+<p align="right">(<a href="#top">przewiń do góry</a>)</p>
 
-W nawiasie podano podprefiksy dla danej grupy endpointów wraz z ich krótkim opisem.
+---
 
-- **Status (`/status`)**: sprawdzenie statusu aplikacji.
-- **Auth (`/auth`)**: rejestracja, logowanie, obecnie zalogowany użytkownik.
-- **Users (`/users`)**: zarządzanie użytkownikami.
-- **Pets (`/pets`)**: zarządzanie profilami zwierząt.
-- **Visits (`/visits`)**: zarządzanie wizytami u weterynarza.
-- **Medical Records (`/medical-records`)**: DO ZROBIENIA zarządzanie historią medyczną zwierząt.
+## Import / Export JSON
+
+- **Endpointy:** 
+  - `POST /api/pets/me/export`, 
+  - `GET /api/pets/me/import`.
+- Frontend: `PetImportExportPanel` – eksport (plik `pets-export-YYYY-MM-DD.json`), import (walidacja, limit 1 MB, drag & drop).
+
+Przykładowy plik:
+```json
+[
+  {
+    "name": "Sara",
+    "species": "DOG",
+    "sex": "FEMALE",
+    "breed": "Crossbreed",
+    "birthDate": "2021-05-10",
+    "birthYear": 2021,
+    "weight": 9.5,
+    "notes": "Very friendly and loves kids."
+  },
+  {
+    "name": "Yuki",
+    "species": "CAT",
+    "sex": "FEMALE",
+    "breed": "European Shorthair",
+    "birthDate": "2022-05-10",
+    "birthYear": 2022,
+    "weight": 3.8,
+    "notes": "Timid and afraid of vaccinations."
+  }
+]
+```
+
+<p align="right">(<a href="#top">przewiń do góry</a>)</p>
+
+---
+
+## Harmonogram rozwoju
+
+| Etap | Zakres                      | Status |
+|------|-----------------------------|--------|
+| 1 | Użytkownicy i zwierzęta     | Zakończone |
+| 2 | JWT + role                  | Zakończone |
+| 3 | Weterynarze i wizyty        | Zakończone |
+| 3 | Import/Export JSON zwierząt | Zakończone |
+| 4 | Rekordy medyczne            | Zakończone |
+| 4 | Obraz Dockera               | Zakończone |
+| 5 | Testy                       | Zakończone |
 
 <p align="right">(<a href="#top">przewiń do góry</a>)</p>
