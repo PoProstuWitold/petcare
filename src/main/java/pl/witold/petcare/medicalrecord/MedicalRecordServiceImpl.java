@@ -1,10 +1,12 @@
 package pl.witold.petcare.medicalrecord;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.witold.petcare.dto.MedicalRecordResponseDto;
 import pl.witold.petcare.exceptions.DuplicateMedicalRecordException;
+import pl.witold.petcare.exceptions.MedicalRecordStatusNotAllowedException;
 import pl.witold.petcare.exceptions.ResourceNotFoundException;
 import pl.witold.petcare.medicalrecord.commands.MedicalRecordCreateCommand;
 import pl.witold.petcare.medicalrecord.commands.MedicalRecordUpdateCommand;
@@ -46,24 +48,12 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         Visit visit = visitRepository.findByIdWithRelations(command.visitId())
                 .orElseThrow(() -> new ResourceNotFoundException("Visit not found"));
 
-        // Ensure only vet owning visit can create record and visit is COMPLETED or CONFIRMED
         VetProfile vetProfile = visit.getVetProfile();
-        boolean isAdmin = currentUserService.hasAnyRole(Role.ADMIN);
-        VetProfile currentVetProfile = isAdmin ? null : vetProfileService.getOrCreateCurrentVetProfile();
-        if (!isAdmin && (currentVetProfile == null || !vetProfile.getId().equals(currentVetProfile.getId()))) {
-            throw new IllegalArgumentException("You can only create records for your own visits");
-        }
-
-        if (!ALLOWED_STATUSES_FOR_RECORD.contains(visit.getStatus())) {
-            throw new IllegalArgumentException("Medical record can be created only for confirmed or completed visits");
-        }
-
-        medicalRecordRepository.findByVisitId(visit.getId()).ifPresent(r -> {
-            throw new DuplicateMedicalRecordException("Medical record already exists for this visit");
-        });
+        assertCanModifyForVet(vetProfile, "create records for your own visits");
+        assertVisitStatusAllowsRecord(visit);
+        assertNoDuplicateRecord(visit.getId());
 
         Pet pet = visit.getPet();
-
         MedicalRecord record = new MedicalRecord(
                 pet,
                 vetProfile,
@@ -74,7 +64,6 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 command.prescriptions(),
                 command.notes()
         );
-
         MedicalRecord saved = medicalRecordRepository.save(record);
         return MedicalRecordMapper.toDto(saved);
     }
@@ -110,12 +99,8 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     public MedicalRecordResponseDto update(Long id, MedicalRecordUpdateCommand command) {
         MedicalRecord record = medicalRecordRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Medical record not found"));
-        // For simplicity allow vet who owns visit or ADMIN (reuse vetProfile match)
-        boolean isAdmin = currentUserService.hasAnyRole(Role.ADMIN);
-        VetProfile currentVetProfile = isAdmin ? null : vetProfileService.getOrCreateCurrentVetProfile();
-        if (!isAdmin && (currentVetProfile == null || !record.getVetProfile().getId().equals(currentVetProfile.getId()))) {
-            throw new IllegalArgumentException("You can only update records you created");
-        }
+        assertCanModifyForVet(record.getVetProfile(), "update records you created");
+
         if (command.title() != null) record.setTitle(command.title());
         if (command.diagnosis() != null) record.setDiagnosis(command.diagnosis());
         if (command.treatment() != null) record.setTreatment(command.treatment());
@@ -128,11 +113,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     public void delete(Long id) {
         MedicalRecord record = medicalRecordRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Medical record not found"));
-        boolean isAdmin = currentUserService.hasAnyRole(Role.ADMIN);
-        VetProfile currentVetProfile = isAdmin ? null : vetProfileService.getOrCreateCurrentVetProfile();
-        if (!isAdmin && (currentVetProfile == null || !record.getVetProfile().getId().equals(currentVetProfile.getId()))) {
-            throw new IllegalArgumentException("You can only delete records you created");
-        }
+        assertCanModifyForVet(record.getVetProfile(), "delete records you created");
         medicalRecordRepository.delete(record);
     }
 
@@ -141,5 +122,27 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         return medicalRecordRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(MedicalRecordMapper::toDto)
                 .toList();
+    }
+
+    // --- Private helpers ---
+    private void assertCanModifyForVet(VetProfile targetProfile, String actionPhrase) {
+        boolean isAdmin = currentUserService.hasAnyRole(Role.ADMIN);
+        if (isAdmin) return;
+        VetProfile currentVetProfile = vetProfileService.getOrCreateCurrentVetProfile();
+        if (currentVetProfile == null || !targetProfile.getId().equals(currentVetProfile.getId())) {
+            throw new AccessDeniedException("You can only " + actionPhrase);
+        }
+    }
+
+    private void assertVisitStatusAllowsRecord(Visit visit) {
+        if (!ALLOWED_STATUSES_FOR_RECORD.contains(visit.getStatus())) {
+            throw new MedicalRecordStatusNotAllowedException("Medical record can be created only for confirmed or completed visits");
+        }
+    }
+
+    private void assertNoDuplicateRecord(Long visitId) {
+        medicalRecordRepository.findByVisitId(visitId).ifPresent(r -> {
+            throw new DuplicateMedicalRecordException("Medical record already exists for this visit");
+        });
     }
 }

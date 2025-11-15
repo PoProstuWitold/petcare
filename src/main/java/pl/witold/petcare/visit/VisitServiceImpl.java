@@ -1,6 +1,7 @@
 package pl.witold.petcare.visit;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.witold.petcare.dto.VisitResponseDto;
@@ -8,8 +9,8 @@ import pl.witold.petcare.exceptions.ResourceNotFoundException;
 import pl.witold.petcare.pet.Pet;
 import pl.witold.petcare.pet.PetAccessService;
 import pl.witold.petcare.pet.PetService;
-import pl.witold.petcare.user.Role;
 import pl.witold.petcare.security.CurrentUserService;
+import pl.witold.petcare.user.Role;
 import pl.witold.petcare.vet.VetProfile;
 import pl.witold.petcare.vet.VetScheduleEntry;
 import pl.witold.petcare.vet.service.VetProfileService;
@@ -24,7 +25,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Default implementation of VisitService containing business rules for booking visits.
+ * Visit service with local validation helpers (SRP kept minimal:
+ * persistence + orchestration + concise validation).
  */
 @Service
 @RequiredArgsConstructor
@@ -48,31 +50,27 @@ public class VisitServiceImpl implements VisitService {
     public Visit createVisit(VisitCreateCommand command) {
         Pet pet = petService.getById(command.petId());
         petAccessService.checkCanModify(pet);
-
         VetProfile vetProfile = vetProfileService.getById(command.vetProfileId());
 
         LocalDate date = command.date();
-        LocalTime requestedStart = command.startTime();
+        LocalTime start = command.startTime();
 
-        validateRequired(date, requestedStart);
-        validateNotPast(date, requestedStart); // updated to include time validation
-
-        VetScheduleEntry scheduleEntry = findMatchingScheduleEntry(vetProfile, date, requestedStart);
-        LocalTime endTime = requestedStart.plusMinutes(scheduleEntry.getSlotLengthMinutes());
-
+        validateRequired(date, start);
+        validateTemporal(date, start);
+        VetScheduleEntry scheduleEntry = findScheduleEntry(vetProfile, date, start);
+        LocalTime end = start.plusMinutes(scheduleEntry.getSlotLengthMinutes());
         validateNotOnTimeOff(vetProfile, date);
-        validateNoConflict(vetProfile, date, requestedStart, endTime);
+        validateNoConflict(vetProfile, date, start, end);
 
         Visit visit = new Visit(
                 pet,
                 vetProfile,
                 date,
-                requestedStart,
-                endTime,
+                start,
+                end,
                 command.reason(),
                 command.notes()
         );
-
         return visitRepository.save(visit);
     }
 
@@ -100,77 +98,46 @@ public class VisitServiceImpl implements VisitService {
 
     @Override
     public VisitResponseDto updateVisitStatus(Long visitId, VisitStatus status) {
-        Visit visit = visitRepository
-                .findByIdWithRelations(visitId)
+        Visit visit = visitRepository.findByIdWithRelations(visitId)
                 .orElseThrow(() -> new ResourceNotFoundException("Visit not found"));
-
         visit.setStatus(status);
-
         return VisitMapper.toDto(visit);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Visit getById(Long visitId) {
-        Visit v = visitRepository
-                .findByIdWithRelations(visitId)
+        Visit visit = visitRepository.findByIdWithRelations(visitId)
                 .orElseThrow(() -> new ResourceNotFoundException("Visit not found"));
-        // allow if current user is owner of pet, or has VET/ADMIN role
-        if (currentUserService.hasAnyRole(Role.ADMIN, Role.VET)) {
-            return v;
+        if (canView(visit)) {
+            return visit;
         }
-        if (v.getPet() != null && v.getPet().getOwner() != null) {
-            Long ownerId = v.getPet().getOwner().getId();
-            if (ownerId != null && ownerId.equals(currentUserService.getCurrentUserId())) {
-                return v;
-            }
-        }
-        throw new IllegalArgumentException("You are not allowed to view this visit");
+        throw new AccessDeniedException("You are not allowed to view this visit");
     }
 
     @Override
     public void deleteById(Long visitId) {
-        Visit v = visitRepository.findByIdWithRelations(visitId)
+        Visit visit = visitRepository.findByIdWithRelations(visitId)
                 .orElseThrow(() -> new ResourceNotFoundException("Visit not found"));
-        visitRepository.delete(v);
+        visitRepository.delete(visit);
     }
 
     @Override
     public VisitResponseDto updateVisitFields(Long visitId, String reason, String notes) {
-        Visit visit = visitRepository
-                .findByIdWithRelations(visitId)
+        Visit visit = visitRepository.findByIdWithRelations(visitId)
                 .orElseThrow(() -> new ResourceNotFoundException("Visit not found"));
         if (reason != null) visit.setReason(reason);
         if (notes != null) visit.setNotes(notes);
         return VisitMapper.toDto(visit);
     }
 
-    private VetScheduleEntry findMatchingScheduleEntry(
-            VetProfile vetProfile,
-            LocalDate date,
-            LocalTime requestedStart
-    ) {
-        List<VetScheduleEntry> weeklySchedule = vetScheduleService.getScheduleForVetProfile(vetProfile.getId());
+    // --- Private helpers (encapsulated validation) ---
 
-        return weeklySchedule.stream()
-                .filter(entry -> entry.getDayOfWeek().equals(date.getDayOfWeek()))
-                .filter(entry -> isWithinEntry(requestedStart, entry))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Requested time is outside vet working hours"));
-    }
-
-    private boolean isWithinEntry(LocalTime requestedStart, VetScheduleEntry entry) {
-        LocalTime blockStart = entry.getStartTime();
-        LocalTime blockEnd = entry.getEndTime();
-        int slotLengthMinutes = entry.getSlotLengthMinutes();
-
-        if (!requestedStart.isBefore(blockEnd) || requestedStart.isBefore(blockStart)) {
-            return false;
-        }
-
-        long minutesFromBlockStart =
-                java.time.Duration.between(blockStart, requestedStart).toMinutes();
-        return minutesFromBlockStart % slotLengthMinutes == 0;
+    private boolean canView(Visit visit) {
+        if (currentUserService.hasAnyRole(Role.ADMIN, Role.VET)) return true;
+        if (visit.getPet() == null || visit.getPet().getOwner() == null) return false;
+        Long ownerId = visit.getPet().getOwner().getId();
+        return ownerId != null && ownerId.equals(currentUserService.getCurrentUserId());
     }
 
     private void validateRequired(LocalDate date, LocalTime start) {
@@ -179,17 +146,32 @@ public class VisitServiceImpl implements VisitService {
         }
     }
 
-    private void validateNotPast(LocalDate date, LocalTime startTime) {
+    private void validateTemporal(LocalDate date, LocalTime start) {
         LocalDate today = LocalDate.now();
         if (date.isBefore(today)) {
             throw new IllegalArgumentException("Visit date cannot be in the past");
         }
-        if (date.isEqual(today)) {
-            LocalTime now = LocalTime.now();
-            if (startTime.isBefore(now)) {
-                throw new IllegalArgumentException("Visit start time cannot be in the past");
-            }
+        if (date.isEqual(today) && start.isBefore(LocalTime.now())) {
+            throw new IllegalArgumentException("Visit start time cannot be in the past");
         }
+    }
+
+    private VetScheduleEntry findScheduleEntry(VetProfile vetProfile, LocalDate date, LocalTime requestedStart) {
+        List<VetScheduleEntry> weekly = vetScheduleService.getScheduleForVetProfile(vetProfile.getId());
+        return weekly.stream()
+                .filter(e -> e.getDayOfWeek().equals(date.getDayOfWeek()))
+                .filter(e -> withinEntry(requestedStart, e))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Requested time is outside vet working hours"));
+    }
+
+    private boolean withinEntry(LocalTime requestedStart, VetScheduleEntry entry) {
+        LocalTime blockStart = entry.getStartTime();
+        LocalTime blockEnd = entry.getEndTime();
+        int slotLen = entry.getSlotLengthMinutes();
+        if (requestedStart.isBefore(blockStart) || !requestedStart.isBefore(blockEnd)) return false;
+        long minutesFromStart = java.time.Duration.between(blockStart, requestedStart).toMinutes();
+        return minutesFromStart % slotLen == 0;
     }
 
     private void validateNotOnTimeOff(VetProfile vetProfile, LocalDate date) {
@@ -198,20 +180,14 @@ public class VisitServiceImpl implements VisitService {
         }
     }
 
-    private void validateNoConflict(
-            VetProfile vetProfile,
-            LocalDate date,
-            LocalTime start,
-            LocalTime end
-    ) {
-        boolean hasConflict = visitRepository
-                .existsByVetProfileAndDateAndStatusInAndStartTimeLessThanAndEndTimeGreaterThan(
-                        vetProfile,
-                        date,
-                        BLOCKING_STATUSES,
-                        end,
-                        start
-                );
+    private void validateNoConflict(VetProfile vetProfile, LocalDate date, LocalTime start, LocalTime end) {
+        boolean hasConflict = visitRepository.existsByVetProfileAndDateAndStatusInAndStartTimeLessThanAndEndTimeGreaterThan(
+                vetProfile,
+                date,
+                BLOCKING_STATUSES,
+                end,
+                start
+        );
         if (hasConflict) {
             throw new IllegalArgumentException("Selected time slot is already taken");
         }

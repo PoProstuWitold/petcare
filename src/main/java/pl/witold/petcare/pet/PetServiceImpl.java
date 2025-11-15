@@ -81,8 +81,7 @@ public class PetServiceImpl implements PetService {
     @Override
     @Transactional(readOnly = true)
     public List<Pet> getAll() {
-        // Only vets and admins are allowed to see all pets.
-        if (!(currentUserService.hasRole(Role.ADMIN) || currentUserService.hasRole(Role.VET))) {
+        if (!isElevated()) {
             throw new AccessDeniedException("You are not allowed to access all pets");
         }
         return petRepository.findAllWithOwner();
@@ -91,7 +90,7 @@ public class PetServiceImpl implements PetService {
     @Override
     @Transactional(readOnly = true)
     public List<Pet> getByOwnerId(Long ownerId) {
-        enforceOwnerScope(ownerId);
+        assertOwnerScope(ownerId, "access pets");
         return petRepository.findByOwnerIdWithOwner(ownerId);
     }
 
@@ -104,7 +103,7 @@ public class PetServiceImpl implements PetService {
 
     @Override
     public List<Pet> importForOwner(Long ownerId, List<PetImportDto> pets) {
-        enforceOwnerScope(ownerId);
+        assertOwnerScope(ownerId, "import pets");
         User owner = getOwnerOrThrow(ownerId);
         return pets.stream()
                 .map(dto -> PetMapper.fromImportDto(owner, dto))
@@ -117,42 +116,41 @@ public class PetServiceImpl implements PetService {
                 .orElseThrow(() -> new PetNotFoundException("Pet with ID " + id + " not found"));
     }
 
-    private User resolveOwnerForCreate(Long requestedOwnerId) {
-        User currentUser = currentUserService.getCurrentUser();
-        boolean elevated = currentUserService.hasRole(Role.ADMIN) || currentUserService.hasRole(Role.VET);
+    private boolean isElevated() {
+        return currentUserService.hasRole(Role.ADMIN) || currentUserService.hasRole(Role.VET);
+    }
 
-        if (elevated) {
+    private void assertOwnerScope(Long ownerId, String action) {
+        if (isElevated()) return;
+        Long currentId = currentUserService.getCurrentUser().getId();
+        if (!currentId.equals(ownerId)) {
+            throw new AccessDeniedException("You are not allowed to " + action + " for this owner");
+        }
+    }
+
+    private User resolveOwnerForCreate(Long requestedOwnerId) {
+        if (isElevated()) {
             return getOwnerOrThrow(requestedOwnerId);
         }
-
-        if (!currentUser.getId().equals(requestedOwnerId)) {
+        Long currentId = currentUserService.getCurrentUser().getId();
+        if (!currentId.equals(requestedOwnerId)) {
             throw new AccessDeniedException("You are not allowed to create pets for another user");
         }
-        return currentUser;
+        return currentUserService.getCurrentUser();
     }
 
     private User resolveOwnerForUpdate(Long requestedOwnerId, Pet pet) {
-        boolean elevated = currentUserService.hasRole(Role.ADMIN) || currentUserService.hasRole(Role.VET);
-        if (elevated) {
+        if (isElevated()) {
             if (!pet.getOwner().getId().equals(requestedOwnerId)) {
                 return getOwnerOrThrow(requestedOwnerId);
             }
             return pet.getOwner();
         }
-        User currentUser = currentUserService.getCurrentUser();
-        if (!pet.getOwner().getId().equals(currentUser.getId()) || !requestedOwnerId.equals(currentUser.getId())) {
+        Long currentId = currentUserService.getCurrentUser().getId();
+        if (!pet.getOwner().getId().equals(currentId) || !requestedOwnerId.equals(currentId)) {
             throw new AccessDeniedException("You are not allowed to change pet owner");
         }
         return pet.getOwner();
-    }
-
-    private void enforceOwnerScope(Long ownerId) {
-        User currentUser = currentUserService.getCurrentUser();
-        boolean elevated = currentUserService.hasRole(Role.ADMIN) || currentUserService.hasRole(Role.VET);
-
-        if (!elevated && !currentUser.getId().equals(ownerId)) {
-            throw new AccessDeniedException("You are not allowed to access pets for this owner");
-        }
     }
 
     private User getOwnerOrThrow(Long ownerId) {

@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pl.witold.petcare.exceptions.DuplicateMedicalRecordException;
+import pl.witold.petcare.exceptions.MedicalRecordStatusNotAllowedException;
 import pl.witold.petcare.exceptions.ResourceNotFoundException;
 import pl.witold.petcare.medicalrecord.commands.MedicalRecordCreateCommand;
 import pl.witold.petcare.security.CurrentUserService;
@@ -48,11 +49,11 @@ class MedicalRecordServiceImplTest {
         when(visitRepository.findByIdWithRelations(10L)).thenReturn(Optional.of(visit));
         when(visit.getVetProfile()).thenReturn(profile);
         when(vetProfileService.getOrCreateCurrentVetProfile()).thenReturn(profile);
-        when(currentUserService.hasAnyRole(Role.ADMIN)).thenReturn(false); // simulate non-admin vet
+        when(currentUserService.hasAnyRole(Role.ADMIN)).thenReturn(false);
         when(profile.getId()).thenReturn(22L);
-        when(visit.getStatus()).thenReturn(VisitStatus.SCHEDULED); // not allowed
+        when(visit.getStatus()).thenReturn(VisitStatus.SCHEDULED);
         MedicalRecordCreateCommand cmd = new MedicalRecordCreateCommand(10L, null, null, null, null, null);
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> medicalRecordService.create(cmd));
+        MedicalRecordStatusNotAllowedException ex = assertThrows(MedicalRecordStatusNotAllowedException.class, () -> medicalRecordService.create(cmd));
         assertTrue(ex.getMessage().toLowerCase().contains("confirmed") || ex.getMessage().toLowerCase().contains("completed"));
     }
 

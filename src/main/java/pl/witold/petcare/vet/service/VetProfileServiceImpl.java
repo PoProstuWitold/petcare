@@ -47,12 +47,7 @@ public class VetProfileServiceImpl implements VetProfileService {
         profile.setAcceptsNewPatients(Boolean.TRUE.equals(command.acceptsNewPatients()));
         profile.setAverageVisitLengthMinutes(command.averageVisitLengthMinutes());
 
-        Set<VetSpecialization> newSpecs = command.specializations() != null
-                ? new HashSet<>(command.specializations())
-                : new HashSet<>();
-
-        profile.getSpecializations().clear();
-        profile.getSpecializations().addAll(newSpecs);
+        applySpecializations(profile, command.specializations());
 
         return vetProfileRepository.save(profile);
     }
@@ -68,6 +63,13 @@ public class VetProfileServiceImpl implements VetProfileService {
     @Transactional(readOnly = true)
     public List<VetProfile> getAllProfiles() {
         return vetProfileRepository.findAll();
+    }
+
+    private void applySpecializations(VetProfile profile, Set<VetSpecialization> specs) {
+        Set<VetSpecialization> newSpecs = specs != null ? new HashSet<>(specs) : new HashSet<>();
+
+        profile.getSpecializations().clear();
+        profile.getSpecializations().addAll(newSpecs);
     }
 
     private User getCurrentVetUserOrThrow() {

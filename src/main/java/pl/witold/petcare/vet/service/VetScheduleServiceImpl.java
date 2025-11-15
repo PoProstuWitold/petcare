@@ -37,20 +37,10 @@ public class VetScheduleServiceImpl implements VetScheduleService {
         vetScheduleEntryRepository.deleteByVetProfile(profile);
 
         List<VetScheduleEntry> entries = new ArrayList<>();
-
         for (VetScheduleEntryCommand command : commands) {
             validateCommand(command);
-
-            VetScheduleEntry entry = new VetScheduleEntry();
-            entry.setVetProfile(profile);
-            entry.setDayOfWeek(command.dayOfWeek());
-            entry.setStartTime(command.startTime());
-            entry.setEndTime(command.endTime());
-            entry.setSlotLengthMinutes(command.slotLengthMinutes());
-
-            entries.add(entry);
+            entries.add(createEntry(profile, command));
         }
-
         return vetScheduleEntryRepository.saveAll(entries);
     }
 
@@ -68,5 +58,15 @@ public class VetScheduleServiceImpl implements VetScheduleService {
         if (!start.isBefore(end)) {
             throw new IllegalArgumentException("Start time must be before end time");
         }
+    }
+
+    private VetScheduleEntry createEntry(VetProfile profile, VetScheduleEntryCommand command) {
+        VetScheduleEntry entry = new VetScheduleEntry();
+        entry.setVetProfile(profile);
+        entry.setDayOfWeek(command.dayOfWeek());
+        entry.setStartTime(command.startTime());
+        entry.setEndTime(command.endTime());
+        entry.setSlotLengthMinutes(command.slotLengthMinutes());
+        return entry;
     }
 }

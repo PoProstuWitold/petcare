@@ -1,7 +1,6 @@
 package pl.witold.petcare.vet.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.witold.petcare.exceptions.VetTimeOffNotFoundException;
@@ -33,7 +32,7 @@ public class VetTimeOffServiceImpl implements VetTimeOffService {
 
     @Override
     public VetTimeOff createTimeOffForCurrentVet(VetTimeOffCreateCommand command) {
-        VetProfile profile = vetProfileService.getOrCreateCurrentVetProfile();
+        VetProfile profile = currentProfile();
 
         validateDates(command.startDate(), command.endDate());
 
@@ -48,17 +47,12 @@ public class VetTimeOffServiceImpl implements VetTimeOffService {
 
     @Override
     public void deleteTimeOffForCurrentVet(Long id) {
-        VetProfile profile = vetProfileService.getOrCreateCurrentVetProfile();
+        VetProfile profile = currentProfile();
 
         VetTimeOff timeOff = vetTimeOffRepository.findByIdAndVetProfile(id, profile)
                 .orElseThrow(() -> new VetTimeOffNotFoundException(
                         "Time-off entry with ID " + id + " not found for current vet"
                 ));
-
-        // Additional defensive check – technically not needed if query uses vetProfile
-        if (!timeOff.getVetProfile().getId().equals(profile.getId())) {
-            throw new AccessDeniedException("You are not allowed to delete this time-off entry");
-        }
 
         vetTimeOffRepository.delete(timeOff);
     }
@@ -87,5 +81,9 @@ public class VetTimeOffServiceImpl implements VetTimeOffService {
         if (end.isBefore(start)) {
             throw new IllegalArgumentException("End date cannot be before start date");
         }
+    }
+
+    private VetProfile currentProfile() {
+        return vetProfileService.getOrCreateCurrentVetProfile();
     }
 }
