@@ -13,12 +13,11 @@ System do zarządzania wizytami u weterynarza i profilami zwierząt.
 ## Spis treści
 1. [Opis, architektura i uruchomienie](#opis-architektura-i-uruchomienie)
 2. [Technologie](#technologie)
-3. [REST API](#rest-api)
-4. [Serializacja danych](#serializacja-danych)
-5. [Zasady SOLID i czysty kod](#zasady-solid-i-czysty-kod)
-6. [Testy](#testy)
-7. [Docker](#docker)
-8. [Harmonogram rozwoju](#harmonogram-rozwoju)
+3. [REST API oraz serializacja danych](#rest-api-oraz-serializacja-danych)
+4. [Zasady SOLID i czysty kod](#zasady-solid-i-czysty-kod)
+5. [Testy](#testy)
+6. [Docker](#docker)
+7. [Harmonogram rozwoju](#harmonogram-rozwoju)
 
 ---
 
@@ -86,7 +85,7 @@ oraz czasu.
 
 ---
 
-## REST API
+## REST API oraz serializacja danych
 
 Wszystkie endpointy mają prefiks `/api`. Dokumentacja OpenAPI jest dostępna w Swagger UI: `http://localhost:8080/swagger-ui/index.html`.
 
@@ -98,11 +97,7 @@ Wszystkie endpointy mają prefiks `/api`. Dokumentacja OpenAPI jest dostępna w 
 - **Visits (`/visits`):** zarządzanie wizytami (slots, konflikty, time-off).
 - **Medical Records (`/medical-records`):** (w toku) zarządzanie historią medyczną.
 
-<p align="right">(<a href="#top">przewiń do góry</a>)</p>
-
----
-
-## Serializacja danych
+**Serializacja danych:**
 
 - **Endpointy:** 
   - `POST /api/pets/me/export`, 
