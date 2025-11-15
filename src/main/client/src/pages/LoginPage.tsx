@@ -78,7 +78,7 @@ export function LoginPage() {
 							htmlFor='username'
 							className='block text-sm font-medium text-slate-800'
 						>
-							Username
+							Username/Email
 						</label>
 						<input
 							id='username'
@@ -86,7 +86,7 @@ export function LoginPage() {
 							className='block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200'
 							placeholder='Your username'
 							{...register('username', {
-								required: 'username is required'
+								required: 'Username/Email is required'
 							})}
 						/>
 						{errors.username && (
