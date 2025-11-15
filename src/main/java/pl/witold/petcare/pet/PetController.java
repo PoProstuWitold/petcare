@@ -92,6 +92,9 @@ public class PetController {
                 .stream()
                 .map(PetMapper::toImportDto)
                 .toList();
+        if (exported.isEmpty()) {
+            throw new IllegalArgumentException("No pets to export for current user");
+        }
         return ResponseEntity.ok(exported);
     }
 
@@ -115,6 +118,9 @@ public class PetController {
             Authentication authentication,
             @Valid @org.springframework.web.bind.annotation.RequestBody List<PetImportDto> payload
     ) {
+        if (payload == null || payload.isEmpty()) {
+            throw new IllegalArgumentException("At least one pet must be provided for import");
+        }
         User currentUser = userService.getByUsername(authentication.getName());
         List<PetResponseDto> created = petService.importForOwner(currentUser.getId(), payload)
                 .stream()
