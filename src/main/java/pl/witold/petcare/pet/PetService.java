@@ -1,5 +1,6 @@
 package pl.witold.petcare.pet;
 
+import pl.witold.petcare.dto.PetImportDto;
 import pl.witold.petcare.pet.commands.PetCreateCommand;
 import pl.witold.petcare.pet.commands.PetUpdateCommand;
 
@@ -12,4 +13,5 @@ public interface PetService {
     List<Pet> getAll();
     List<Pet> getByOwnerId(Long ownerId);
     void deleteById(Long id);
+    List<Pet> importForOwner(Long ownerId, List<PetImportDto> pets);
 }

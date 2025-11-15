@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.witold.petcare.dto.PetImportDto;
 import pl.witold.petcare.exceptions.PetNotFoundException;
 import pl.witold.petcare.exceptions.UserNotFoundException;
 import pl.witold.petcare.pet.commands.PetCreateCommand;
@@ -99,6 +100,16 @@ public class PetServiceImpl implements PetService {
         Pet pet = getByIdWithOwner(id);
         petAccessService.checkCanModify(pet);
         petRepository.delete(pet);
+    }
+
+    @Override
+    public List<Pet> importForOwner(Long ownerId, List<PetImportDto> pets) {
+        enforceOwnerScope(ownerId);
+        User owner = getOwnerOrThrow(ownerId);
+        return pets.stream()
+                .map(dto -> PetMapper.fromImportDto(owner, dto))
+                .map(petRepository::save)
+                .toList();
     }
 
     private Pet getByIdWithOwner(Long id) {

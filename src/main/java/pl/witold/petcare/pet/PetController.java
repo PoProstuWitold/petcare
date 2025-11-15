@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import pl.witold.petcare.dto.PetImportDto;
 import pl.witold.petcare.dto.PetResponseDto;
 import pl.witold.petcare.pet.commands.PetCreateCommand;
 import pl.witold.petcare.pet.commands.PetUpdateCommand;
@@ -67,6 +68,59 @@ public class PetController {
     ) {
         Pet pet = petService.create(command);
         return ResponseEntity.ok(PetMapper.toDto(pet));
+    }
+
+    /**
+     * Export current user's pets as a JSON array of PetImportDto.
+     */
+    @Operation(
+            summary = "Export current user's pets",
+            description = "Returns a JSON array of pets for the current user, without IDs/owner info."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Exported pets",
+            content = @Content(
+                    mediaType = "application/json",
+                    array = @ArraySchema(schema = @Schema(implementation = PetImportDto.class))
+            )
+    )
+    @GetMapping("/me/export")
+    public ResponseEntity<List<PetImportDto>> exportMyPets(Authentication authentication) {
+        User currentUser = userService.getByUsername(authentication.getName());
+        List<PetImportDto> exported = petService.getByOwnerId(currentUser.getId())
+                .stream()
+                .map(PetMapper::toImportDto)
+                .toList();
+        return ResponseEntity.ok(exported);
+    }
+
+    /**
+     * Import pets from JSON and assign them to the current user. New IDs will be generated.
+     */
+    @Operation(
+            summary = "Import pets for current user",
+            description = "Accepts a JSON array of pets and creates them for the current user. New IDs are generated."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Imported pets",
+            content = @Content(
+                    mediaType = "application/json",
+                    array = @ArraySchema(schema = @Schema(implementation = PetResponseDto.class))
+            )
+    )
+    @PostMapping("/me/import")
+    public ResponseEntity<List<PetResponseDto>> importMyPets(
+            Authentication authentication,
+            @Valid @org.springframework.web.bind.annotation.RequestBody List<PetImportDto> payload
+    ) {
+        User currentUser = userService.getByUsername(authentication.getName());
+        List<PetResponseDto> created = petService.importForOwner(currentUser.getId(), payload)
+                .stream()
+                .map(PetMapper::toDto)
+                .toList();
+        return ResponseEntity.ok(created);
     }
 
     /**

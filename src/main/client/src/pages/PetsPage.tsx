@@ -5,6 +5,7 @@ import { Loader } from '../components/Loader'
 import { PetMedicalRecordsSection } from '../components/medical/PetMedicalRecordsSection'
 import { PetCard } from '../components/PetCard'
 import { PetForm } from '../components/PetForm'
+import { PetImportExportPanel } from '../components/PetImportExportPanel'
 import { ProtectedHeader } from '../components/ProtectedHeader'
 import { Button } from '../components/ui/Button'
 import { PetVisitsSection } from '../components/visits/PetVisitsSection'
@@ -157,8 +158,21 @@ export function PetsPage() {
 					</Button>
 				</div>
 			</ProtectedHeader>
-
 			<div className='page-content'>
+				<PetImportExportPanel
+					onImported={(newPets) => {
+						// merge new pets (avoid duplicates by id)
+						setPets((prev) => {
+							const existingIds = new Set(prev.map((p) => p.id))
+							const merged = [...prev]
+							for (const p of newPets) {
+								if (!existingIds.has(p.id)) merged.push(p)
+							}
+							return merged
+						})
+					}}
+					disabled={isCreating || !!editingPet || isBookingVisit}
+				/>
 				{(isCreating || editingPet) && (
 					<PetForm
 						mode={editingPet ? 'edit' : 'create'}
