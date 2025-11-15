@@ -36,7 +36,7 @@ export function Collapsible({
 		const onResize = () => measure()
 		window.addEventListener('resize', onResize)
 		return () => window.removeEventListener('resize', onResize)
-	}, [open])
+	}, [])
 
 	// If closed set maxHeight to 0, if open to measured height (+ buffer to avoid clipping)
 	const maxHeight = open ? (contentHeight > 0 ? contentHeight + 8 : 9999) : 0
@@ -46,9 +46,15 @@ export function Collapsible({
 			id={id}
 			aria-hidden={!open}
 			className={`overflow-hidden transition-[max-height] ease-in-out ${open ? 'mt-4' : ''} ${className}`}
-			style={{ maxHeight, transitionDuration: `${durationMs}ms`, willChange: 'max-height' }}
+			style={{
+				maxHeight,
+				transitionDuration: `${durationMs}ms`,
+				willChange: 'max-height'
+			}}
 		>
-			<div ref={innerRef} className='pb-1'>{children}</div>
+			<div ref={innerRef} className='pb-1'>
+				{children}
+			</div>
 		</div>
 	)
 }
