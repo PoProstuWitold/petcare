@@ -31,8 +31,7 @@ ENV SPRING_PROFILES_ACTIVE=prod \
     SPRING_DATASOURCE_PASSWORD=petcare \
     SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver \
     SPRING_H2_CONSOLE_ENABLED=false \
-    SPRING_FLYWAY_ENABLED=true \
-    JWT_SECRET_BASE64=faJJ1JQFddaDGiwl6BOXixX95I1HGKbTYBjRWdxv4EY2
+    SPRING_FLYWAY_ENABLED=true
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 CMD wget -qO- http://localhost:8080/api/status/health | grep '"status"' || exit 1
 ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar /app/app.jar"]

@@ -18,9 +18,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        SKIP_TESTS: "true"
     container_name: petcare
+    environment:
+      JWT_SECRET_BASE64: 598c0e890a71a89f6f02ba07e03cb18dbad8c3e327d3cc5b390fc37a357b5d90
     restart: unless-stopped
     depends_on:
       - petcare_db
