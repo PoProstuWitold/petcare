@@ -74,10 +74,8 @@ export function MedicalRecordForm({ visitId, onCreated, defaultTitle }: Props) {
 		try {
 			await createMedicalRecord(form, accessToken)
 			toast.success('Medical record created successfully')
+			// Call onCreated callback to refresh data instead of hard refresh
 			onCreated?.()
-			setTimeout(() => {
-				window.location.href = '/vet'
-			}, 500)
 		} catch (err: unknown) {
 			// Extract error message from API response
 			let msg = 'Failed to create medical record'

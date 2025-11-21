@@ -205,18 +205,6 @@ export function ManageVisits() {
 						notes: form.notes || null
 					})
 				})
-				setVisits((prev) =>
-					prev.map((v) =>
-						v.id === selectedVisit?.id
-							? {
-									...v,
-									status: form.status,
-									reason: form.reason,
-									notes: form.notes
-								}
-							: v
-					)
-				)
 			} else {
 				// Create visit
 				const payload = {
@@ -227,13 +215,14 @@ export function ManageVisits() {
 					reason: form.reason.trim(),
 					notes: form.notes || null
 				}
-				const created = await httpJson<Visit>('/api/visits', {
+				await httpJson<Visit>('/api/visits', {
 					method: 'POST',
 					headers: authHeaders(accessToken),
 					body: JSON.stringify(payload)
 				})
-				setVisits((prev) => [created, ...prev])
 			}
+			// Refresh full list to ensure consistency with server state
+			await loadVisits()
 			startCreate()
 		} catch (e) {
 			setError(e instanceof Error ? e.message : 'Failed to save visit')
@@ -256,7 +245,8 @@ export function ManageVisits() {
 				method: 'DELETE',
 				headers: authHeaders(accessToken)
 			})
-			setVisits((prev) => prev.filter((x) => x.id !== visitToDelete.id))
+			// Refresh full list to ensure consistency with server state
+			await loadVisits()
 			setVisitToDelete(null)
 		} catch (e) {
 			setError(e instanceof Error ? e.message : 'Failed to delete visit')

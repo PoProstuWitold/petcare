@@ -157,7 +157,7 @@ export function ManageMedicalRecords() {
 					prescriptions: form.prescriptions || null,
 					notes: form.notes || null
 				}
-				const updated = await httpJson<MedicalRecord>(
+				await httpJson<MedicalRecord>(
 					`/api/medical-records/${selectedRecord.id}`,
 					{
 						method: 'PATCH',
@@ -165,10 +165,6 @@ export function ManageMedicalRecords() {
 						body: JSON.stringify(payloadUpdate)
 					}
 				)
-				setRecords((prev) =>
-					prev.map((r) => (r.id === selectedRecord.id ? updated : r))
-				)
-				startCreate()
 			} else {
 				const payload = {
 					visitId: Number(form.visitId),
@@ -178,7 +174,7 @@ export function ManageMedicalRecords() {
 					prescriptions: form.prescriptions || null,
 					notes: form.notes || null
 				}
-				const created = await httpJson<MedicalRecord>(
+				await httpJson<MedicalRecord>(
 					'/api/medical-records',
 					{
 						method: 'POST',
@@ -186,7 +182,12 @@ export function ManageMedicalRecords() {
 						body: JSON.stringify(payload)
 					}
 				)
-				setRecords((prev) => [created, ...prev])
+			}
+			// Refresh full list to ensure consistency with server state
+			await loadRecords()
+			if (mode === 'EDIT') {
+				startCreate()
+			} else {
 				resetForm()
 			}
 		} catch (e) {
@@ -214,7 +215,8 @@ export function ManageMedicalRecords() {
 				method: 'DELETE',
 				headers: authHeaders(accessToken)
 			})
-			setRecords((prev) => prev.filter((x) => x.id !== recordToDelete.id))
+			// Refresh full list to ensure consistency with server state
+			await loadRecords()
 			if (selectedRecord && selectedRecord.id === recordToDelete.id) startCreate()
 			setRecordToDelete(null)
 		} catch (e) {

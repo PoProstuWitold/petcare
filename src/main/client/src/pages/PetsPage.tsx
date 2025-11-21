@@ -101,7 +101,9 @@ export function PetsPage() {
 		try {
 			await json<void>(`/api/pets/${petToDelete.id}`, { method: 'DELETE' })
 
-			setPets((prev) => prev.filter((p) => p.id !== petToDelete.id))
+			// Refresh full list to ensure consistency with server state
+			const data = await json<Pet[]>('/api/pets/me')
+			setPets(data)
 
 			setEditingPet((current) =>
 				current && current.id === petToDelete.id ? null : current

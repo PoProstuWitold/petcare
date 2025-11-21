@@ -171,13 +171,8 @@ export function ManagePets() {
 				headers: authHeaders(accessToken),
 				body: JSON.stringify(payload)
 			})
-			if (isEdit) {
-				setPets((prev) =>
-					prev.map((p) => (p.id === selectedPet?.id ? saved : p))
-				)
-			} else {
-				setPets((prev) => [saved, ...prev])
-			}
+			// Refresh full list to ensure consistency with server state
+			await loadPets()
 			startCreate()
 		} catch (e) {
 			setError(e instanceof Error ? e.message : 'Failed to save pet')
@@ -200,7 +195,8 @@ export function ManagePets() {
 				method: 'DELETE',
 				headers: authHeaders(accessToken)
 			})
-			setPets((prev) => prev.filter((p) => p.id !== petToDelete.id))
+			// Refresh full list to ensure consistency with server state
+			await loadPets()
 			setPetToDelete(null)
 		} catch (e) {
 			setError(e instanceof Error ? e.message : 'Failed to delete pet')

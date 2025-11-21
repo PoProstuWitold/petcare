@@ -150,7 +150,8 @@ export function ManageUsers() {
 				method: 'DELETE',
 				headers: authHeaders(accessToken)
 			})
-			setUsers((prev) => prev.filter((u) => u.id !== userIdToDelete))
+			// Refresh full list to ensure consistency with server state
+			await loadUsers()
 			setUserIdToDelete(null)
 		} catch (e) {
 			if (e instanceof Error) {
