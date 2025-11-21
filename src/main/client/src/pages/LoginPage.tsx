@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router'
 import { toast } from 'react-toastify'
+import { Spinner } from '../components/ui/Spinner'
 import { useAuth } from '../context/AuthContext'
 
 type LoginFormValues = {
@@ -12,8 +13,9 @@ type LoginFormValues = {
 export function LoginPage() {
 	const [isSubmitting, setIsSubmitting] = useState(false)
 	const [serverError, setServerError] = useState<string | null>(null)
+	const [shouldRedirect, setShouldRedirect] = useState(false)
 	const navigate = useNavigate()
-	const { login } = useAuth()
+	const { login, user } = useAuth()
 
 	const {
 		register,
@@ -26,6 +28,20 @@ export function LoginPage() {
 		}
 	})
 
+	// Redirect after successful login based on user role
+	useEffect(() => {
+		if (shouldRedirect && user?.roles) {
+			if (user.roles.includes('ADMIN')) {
+				navigate('/admin', { replace: true })
+			} else if (user.roles.includes('VET')) {
+				navigate('/vet', { replace: true })
+			} else {
+				navigate('/pets', { replace: true })
+			}
+			setShouldRedirect(false)
+		}
+	}, [user, shouldRedirect, navigate])
+
 	const onSubmit = async (values: LoginFormValues) => {
 		setIsSubmitting(true)
 		setServerError(null)
@@ -36,14 +52,22 @@ export function LoginPage() {
 				password: values.password
 			})
 
-			// TODO: możesz tu dodać logikę zależną od roli
-			// np. jeśli ADMIN => /admin, jeśli VET => /vet itd.
 			toast.success('Login successful')
-			navigate('/', { replace: true })
+			setShouldRedirect(true)
 		} catch (error) {
-			toast.error('Login failed')
 			console.error('Login failed', error)
-			setServerError('Invalid username or password')
+			// Extract error message from API response
+			let errorMessage = 'Invalid username or password'
+			if (error instanceof Error) {
+				const httpError = error as any
+				if (httpError.body?.message) {
+					errorMessage = httpError.body.message
+				} else if (error.message) {
+					errorMessage = error.message
+				}
+			}
+			toast.error('Login failed')
+			setServerError(errorMessage)
 		} finally {
 			setIsSubmitting(false)
 		}
@@ -128,8 +152,9 @@ export function LoginPage() {
 					<button
 						type='submit'
 						disabled={isSubmitting}
-						className='mt-2 flex w-full items-center justify-center rounded-full bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-70'
+						className='mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-70'
 					>
+						{isSubmitting && <Spinner size='sm' className='border-white border-t-transparent' />}
 						{isSubmitting ? 'Signing in...' : 'Sign in'}
 					</button>
 				</form>

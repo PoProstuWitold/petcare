@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { Link } from 'react-router'
 import { toast } from 'react-toastify'
 import { Button } from '../components/ui/Button'
+import { Spinner } from '../components/ui/Spinner'
 import { httpJson } from '../utils/http'
 
 type RegisterFormValues = {
@@ -199,9 +200,10 @@ export function RegisterPage() {
 					<Button
 						type='submit'
 						variant='primary'
-						className='w-full rounded-full'
+						className='w-full rounded-full flex items-center justify-center gap-2'
 						disabled={isSubmitting}
 					>
+						{isSubmitting && <Spinner size='sm' className='border-white border-t-transparent' />}
 						{isSubmitting
 							? 'Creating account...'
 							: 'Create account'}

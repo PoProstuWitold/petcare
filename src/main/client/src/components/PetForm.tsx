@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { useAuthFetch } from '../hooks/useAuthFetch'
 import type { Pet } from '../utils/types'
 import { Button } from './ui/Button'
+import { Spinner } from './ui/Spinner'
 
 const SPECIES_OPTIONS = [
 	'DOG',
@@ -40,10 +41,33 @@ interface PetFormState {
 	notes: string
 }
 
+// Helper function to parse validation errors from API response
+// Format: "field: message, field2: message2"
+function parseValidationErrors(errorMessage: string): Record<string, string> {
+	const errors: Record<string, string> = {}
+	
+	// Split by comma and parse each "field: message" pair
+	const parts = errorMessage.split(',').map(s => s.trim())
+	
+	for (const part of parts) {
+		const colonIndex = part.indexOf(':')
+		if (colonIndex > 0) {
+			const field = part.substring(0, colonIndex).trim()
+			const message = part.substring(colonIndex + 1).trim()
+			if (field && message) {
+				errors[field] = message
+			}
+		}
+	}
+	
+	return errors
+}
+
 export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 	const { accessToken, user } = useAuth()
 	const { json } = useAuthFetch()
 	const [isSubmitting, setIsSubmitting] = useState(false)
+	const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
 	const [form, setForm] = useState<PetFormState>(() => ({
 		name: initialPet?.name ?? '',
@@ -71,6 +95,14 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 	) => {
 		const { name, value } = event.target
 		setForm((prev) => ({ ...prev, [name]: value }))
+		// Clear field error when user starts typing
+		if (fieldErrors[name]) {
+			setFieldErrors((prev) => {
+				const newErrors = { ...prev }
+				delete newErrors[name]
+				return newErrors
+			})
+		}
 	}
 
 	const handleSubmit = async (event: React.FormEvent) => {
@@ -103,6 +135,7 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 		const method = isEdit ? 'PUT' : 'POST'
 
 		setIsSubmitting(true)
+		setFieldErrors({}) // Clear previous errors
 
 		try {
 			const data = await json<Pet>(url, {
@@ -133,9 +166,36 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 					notes: ''
 				})
 			}
+			setFieldErrors({}) // Clear errors on success
 		} catch (error) {
-			console.error('ErrorHandler while submitting pet form', error)
-			toast.error('Unexpected error while saving pet.')
+			console.error('Error while submitting pet form', error)
+			// Extract error message from API response
+			let errorMessage = 'Unexpected error while saving pet.'
+			if (error instanceof Error) {
+				// HttpError from httpJson has body.message or error.message
+				const httpError = error as any
+				if (httpError.body?.message) {
+					errorMessage = httpError.body.message
+				} else if (error.message) {
+					errorMessage = error.message
+				}
+			}
+			
+			// Check if it's a validation error (400 Bad Request with field: message format)
+			const httpError = error as any
+			if (httpError.status === 400 && errorMessage.includes(':')) {
+				// Parse validation errors and map to fields
+				const validationErrors = parseValidationErrors(errorMessage)
+				setFieldErrors(validationErrors)
+				// Show toast with general message if there are multiple errors
+				if (Object.keys(validationErrors).length > 1) {
+					toast.error('Please fix the validation errors below')
+				} else {
+					toast.error(errorMessage)
+				}
+			} else {
+				toast.error(errorMessage)
+			}
 		} finally {
 			setIsSubmitting(false)
 		}
@@ -165,10 +225,17 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 						name='name'
 						value={form.name}
 						onChange={handleChange}
-						className='mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200'
+						className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 ${
+							fieldErrors.name
+								? 'border-red-300 focus:border-red-500 focus:ring-red-200'
+								: 'border-slate-300 bg-white focus:border-sky-500 focus:ring-sky-200'
+						}`}
 						placeholder='e.g. Luna'
 						required
 					/>
+					{fieldErrors.name && (
+						<p className='mt-1 text-xs text-red-600'>{fieldErrors.name}</p>
+					)}
 				</div>
 
 				<div className='sm:col-span-1'>
@@ -182,7 +249,11 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 						name='species'
 						value={form.species}
 						onChange={handleChange}
-						className='mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200'
+						className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 ${
+							fieldErrors.species
+								? 'border-red-300 focus:border-red-500 focus:ring-red-200'
+								: 'border-slate-300 bg-white focus:border-sky-500 focus:ring-sky-200'
+						}`}
 						required
 					>
 						<option value=''>Select species</option>
@@ -192,6 +263,9 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 							</option>
 						))}
 					</select>
+					{fieldErrors.species && (
+						<p className='mt-1 text-xs text-red-600'>{fieldErrors.species}</p>
+					)}
 				</div>
 
 				<div className='sm:col-span-1'>
@@ -205,7 +279,11 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 						name='sex'
 						value={form.sex}
 						onChange={handleChange}
-						className='mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200'
+						className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 ${
+							fieldErrors.sex
+								? 'border-red-300 focus:border-red-500 focus:ring-red-200'
+								: 'border-slate-300 bg-white focus:border-sky-500 focus:ring-sky-200'
+						}`}
 					>
 						{SEX_OPTIONS.map((option) => (
 							<option key={option} value={option}>
@@ -213,6 +291,9 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 							</option>
 						))}
 					</select>
+					{fieldErrors.sex && (
+						<p className='mt-1 text-xs text-red-600'>{fieldErrors.sex}</p>
+					)}
 				</div>
 
 				<div className='sm:col-span-1'>
@@ -227,9 +308,16 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 						name='breed'
 						value={form.breed}
 						onChange={handleChange}
-						className='mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200'
+						className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 ${
+							fieldErrors.breed
+								? 'border-red-300 focus:border-red-500 focus:ring-red-200'
+								: 'border-slate-300 bg-white focus:border-sky-500 focus:ring-sky-200'
+						}`}
 						placeholder='optional'
 					/>
+					{fieldErrors.breed && (
+						<p className='mt-1 text-xs text-red-600'>{fieldErrors.breed}</p>
+					)}
 				</div>
 
 				<div>
@@ -244,8 +332,15 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 						name='birthDate'
 						value={form.birthDate}
 						onChange={handleChange}
-						className='mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200'
+						className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 ${
+							fieldErrors.birthDate
+								? 'border-red-300 focus:border-red-500 focus:ring-red-200'
+								: 'border-slate-300 bg-white focus:border-sky-500 focus:ring-sky-200'
+						}`}
 					/>
+					{fieldErrors.birthDate && (
+						<p className='mt-1 text-xs text-red-600'>{fieldErrors.birthDate}</p>
+					)}
 					<p className='mt-1 text-[11px] text-slate-500'>
 						If you do not know exact date, you can provide only year
 						below.
@@ -264,11 +359,18 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 						name='birthYear'
 						value={form.birthYear}
 						onChange={handleChange}
-						className='mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200'
+						className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 ${
+							fieldErrors.birthYear
+								? 'border-red-300 focus:border-red-500 focus:ring-red-200'
+								: 'border-slate-300 bg-white focus:border-sky-500 focus:ring-sky-200'
+						}`}
 						placeholder='e.g. 2019'
 						min={1900}
 						max={new Date().getFullYear()}
 					/>
+					{fieldErrors.birthYear && (
+						<p className='mt-1 text-xs text-red-600'>{fieldErrors.birthYear}</p>
+					)}
 				</div>
 
 				<div>
@@ -283,11 +385,18 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 						name='weight'
 						value={form.weight}
 						onChange={handleChange}
-						className='mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200'
+						className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 ${
+							fieldErrors.weight
+								? 'border-red-300 focus:border-red-500 focus:ring-red-200'
+								: 'border-slate-300 bg-white focus:border-sky-500 focus:ring-sky-200'
+						}`}
 						step='0.1'
 						min='0'
 						placeholder='optional'
 					/>
+					{fieldErrors.weight && (
+						<p className='mt-1 text-xs text-red-600'>{fieldErrors.weight}</p>
+					)}
 				</div>
 
 				<div className='sm:col-span-2'>
@@ -301,10 +410,17 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 						name='notes'
 						value={form.notes}
 						onChange={handleChange}
-						className='mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200'
+						className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 ${
+							fieldErrors.notes
+								? 'border-red-300 focus:border-red-500 focus:ring-red-200'
+								: 'border-slate-300 bg-white focus:border-sky-500 focus:ring-sky-200'
+						}`}
 						rows={3}
 						placeholder='Any important medical or behavioral notes...'
 					/>
+					{fieldErrors.notes && (
+						<p className='mt-1 text-xs text-red-600'>{fieldErrors.notes}</p>
+					)}
 				</div>
 			</div>
 
@@ -319,7 +435,8 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 						Cancel
 					</Button>
 				)}
-				<Button type='submit' variant='primary' disabled={isSubmitting}>
+				<Button type='submit' variant='primary' disabled={isSubmitting} className='flex items-center gap-2'>
+					{isSubmitting && <Spinner size='sm' className='border-white border-t-transparent' />}
 					{isSubmitting
 						? mode === 'edit'
 							? 'Saving...'

@@ -5,6 +5,8 @@ import { authHeaders, httpJson } from '../../utils/http'
 import type { Pet, User } from '../../utils/types'
 import { Alert } from '../ui/Alert'
 import { Button } from '../ui/Button'
+import { Spinner } from '../ui/Spinner'
+import { ConfirmationDialog } from '../ui/ConfirmationDialog'
 
 const SPECIES_OPTIONS = [
 	'DOG',
@@ -44,6 +46,7 @@ export function ManagePets() {
 	const [formMode, setFormMode] = useState<FormMode>('CREATE')
 	const [selectedPet, setSelectedPet] = useState<Pet | null>(null)
 	const [submitting, setSubmitting] = useState(false)
+	const [petToDelete, setPetToDelete] = useState<Pet | null>(null)
 
 	const [form, setForm] = useState<PetFormState>({
 		ownerId: '',
@@ -169,13 +172,8 @@ export function ManagePets() {
 				headers: authHeaders(accessToken),
 				body: JSON.stringify(payload)
 			})
-			if (isEdit) {
-				setPets((prev) =>
-					prev.map((p) => (p.id === selectedPet?.id ? saved : p))
-				)
-			} else {
-				setPets((prev) => [saved, ...prev])
-			}
+			// Refresh full list to ensure consistency with server state
+			await loadPets()
 			startCreate()
 		} catch (e) {
 			setError(e instanceof Error ? e.message : 'Failed to save pet')
@@ -184,15 +182,23 @@ export function ManagePets() {
 		}
 	}
 
-	async function handleDelete(pet: Pet) {
-		if (!accessToken) return
-		if (!confirm(`Delete pet "${pet.name}"? This cannot be undone.`)) return
+	function handleDelete(pet: Pet) {
+		setPetToDelete(pet)
+	}
+
+	async function confirmDeletePet() {
+		if (!petToDelete || !accessToken) {
+			setPetToDelete(null)
+			return
+		}
 		try {
-			await httpJson<void>(`/api/pets/${pet.id}`, {
+			await httpJson<void>(`/api/pets/${petToDelete.id}`, {
 				method: 'DELETE',
 				headers: authHeaders(accessToken)
 			})
-			setPets((prev) => prev.filter((p) => p.id !== pet.id))
+			// Refresh full list to ensure consistency with server state
+			await loadPets()
+			setPetToDelete(null)
 		} catch (e) {
 			setError(e instanceof Error ? e.message : 'Failed to delete pet')
 		}
@@ -537,7 +543,9 @@ export function ManagePets() {
 						<Button
 							type='submit'
 							disabled={!canSubmit || submitting}
+							className='flex items-center gap-2'
 						>
+							{submitting && <Spinner size='sm' className='border-white border-t-transparent' />}
 							{submitting
 								? formMode === 'EDIT'
 									? 'Saving...'
@@ -557,6 +565,21 @@ export function ManagePets() {
 					</div>
 				</form>
 			</div>
+
+			<ConfirmationDialog
+				isOpen={petToDelete !== null}
+				title='Delete Pet'
+				message={
+					petToDelete
+						? `Delete pet "${petToDelete.name}"? This cannot be undone.`
+						: ''
+				}
+				confirmLabel='Delete'
+				cancelLabel='Cancel'
+				onConfirm={confirmDeletePet}
+				onCancel={() => setPetToDelete(null)}
+				variant='danger'
+			/>
 		</section>
 	)
 }

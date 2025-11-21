@@ -23,6 +23,7 @@ import type {
 	Visit
 } from '../../utils/types'
 import { Button } from '../ui/Button'
+import { Spinner } from '../ui/Spinner'
 
 type VisitBookingFormProps = {
 	pets: Pet[]
@@ -401,10 +402,16 @@ export function VisitBookingForm({
 			setAvailableSlots([])
 		} catch (err) {
 			console.error('Error while booking visit', err)
-			const message =
-				err instanceof Error
-					? err.message
-					: 'Unexpected error while booking visit.'
+			// Extract error message from API response
+			let message = 'Unexpected error while booking visit.'
+			if (err instanceof Error) {
+				const httpError = err as any
+				if (httpError.body?.message) {
+					message = httpError.body.message
+				} else if (err.message) {
+					message = err.message
+				}
+			}
 			setError(message)
 			toast.error(message)
 		} finally {
@@ -661,7 +668,9 @@ export function VisitBookingForm({
 						!form.petId ||
 						!form.vetProfileId
 					}
+					className='flex items-center gap-2'
 				>
+					{isSubmitting && <Spinner size='sm' className='border-white border-t-transparent' />}
 					{isSubmitting ? 'Booking...' : 'Book visit'}
 				</Button>
 			</div>

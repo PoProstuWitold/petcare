@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { RxCross2, RxHamburgerMenu } from 'react-icons/rx'
 import { Link, NavLink } from 'react-router'
+import { ConfirmationDialog } from './ui/ConfirmationDialog'
 import { useAuth } from '../context/AuthContext'
 
 type Role = 'USER' | 'VET' | 'ADMIN'
@@ -59,7 +60,14 @@ const buttonGhost = `${buttonBase} border border-transparent text-slate-700 hove
 
 export function Navbar() {
 	const [isOpen, setIsOpen] = useState(false)
+	const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 	const { user, isAuthenticated, hasRole, logout } = useAuth()
+
+	const handleLogout = () => {
+		setShowLogoutConfirm(false)
+		setIsOpen(false)
+		logout()
+	}
 
 	const visibleNavItems = navItems.filter((item) => {
 		if (!item.requiresAuth) {
@@ -75,6 +83,7 @@ export function Navbar() {
 	})
 
 	return (
+		<>
 		<header className='border-b border-slate-200 bg-white/80 backdrop-blur'>
 			<nav className='mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8'>
 				{/* Logo */}
@@ -141,7 +150,7 @@ export function Navbar() {
 								)}
 								<button
 									type='button'
-									onClick={logout}
+									onClick={() => setShowLogoutConfirm(true)}
 									className={`${buttonSecondary} cursor-pointer`}
 								>
 									Logout
@@ -232,7 +241,7 @@ export function Navbar() {
 									<button
 										type='button'
 										onClick={() => {
-											logout()
+											setShowLogoutConfirm(true)
 											setIsOpen(false)
 										}}
 										className={`${buttonSecondary} w-full justify-center cursor-pointer`}
@@ -262,6 +271,19 @@ export function Navbar() {
 					</div>
 				</div>
 			)}
+
 		</header>
+
+		<ConfirmationDialog
+			isOpen={showLogoutConfirm}
+			title='Wylogowanie'
+			message='Czy na pewno chcesz się wylogować?'
+			confirmLabel='Wyloguj'
+			cancelLabel='Anuluj'
+			onConfirm={handleLogout}
+			onCancel={() => setShowLogoutConfirm(false)}
+			variant='warning'
+		/>
+		</>
 	)
 }

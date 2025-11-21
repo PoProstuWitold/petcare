@@ -17,6 +17,7 @@ import type {
 } from '../../utils/types'
 import { Alert } from '../ui/Alert'
 import { Button } from '../ui/Button'
+import { ConfirmationDialog } from '../ui/ConfirmationDialog'
 
 interface RoleToggleProps {
 	value: Role[]
@@ -58,6 +59,7 @@ export function ManageUsers() {
 	const [error, setError] = useState<string | null>(null)
 	const [formMode, setFormMode] = useState<FormMode>('CREATE')
 	const [selectedUser, setSelectedUser] = useState<User | null>(null)
+	const [userIdToDelete, setUserIdToDelete] = useState<number | null>(null)
 	const [refreshing, setRefreshing] = useState(false)
 
 	const [createForm, setCreateForm] = useState<NewUserForm>({
@@ -134,15 +136,23 @@ export function ManageUsers() {
 		}
 	}
 
-	async function handleDelete(id: number) {
-		if (!confirm('Delete user? This cannot be undone.')) return
-		if (!accessToken) return
+	function handleDelete(id: number) {
+		setUserIdToDelete(id)
+	}
+
+	async function confirmDeleteUser() {
+		if (userIdToDelete === null || !accessToken) {
+			setUserIdToDelete(null)
+			return
+		}
 		try {
-			await httpJson<void>(`/api/users/${id}`, {
+			await httpJson<void>(`/api/users/${userIdToDelete}`, {
 				method: 'DELETE',
 				headers: authHeaders(accessToken)
 			})
-			setUsers((prev) => prev.filter((u) => u.id !== id))
+			// Refresh full list to ensure consistency with server state
+			await loadUsers()
+			setUserIdToDelete(null)
 		} catch (e) {
 			if (e instanceof Error) {
 				setError(e.message)
@@ -581,6 +591,17 @@ export function ManageUsers() {
 					</form>
 				)}
 			</div>
+
+			<ConfirmationDialog
+				isOpen={userIdToDelete !== null}
+				title='Delete User'
+				message='Delete user? This cannot be undone.'
+				confirmLabel='Delete'
+				cancelLabel='Cancel'
+				onConfirm={confirmDeleteUser}
+				onCancel={() => setUserIdToDelete(null)}
+				variant='danger'
+			/>
 		</section>
 	)
 }

@@ -13,6 +13,8 @@ import { authHeaders, httpJson } from '../../utils/http'
 import type { MedicalRecord, Pet } from '../../utils/types'
 import { Alert } from '../ui/Alert'
 import { Button } from '../ui/Button'
+import { ConfirmationDialog } from '../ui/ConfirmationDialog'
+import { Spinner } from '../ui/Spinner'
 
 type RecordFormState = {
 	visitId: string
@@ -35,6 +37,7 @@ export function ManageMedicalRecords() {
 	const [filterVisitId, setFilterVisitId] = useState<string>('')
 
 	const [submitting, setSubmitting] = useState(false)
+	const [recordToDelete, setRecordToDelete] = useState<MedicalRecord | null>(null)
 	const [form, setForm] = useState<RecordFormState>({
 		visitId: '',
 		title: '',
@@ -155,7 +158,7 @@ export function ManageMedicalRecords() {
 					prescriptions: form.prescriptions || null,
 					notes: form.notes || null
 				}
-				const updated = await httpJson<MedicalRecord>(
+				await httpJson<MedicalRecord>(
 					`/api/medical-records/${selectedRecord.id}`,
 					{
 						method: 'PATCH',
@@ -163,10 +166,6 @@ export function ManageMedicalRecords() {
 						body: JSON.stringify(payloadUpdate)
 					}
 				)
-				setRecords((prev) =>
-					prev.map((r) => (r.id === selectedRecord.id ? updated : r))
-				)
-				startCreate()
 			} else {
 				const payload = {
 					visitId: Number(form.visitId),
@@ -176,7 +175,7 @@ export function ManageMedicalRecords() {
 					prescriptions: form.prescriptions || null,
 					notes: form.notes || null
 				}
-				const created = await httpJson<MedicalRecord>(
+				await httpJson<MedicalRecord>(
 					'/api/medical-records',
 					{
 						method: 'POST',
@@ -184,7 +183,12 @@ export function ManageMedicalRecords() {
 						body: JSON.stringify(payload)
 					}
 				)
-				setRecords((prev) => [created, ...prev])
+			}
+			// Refresh full list to ensure consistency with server state
+			await loadRecords()
+			if (mode === 'EDIT') {
+				startCreate()
+			} else {
 				resetForm()
 			}
 		} catch (e) {
@@ -198,17 +202,24 @@ export function ManageMedicalRecords() {
 		}
 	}
 
-	async function handleDelete(r: MedicalRecord) {
-		if (!accessToken) return
-		if (!confirm(`Delete medical record #${r.id}? This cannot be undone.`))
+	function handleDelete(r: MedicalRecord) {
+		setRecordToDelete(r)
+	}
+
+	async function confirmDeleteRecord() {
+		if (!recordToDelete || !accessToken) {
+			setRecordToDelete(null)
 			return
+		}
 		try {
-			await httpJson<void>(`/api/medical-records/${r.id}`, {
+			await httpJson<void>(`/api/medical-records/${recordToDelete.id}`, {
 				method: 'DELETE',
 				headers: authHeaders(accessToken)
 			})
-			setRecords((prev) => prev.filter((x) => x.id !== r.id))
-			if (selectedRecord && selectedRecord.id === r.id) startCreate()
+			// Refresh full list to ensure consistency with server state
+			await loadRecords()
+			if (selectedRecord && selectedRecord.id === recordToDelete.id) startCreate()
+			setRecordToDelete(null)
 		} catch (e) {
 			setError(
 				e instanceof Error
@@ -535,7 +546,9 @@ export function ManageMedicalRecords() {
 							disabled={
 								(!canSubmit && mode === 'CREATE') || submitting
 							}
+							className='flex items-center gap-2'
 						>
+							{submitting && <Spinner size='sm' className='border-white border-t-transparent' />}
 							{submitting
 								? mode === 'EDIT'
 									? 'Saving...'
@@ -555,6 +568,21 @@ export function ManageMedicalRecords() {
 					</div>
 				</form>
 			</div>
+
+			<ConfirmationDialog
+				isOpen={recordToDelete !== null}
+				title='Delete Medical Record'
+				message={
+					recordToDelete
+						? `Delete medical record #${recordToDelete.id}? This cannot be undone.`
+						: ''
+				}
+				confirmLabel='Delete'
+				cancelLabel='Cancel'
+				onConfirm={confirmDeleteRecord}
+				onCancel={() => setRecordToDelete(null)}
+				variant='danger'
+			/>
 		</section>
 	)
 }

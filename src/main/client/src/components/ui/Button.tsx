@@ -5,6 +5,7 @@ export type ButtonVariant =
 	| 'secondary'
 	| 'ghost'
 	| 'danger'
+	| 'warning'
 	| 'outline'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -31,6 +32,8 @@ function variantClasses(variant: ButtonVariant): string {
 			return 'border border-slate-300 bg-white text-slate-800 shadow-sm hover:bg-slate-50 hover:border-slate-400 hover:shadow-md active:bg-slate-100 active:translate-y-px'
 		case 'danger':
 			return 'bg-rose-600 text-white shadow-sm hover:bg-rose-700 active:translate-y-px'
+		case 'warning':
+			return 'bg-amber-600 text-white shadow-sm hover:bg-amber-700 active:translate-y-px'
 		case 'outline':
 			return 'border border-sky-600 text-sky-700 bg-transparent hover:bg-sky-50'
 		default:

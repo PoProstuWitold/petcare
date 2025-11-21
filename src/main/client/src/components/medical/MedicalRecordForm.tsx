@@ -22,6 +22,7 @@ import type {
 } from '../../utils/types'
 import { Alert } from '../ui/Alert'
 import { Button } from '../ui/Button'
+import { Spinner } from '../ui/Spinner'
 import { StatusPill, visitStatusColor } from '../ui/StatusPill'
 
 interface Props {
@@ -74,15 +75,19 @@ export function MedicalRecordForm({ visitId, onCreated, defaultTitle }: Props) {
 		try {
 			await createMedicalRecord(form, accessToken)
 			toast.success('Medical record created successfully')
+			// Call onCreated callback to refresh data instead of hard refresh
 			onCreated?.()
-			setTimeout(() => {
-				window.location.href = '/vet'
-			}, 500)
 		} catch (err: unknown) {
-			const msg =
-				err instanceof Error
-					? err.message
-					: 'Failed to create medical record'
+			// Extract error message from API response
+			let msg = 'Failed to create medical record'
+			if (err instanceof Error) {
+				const httpError = err as any
+				if (httpError.body?.message) {
+					msg = httpError.body.message
+				} else if (err.message) {
+					msg = err.message
+				}
+			}
 			setError(msg)
 			toast.error(msg)
 		} finally {
@@ -316,7 +321,8 @@ export function MedicalRecordForm({ visitId, onCreated, defaultTitle }: Props) {
 					</p>
 				</div>
 				<div className='flex gap-2 pt-1'>
-					<Button type='submit' variant='primary' disabled={loading}>
+					<Button type='submit' variant='primary' disabled={loading} className='flex items-center gap-2'>
+						{loading && <Spinner size='sm' className='border-white border-t-transparent' />}
 						Create
 					</Button>
 					<Button

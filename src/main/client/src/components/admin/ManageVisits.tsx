@@ -15,6 +15,8 @@ import { authHeaders, httpJson } from '../../utils/http'
 import type { Pet, Visit, VisitStatus } from '../../utils/types'
 import { Alert } from '../ui/Alert'
 import { Button } from '../ui/Button'
+import { ConfirmationDialog } from '../ui/ConfirmationDialog'
+import { Spinner } from '../ui/Spinner'
 
 // Remove VisitExtended alias
 
@@ -48,6 +50,7 @@ export function ManageVisits() {
 	const [selectedVisit, setSelectedVisit] = useState<Visit | null>(null)
 	const [submitting, setSubmitting] = useState(false)
 	const [filterPetId, setFilterPetId] = useState<string>('')
+	const [visitToDelete, setVisitToDelete] = useState<Visit | null>(null)
 	const [filterVetProfileId, setFilterVetProfileId] = useState<string>('')
 
 	const [form, setForm] = useState<VisitFormState>({
@@ -203,18 +206,6 @@ export function ManageVisits() {
 						notes: form.notes || null
 					})
 				})
-				setVisits((prev) =>
-					prev.map((v) =>
-						v.id === selectedVisit?.id
-							? {
-									...v,
-									status: form.status,
-									reason: form.reason,
-									notes: form.notes
-								}
-							: v
-					)
-				)
 			} else {
 				// Create visit
 				const payload = {
@@ -225,13 +216,14 @@ export function ManageVisits() {
 					reason: form.reason.trim(),
 					notes: form.notes || null
 				}
-				const created = await httpJson<Visit>('/api/visits', {
+				await httpJson<Visit>('/api/visits', {
 					method: 'POST',
 					headers: authHeaders(accessToken),
 					body: JSON.stringify(payload)
 				})
-				setVisits((prev) => [created, ...prev])
 			}
+			// Refresh full list to ensure consistency with server state
+			await loadVisits()
 			startCreate()
 		} catch (e) {
 			setError(e instanceof Error ? e.message : 'Failed to save visit')
@@ -240,15 +232,23 @@ export function ManageVisits() {
 		}
 	}
 
-	async function handleDelete(v: Visit) {
-		if (!accessToken) return
-		if (!confirm(`Delete visit #${v.id}? This cannot be undone.`)) return
+	function handleDelete(v: Visit) {
+		setVisitToDelete(v)
+	}
+
+	async function confirmDeleteVisit() {
+		if (!visitToDelete || !accessToken) {
+			setVisitToDelete(null)
+			return
+		}
 		try {
-			await httpJson<void>(`/api/visits/${v.id}`, {
+			await httpJson<void>(`/api/visits/${visitToDelete.id}`, {
 				method: 'DELETE',
 				headers: authHeaders(accessToken)
 			})
-			setVisits((prev) => prev.filter((x) => x.id !== v.id))
+			// Refresh full list to ensure consistency with server state
+			await loadVisits()
+			setVisitToDelete(null)
 		} catch (e) {
 			setError(e instanceof Error ? e.message : 'Failed to delete visit')
 		}
@@ -603,7 +603,9 @@ export function ManageVisits() {
 						<Button
 							type='submit'
 							disabled={!canSubmit || submitting}
+							className='flex items-center gap-2'
 						>
+							{submitting && <Spinner size='sm' className='border-white border-t-transparent' />}
 							{submitting
 								? formMode === 'EDIT'
 									? 'Saving...'
@@ -623,6 +625,21 @@ export function ManageVisits() {
 					</div>
 				</form>
 			</div>
+
+			<ConfirmationDialog
+				isOpen={visitToDelete !== null}
+				title='Delete Visit'
+				message={
+					visitToDelete
+						? `Delete visit #${visitToDelete.id}? This cannot be undone.`
+						: ''
+				}
+				confirmLabel='Delete'
+				cancelLabel='Cancel'
+				onConfirm={confirmDeleteVisit}
+				onCancel={() => setVisitToDelete(null)}
+				variant='danger'
+			/>
 		</section>
 	)
 }
