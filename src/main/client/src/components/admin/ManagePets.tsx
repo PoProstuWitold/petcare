@@ -5,6 +5,7 @@ import { authHeaders, httpJson } from '../../utils/http'
 import type { Pet, User } from '../../utils/types'
 import { Alert } from '../ui/Alert'
 import { Button } from '../ui/Button'
+import { Spinner } from '../ui/Spinner'
 import { ConfirmationDialog } from '../ui/ConfirmationDialog'
 
 const SPECIES_OPTIONS = [
@@ -542,7 +543,9 @@ export function ManagePets() {
 						<Button
 							type='submit'
 							disabled={!canSubmit || submitting}
+							className='flex items-center gap-2'
 						>
+							{submitting && <Spinner size='sm' className='border-white border-t-transparent' />}
 							{submitting
 								? formMode === 'EDIT'
 									? 'Saving...'

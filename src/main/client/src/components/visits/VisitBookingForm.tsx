@@ -23,6 +23,7 @@ import type {
 	Visit
 } from '../../utils/types'
 import { Button } from '../ui/Button'
+import { Spinner } from '../ui/Spinner'
 
 type VisitBookingFormProps = {
 	pets: Pet[]
@@ -667,7 +668,9 @@ export function VisitBookingForm({
 						!form.petId ||
 						!form.vetProfileId
 					}
+					className='flex items-center gap-2'
 				>
+					{isSubmitting && <Spinner size='sm' className='border-white border-t-transparent' />}
 					{isSubmitting ? 'Booking...' : 'Book visit'}
 				</Button>
 			</div>

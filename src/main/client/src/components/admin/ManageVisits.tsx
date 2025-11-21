@@ -16,6 +16,7 @@ import type { Pet, Visit, VisitStatus } from '../../utils/types'
 import { Alert } from '../ui/Alert'
 import { Button } from '../ui/Button'
 import { ConfirmationDialog } from '../ui/ConfirmationDialog'
+import { Spinner } from '../ui/Spinner'
 
 // Remove VisitExtended alias
 
@@ -602,7 +603,9 @@ export function ManageVisits() {
 						<Button
 							type='submit'
 							disabled={!canSubmit || submitting}
+							className='flex items-center gap-2'
 						>
+							{submitting && <Spinner size='sm' className='border-white border-t-transparent' />}
 							{submitting
 								? formMode === 'EDIT'
 									? 'Saving...'

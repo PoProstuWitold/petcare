@@ -14,6 +14,7 @@ import type { MedicalRecord, Pet } from '../../utils/types'
 import { Alert } from '../ui/Alert'
 import { Button } from '../ui/Button'
 import { ConfirmationDialog } from '../ui/ConfirmationDialog'
+import { Spinner } from '../ui/Spinner'
 
 type RecordFormState = {
 	visitId: string
@@ -545,7 +546,9 @@ export function ManageMedicalRecords() {
 							disabled={
 								(!canSubmit && mode === 'CREATE') || submitting
 							}
+							className='flex items-center gap-2'
 						>
+							{submitting && <Spinner size='sm' className='border-white border-t-transparent' />}
 							{submitting
 								? mode === 'EDIT'
 									? 'Saving...'

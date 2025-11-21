@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router'
 import { toast } from 'react-toastify'
+import { Spinner } from '../components/ui/Spinner'
 import { useAuth } from '../context/AuthContext'
 
 type LoginFormValues = {
@@ -151,8 +152,9 @@ export function LoginPage() {
 					<button
 						type='submit'
 						disabled={isSubmitting}
-						className='mt-2 flex w-full items-center justify-center rounded-full bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-70'
+						className='mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-70'
 					>
+						{isSubmitting && <Spinner size='sm' className='border-white border-t-transparent' />}
 						{isSubmitting ? 'Signing in...' : 'Sign in'}
 					</button>
 				</form>

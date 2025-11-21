@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { useAuthFetch } from '../hooks/useAuthFetch'
 import type { Pet } from '../utils/types'
 import { Button } from './ui/Button'
+import { Spinner } from './ui/Spinner'
 
 const SPECIES_OPTIONS = [
 	'DOG',
@@ -434,7 +435,8 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 						Cancel
 					</Button>
 				)}
-				<Button type='submit' variant='primary' disabled={isSubmitting}>
+				<Button type='submit' variant='primary' disabled={isSubmitting} className='flex items-center gap-2'>
+					{isSubmitting && <Spinner size='sm' className='border-white border-t-transparent' />}
 					{isSubmitting
 						? mode === 'edit'
 							? 'Saving...'

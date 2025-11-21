@@ -22,6 +22,7 @@ import type {
 } from '../../utils/types'
 import { Alert } from '../ui/Alert'
 import { Button } from '../ui/Button'
+import { Spinner } from '../ui/Spinner'
 import { StatusPill, visitStatusColor } from '../ui/StatusPill'
 
 interface Props {
@@ -320,7 +321,8 @@ export function MedicalRecordForm({ visitId, onCreated, defaultTitle }: Props) {
 					</p>
 				</div>
 				<div className='flex gap-2 pt-1'>
-					<Button type='submit' variant='primary' disabled={loading}>
+					<Button type='submit' variant='primary' disabled={loading} className='flex items-center gap-2'>
+						{loading && <Spinner size='sm' className='border-white border-t-transparent' />}
 						Create
 					</Button>
 					<Button
