@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router'
 import { toast } from 'react-toastify'
@@ -12,8 +12,9 @@ type LoginFormValues = {
 export function LoginPage() {
 	const [isSubmitting, setIsSubmitting] = useState(false)
 	const [serverError, setServerError] = useState<string | null>(null)
+	const [shouldRedirect, setShouldRedirect] = useState(false)
 	const navigate = useNavigate()
-	const { login } = useAuth()
+	const { login, user } = useAuth()
 
 	const {
 		register,
@@ -26,6 +27,20 @@ export function LoginPage() {
 		}
 	})
 
+	// Redirect after successful login based on user role
+	useEffect(() => {
+		if (shouldRedirect && user?.roles) {
+			if (user.roles.includes('ADMIN')) {
+				navigate('/admin', { replace: true })
+			} else if (user.roles.includes('VET')) {
+				navigate('/vet', { replace: true })
+			} else {
+				navigate('/pets', { replace: true })
+			}
+			setShouldRedirect(false)
+		}
+	}, [user, shouldRedirect, navigate])
+
 	const onSubmit = async (values: LoginFormValues) => {
 		setIsSubmitting(true)
 		setServerError(null)
@@ -36,10 +51,8 @@ export function LoginPage() {
 				password: values.password
 			})
 
-			// TODO: możesz tu dodać logikę zależną od roli
-			// np. jeśli ADMIN => /admin, jeśli VET => /vet itd.
 			toast.success('Login successful')
-			navigate('/', { replace: true })
+			setShouldRedirect(true)
 		} catch (error) {
 			toast.error('Login failed')
 			console.error('Login failed', error)
