@@ -54,9 +54,19 @@ export function LoginPage() {
 			toast.success('Login successful')
 			setShouldRedirect(true)
 		} catch (error) {
-			toast.error('Login failed')
 			console.error('Login failed', error)
-			setServerError('Invalid username or password')
+			// Extract error message from API response
+			let errorMessage = 'Invalid username or password'
+			if (error instanceof Error) {
+				const httpError = error as any
+				if (httpError.body?.message) {
+					errorMessage = httpError.body.message
+				} else if (error.message) {
+					errorMessage = error.message
+				}
+			}
+			toast.error('Login failed')
+			setServerError(errorMessage)
 		} finally {
 			setIsSubmitting(false)
 		}
