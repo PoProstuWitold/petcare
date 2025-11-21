@@ -15,6 +15,7 @@ import { authHeaders, httpJson } from '../../utils/http'
 import type { Pet, Visit, VisitStatus } from '../../utils/types'
 import { Alert } from '../ui/Alert'
 import { Button } from '../ui/Button'
+import { ConfirmationDialog } from '../ui/ConfirmationDialog'
 
 // Remove VisitExtended alias
 
@@ -48,6 +49,7 @@ export function ManageVisits() {
 	const [selectedVisit, setSelectedVisit] = useState<Visit | null>(null)
 	const [submitting, setSubmitting] = useState(false)
 	const [filterPetId, setFilterPetId] = useState<string>('')
+	const [visitToDelete, setVisitToDelete] = useState<Visit | null>(null)
 	const [filterVetProfileId, setFilterVetProfileId] = useState<string>('')
 
 	const [form, setForm] = useState<VisitFormState>({
@@ -240,15 +242,22 @@ export function ManageVisits() {
 		}
 	}
 
-	async function handleDelete(v: Visit) {
-		if (!accessToken) return
-		if (!confirm(`Delete visit #${v.id}? This cannot be undone.`)) return
+	function handleDelete(v: Visit) {
+		setVisitToDelete(v)
+	}
+
+	async function confirmDeleteVisit() {
+		if (!visitToDelete || !accessToken) {
+			setVisitToDelete(null)
+			return
+		}
 		try {
-			await httpJson<void>(`/api/visits/${v.id}`, {
+			await httpJson<void>(`/api/visits/${visitToDelete.id}`, {
 				method: 'DELETE',
 				headers: authHeaders(accessToken)
 			})
-			setVisits((prev) => prev.filter((x) => x.id !== v.id))
+			setVisits((prev) => prev.filter((x) => x.id !== visitToDelete.id))
+			setVisitToDelete(null)
 		} catch (e) {
 			setError(e instanceof Error ? e.message : 'Failed to delete visit')
 		}
@@ -623,6 +632,21 @@ export function ManageVisits() {
 					</div>
 				</form>
 			</div>
+
+			<ConfirmationDialog
+				isOpen={visitToDelete !== null}
+				title='Delete Visit'
+				message={
+					visitToDelete
+						? `Delete visit #${visitToDelete.id}? This cannot be undone.`
+						: ''
+				}
+				confirmLabel='Delete'
+				cancelLabel='Cancel'
+				onConfirm={confirmDeleteVisit}
+				onCancel={() => setVisitToDelete(null)}
+				variant='danger'
+			/>
 		</section>
 	)
 }

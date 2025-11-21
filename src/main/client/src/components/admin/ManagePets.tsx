@@ -5,6 +5,7 @@ import { authHeaders, httpJson } from '../../utils/http'
 import type { Pet, User } from '../../utils/types'
 import { Alert } from '../ui/Alert'
 import { Button } from '../ui/Button'
+import { ConfirmationDialog } from '../ui/ConfirmationDialog'
 
 const SPECIES_OPTIONS = [
 	'DOG',
@@ -44,6 +45,7 @@ export function ManagePets() {
 	const [formMode, setFormMode] = useState<FormMode>('CREATE')
 	const [selectedPet, setSelectedPet] = useState<Pet | null>(null)
 	const [submitting, setSubmitting] = useState(false)
+	const [petToDelete, setPetToDelete] = useState<Pet | null>(null)
 
 	const [form, setForm] = useState<PetFormState>({
 		ownerId: '',
@@ -184,15 +186,22 @@ export function ManagePets() {
 		}
 	}
 
-	async function handleDelete(pet: Pet) {
-		if (!accessToken) return
-		if (!confirm(`Delete pet "${pet.name}"? This cannot be undone.`)) return
+	function handleDelete(pet: Pet) {
+		setPetToDelete(pet)
+	}
+
+	async function confirmDeletePet() {
+		if (!petToDelete || !accessToken) {
+			setPetToDelete(null)
+			return
+		}
 		try {
-			await httpJson<void>(`/api/pets/${pet.id}`, {
+			await httpJson<void>(`/api/pets/${petToDelete.id}`, {
 				method: 'DELETE',
 				headers: authHeaders(accessToken)
 			})
-			setPets((prev) => prev.filter((p) => p.id !== pet.id))
+			setPets((prev) => prev.filter((p) => p.id !== petToDelete.id))
+			setPetToDelete(null)
 		} catch (e) {
 			setError(e instanceof Error ? e.message : 'Failed to delete pet')
 		}
@@ -557,6 +566,21 @@ export function ManagePets() {
 					</div>
 				</form>
 			</div>
+
+			<ConfirmationDialog
+				isOpen={petToDelete !== null}
+				title='Delete Pet'
+				message={
+					petToDelete
+						? `Delete pet "${petToDelete.name}"? This cannot be undone.`
+						: ''
+				}
+				confirmLabel='Delete'
+				cancelLabel='Cancel'
+				onConfirm={confirmDeletePet}
+				onCancel={() => setPetToDelete(null)}
+				variant='danger'
+			/>
 		</section>
 	)
 }

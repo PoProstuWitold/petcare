@@ -8,6 +8,7 @@ import { PetForm } from '../components/PetForm'
 import { PetImportExportPanel } from '../components/PetImportExportPanel'
 import { ProtectedHeader } from '../components/ProtectedHeader'
 import { Button } from '../components/ui/Button'
+import { ConfirmationDialog } from '../components/ui/ConfirmationDialog'
 import { PetVisitsSection } from '../components/visits/PetVisitsSection'
 import { VisitBookingForm } from '../components/visits/VisitBookingForm'
 import { useAuth } from '../context/AuthContext'
@@ -25,6 +26,7 @@ export function PetsPage() {
 	const [editingPet, setEditingPet] = useState<Pet | null>(null)
 	const [isBookingVisit, setIsBookingVisit] = useState(false)
 	const [visitsRefreshKey, setVisitsRefreshKey] = useState(0)
+	const [petToDelete, setPetToDelete] = useState<Pet | null>(null)
 
 	useEffect(() => {
 		if (!accessToken) {
@@ -86,35 +88,42 @@ export function PetsPage() {
 		setVisitsRefreshKey((prev) => prev + 1)
 	}
 
-	const handleDeletePet = async (pet: Pet) => {
-		if (!accessToken) {
-			toast.error('Missing access token. Please log in again.')
-			return
-		}
+	const handleDeletePet = (pet: Pet) => {
+		setPetToDelete(pet)
+	}
 
-		const confirmed = window.confirm(
-			`Are you sure you want to delete ${pet.name}? This action cannot be undone.`
-		)
-
-		if (!confirmed) {
+	const confirmDeletePet = async () => {
+		if (!petToDelete || !accessToken) {
+			setPetToDelete(null)
 			return
 		}
 
 		try {
-			await json<void>(`/api/pets/${pet.id}`, { method: 'DELETE' })
+			await json<void>(`/api/pets/${petToDelete.id}`, { method: 'DELETE' })
 
-			setPets((prev) => prev.filter((p) => p.id !== pet.id))
+			setPets((prev) => prev.filter((p) => p.id !== petToDelete.id))
 
 			setEditingPet((current) =>
-				current && current.id === pet.id ? null : current
+				current && current.id === petToDelete.id ? null : current
 			)
 			setIsCreating(false)
 
 			toast.success('Pet deleted successfully.')
+			setPetToDelete(null)
 			// biome-ignore lint: no needed
 		} catch (error: any) {
-			console.error('ErrorHandler while deleting pet', error)
-			toast.error(error.message)
+			console.error('Error while deleting pet', error)
+			// Extract error message from API response
+			let errorMessage = 'Failed to delete pet.'
+			if (error instanceof Error) {
+				const httpError = error as any
+				if (httpError.body?.message) {
+					errorMessage = httpError.body.message
+				} else if (error.message) {
+					errorMessage = error.message
+				}
+			}
+			toast.error(errorMessage)
 		}
 	}
 
@@ -215,7 +224,7 @@ export function PetsPage() {
 									setEditingPet(pet)
 								}}
 								onDelete={() => {
-									void handleDeletePet(pet)
+									handleDeletePet(pet)
 								}}
 							>
 								<PetVisitsSection
@@ -228,6 +237,21 @@ export function PetsPage() {
 					</div>
 				)}
 			</div>
+
+			<ConfirmationDialog
+				isOpen={petToDelete !== null}
+				title='Delete Pet'
+				message={
+					petToDelete
+						? `Are you sure you want to delete ${petToDelete.name}? This action cannot be undone.`
+						: ''
+				}
+				confirmLabel='Delete'
+				cancelLabel='Cancel'
+				onConfirm={confirmDeletePet}
+				onCancel={() => setPetToDelete(null)}
+				variant='danger'
+			/>
 		</div>
 	)
 }

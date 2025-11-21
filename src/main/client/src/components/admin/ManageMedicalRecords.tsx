@@ -13,6 +13,7 @@ import { authHeaders, httpJson } from '../../utils/http'
 import type { MedicalRecord, Pet } from '../../utils/types'
 import { Alert } from '../ui/Alert'
 import { Button } from '../ui/Button'
+import { ConfirmationDialog } from '../ui/ConfirmationDialog'
 
 type RecordFormState = {
 	visitId: string
@@ -35,6 +36,7 @@ export function ManageMedicalRecords() {
 	const [filterVisitId, setFilterVisitId] = useState<string>('')
 
 	const [submitting, setSubmitting] = useState(false)
+	const [recordToDelete, setRecordToDelete] = useState<MedicalRecord | null>(null)
 	const [form, setForm] = useState<RecordFormState>({
 		visitId: '',
 		title: '',
@@ -198,17 +200,23 @@ export function ManageMedicalRecords() {
 		}
 	}
 
-	async function handleDelete(r: MedicalRecord) {
-		if (!accessToken) return
-		if (!confirm(`Delete medical record #${r.id}? This cannot be undone.`))
+	function handleDelete(r: MedicalRecord) {
+		setRecordToDelete(r)
+	}
+
+	async function confirmDeleteRecord() {
+		if (!recordToDelete || !accessToken) {
+			setRecordToDelete(null)
 			return
+		}
 		try {
-			await httpJson<void>(`/api/medical-records/${r.id}`, {
+			await httpJson<void>(`/api/medical-records/${recordToDelete.id}`, {
 				method: 'DELETE',
 				headers: authHeaders(accessToken)
 			})
-			setRecords((prev) => prev.filter((x) => x.id !== r.id))
-			if (selectedRecord && selectedRecord.id === r.id) startCreate()
+			setRecords((prev) => prev.filter((x) => x.id !== recordToDelete.id))
+			if (selectedRecord && selectedRecord.id === recordToDelete.id) startCreate()
+			setRecordToDelete(null)
 		} catch (e) {
 			setError(
 				e instanceof Error
@@ -555,6 +563,21 @@ export function ManageMedicalRecords() {
 					</div>
 				</form>
 			</div>
+
+			<ConfirmationDialog
+				isOpen={recordToDelete !== null}
+				title='Delete Medical Record'
+				message={
+					recordToDelete
+						? `Delete medical record #${recordToDelete.id}? This cannot be undone.`
+						: ''
+				}
+				confirmLabel='Delete'
+				cancelLabel='Cancel'
+				onConfirm={confirmDeleteRecord}
+				onCancel={() => setRecordToDelete(null)}
+				variant='danger'
+			/>
 		</section>
 	)
 }
