@@ -59,6 +59,7 @@ export function LoginPage() {
 			// Extract error message from API response
 			let errorMessage = 'Invalid username or password'
 			if (error instanceof Error) {
+				// biome-ignore lint: no need to narrow
 				const httpError = error as any
 				if (httpError.body?.message) {
 					errorMessage = httpError.body.message
@@ -154,7 +155,12 @@ export function LoginPage() {
 						disabled={isSubmitting}
 						className='mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-70'
 					>
-						{isSubmitting && <Spinner size='sm' className='border-white border-t-transparent' />}
+						{isSubmitting && (
+							<Spinner
+								size='sm'
+								className='border-white border-t-transparent'
+							/>
+						)}
 						{isSubmitting ? 'Signing in...' : 'Sign in'}
 					</button>
 				</form>

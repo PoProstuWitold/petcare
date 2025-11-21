@@ -605,7 +605,12 @@ export function ManageVisits() {
 							disabled={!canSubmit || submitting}
 							className='flex items-center gap-2'
 						>
-							{submitting && <Spinner size='sm' className='border-white border-t-transparent' />}
+							{submitting && (
+								<Spinner
+									size='sm'
+									className='border-white border-t-transparent'
+								/>
+							)}
 							{submitting
 								? formMode === 'EDIT'
 									? 'Saving...'

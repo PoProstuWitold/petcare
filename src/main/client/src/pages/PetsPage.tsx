@@ -99,7 +99,9 @@ export function PetsPage() {
 		}
 
 		try {
-			await json<void>(`/api/pets/${petToDelete.id}`, { method: 'DELETE' })
+			await json<void>(`/api/pets/${petToDelete.id}`, {
+				method: 'DELETE'
+			})
 
 			// Refresh full list to ensure consistency with server state
 			const data = await json<Pet[]>('/api/pets/me')
@@ -118,6 +120,7 @@ export function PetsPage() {
 			// Extract error message from API response
 			let errorMessage = 'Failed to delete pet.'
 			if (error instanceof Error) {
+				// biome-ignore lint: no need to narrow
 				const httpError = error as any
 				if (httpError.body?.message) {
 					errorMessage = httpError.body.message

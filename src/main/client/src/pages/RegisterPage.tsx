@@ -203,7 +203,12 @@ export function RegisterPage() {
 						className='w-full rounded-full flex items-center justify-center gap-2'
 						disabled={isSubmitting}
 					>
-						{isSubmitting && <Spinner size='sm' className='border-white border-t-transparent' />}
+						{isSubmitting && (
+							<Spinner
+								size='sm'
+								className='border-white border-t-transparent'
+							/>
+						)}
 						{isSubmitting
 							? 'Creating account...'
 							: 'Create account'}

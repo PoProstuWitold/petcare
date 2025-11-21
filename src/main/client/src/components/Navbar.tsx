@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { RxCross2, RxHamburgerMenu } from 'react-icons/rx'
 import { Link, NavLink } from 'react-router'
-import { ConfirmationDialog } from './ui/ConfirmationDialog'
 import { useAuth } from '../context/AuthContext'
+import { ConfirmationDialog } from './ui/ConfirmationDialog'
 
 type Role = 'USER' | 'VET' | 'ADMIN'
 
@@ -84,122 +84,35 @@ export function Navbar() {
 
 	return (
 		<>
-		<header className='border-b border-slate-200 bg-white/80 backdrop-blur'>
-			<nav className='mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8'>
-				{/* Logo */}
-				<Link to='/' className='flex items-center gap-2'>
-					<img
-						src='/img/petcare.png'
-						alt='PetCare logo'
-						className='h-10 w-10 rounded-full object-contain'
-					/>
-					<div className='flex flex-col leading-tight'>
-						<span className='text-lg font-semibold tracking-tight text-slate-900'>
-							PetCare
-						</span>
-						<span className='text-xs text-slate-500'>
-							Veterinary visits made simple
-						</span>
-					</div>
-				</Link>
+			<header className='border-b border-slate-200 bg-white/80 backdrop-blur'>
+				<nav className='mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8'>
+					{/* Logo */}
+					<Link to='/' className='flex items-center gap-2'>
+						<img
+							src='/img/petcare.png'
+							alt='PetCare logo'
+							className='h-10 w-10 rounded-full object-contain'
+						/>
+						<div className='flex flex-col leading-tight'>
+							<span className='text-lg font-semibold tracking-tight text-slate-900'>
+								PetCare
+							</span>
+							<span className='text-xs text-slate-500'>
+								Veterinary visits made simple
+							</span>
+						</div>
+					</Link>
 
-				{/* Desktop nav */}
-				<div className='hidden items-center gap-3 md:flex'>
-					<ul className='flex items-center gap-2'>
-						{visibleNavItems.map((item) => (
-							<li key={item.to}>
-								<NavLink
-									to={item.to}
-									className={({ isActive }) =>
-										[
-											navLinkBase,
-											isActive
-												? navLinkActive
-												: navLinkInactive
-										].join(' ')
-									}
-								>
-									{item.label}
-								</NavLink>
-							</li>
-						))}
-					</ul>
-
-					<div className='flex items-center gap-3'>
-						{isAuthenticated ? (
-							<>
-								{user?.username ? (
-									<Link
-										to={`/u/${encodeURIComponent(
-											user.username
-										)}`}
-										className={pillGreeting}
-									>
-										Hello,&nbsp;
-										<span className='font-semibold'>
-											{user.fullName}
-										</span>
-									</Link>
-								) : (
-									<span className={pillGreeting}>
-										Hello,&nbsp;
-										<span className='font-semibold'>
-											{user?.fullName}
-										</span>
-									</span>
-								)}
-								<button
-									type='button'
-									onClick={() => setShowLogoutConfirm(true)}
-									className={`${buttonSecondary} cursor-pointer`}
-								>
-									Logout
-								</button>
-							</>
-						) : (
-							<>
-								<Link to='/login' className={buttonGhost}>
-									Login
-								</Link>
-								<Link to='/register' className={buttonPrimary}>
-									Register
-								</Link>
-							</>
-						)}
-					</div>
-				</div>
-
-				{/* Mobile menu button */}
-				<button
-					type='button'
-					className='inline-flex items-center rounded-full px-3 py-2 text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500 md:hidden'
-					onClick={() => setIsOpen((prev) => !prev)}
-					aria-expanded={isOpen}
-					aria-label='Toggle navigation'
-				>
-					<span className='sr-only'>Open main menu</span>
-					{isOpen ? (
-						<RxCross2 className='h-6 w-6' />
-					) : (
-						<RxHamburgerMenu className='h-6 w-6' />
-					)}
-				</button>
-			</nav>
-
-			{/* Mobile menu */}
-			{isOpen && (
-				<div className='border-t border-slate-200 bg-white md:hidden'>
-					<div className='mx-auto max-w-6xl px-4 py-3 sm:px-6 lg:px-8'>
-						<ul className='space-y-1'>
+					{/* Desktop nav */}
+					<div className='hidden items-center gap-3 md:flex'>
+						<ul className='flex items-center gap-2'>
 							{visibleNavItems.map((item) => (
 								<li key={item.to}>
 									<NavLink
 										to={item.to}
-										onClick={() => setIsOpen(false)}
 										className={({ isActive }) =>
 											[
 												navLinkBase,
-												'w-full justify-start',
 												isActive
 													? navLinkActive
 													: navLinkInactive
@@ -212,7 +125,7 @@ export function Navbar() {
 							))}
 						</ul>
 
-						<div className='mt-3 flex flex-col gap-2'>
+						<div className='flex items-center gap-3'>
 							{isAuthenticated ? (
 								<>
 									{user?.username ? (
@@ -220,8 +133,7 @@ export function Navbar() {
 											to={`/u/${encodeURIComponent(
 												user.username
 											)}`}
-											onClick={() => setIsOpen(false)}
-											className={`${pillGreeting} justify-center`}
+											className={pillGreeting}
 										>
 											Hello,&nbsp;
 											<span className='font-semibold'>
@@ -229,9 +141,7 @@ export function Navbar() {
 											</span>
 										</Link>
 									) : (
-										<span
-											className={`${pillGreeting} justify-center`}
-										>
+										<span className={pillGreeting}>
 											Hello,&nbsp;
 											<span className='font-semibold'>
 												{user?.fullName}
@@ -240,28 +150,22 @@ export function Navbar() {
 									)}
 									<button
 										type='button'
-										onClick={() => {
+										onClick={() =>
 											setShowLogoutConfirm(true)
-											setIsOpen(false)
-										}}
-										className={`${buttonSecondary} w-full justify-center cursor-pointer`}
+										}
+										className={`${buttonSecondary} cursor-pointer`}
 									>
-										Log out
+										Logout
 									</button>
 								</>
 							) : (
 								<>
-									<Link
-										to='/login'
-										onClick={() => setIsOpen(false)}
-										className={`${buttonGhost} w-full justify-center`}
-									>
+									<Link to='/login' className={buttonGhost}>
 										Login
 									</Link>
 									<Link
 										to='/register'
-										onClick={() => setIsOpen(false)}
-										className={`${buttonPrimary} w-full justify-center`}
+										className={buttonPrimary}
 									>
 										Register
 									</Link>
@@ -269,21 +173,121 @@ export function Navbar() {
 							)}
 						</div>
 					</div>
-				</div>
-			)}
 
-		</header>
+					{/* Mobile menu button */}
+					<button
+						type='button'
+						className='inline-flex items-center rounded-full px-3 py-2 text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500 md:hidden'
+						onClick={() => setIsOpen((prev) => !prev)}
+						aria-expanded={isOpen}
+						aria-label='Toggle navigation'
+					>
+						<span className='sr-only'>Open main menu</span>
+						{isOpen ? (
+							<RxCross2 className='h-6 w-6' />
+						) : (
+							<RxHamburgerMenu className='h-6 w-6' />
+						)}
+					</button>
+				</nav>
 
-		<ConfirmationDialog
-			isOpen={showLogoutConfirm}
-			title='Wylogowanie'
-			message='Czy na pewno chcesz się wylogować?'
-			confirmLabel='Wyloguj'
-			cancelLabel='Anuluj'
-			onConfirm={handleLogout}
-			onCancel={() => setShowLogoutConfirm(false)}
-			variant='warning'
-		/>
+				{/* Mobile menu */}
+				{isOpen && (
+					<div className='border-t border-slate-200 bg-white md:hidden'>
+						<div className='mx-auto max-w-6xl px-4 py-3 sm:px-6 lg:px-8'>
+							<ul className='space-y-1'>
+								{visibleNavItems.map((item) => (
+									<li key={item.to}>
+										<NavLink
+											to={item.to}
+											onClick={() => setIsOpen(false)}
+											className={({ isActive }) =>
+												[
+													navLinkBase,
+													'w-full justify-start',
+													isActive
+														? navLinkActive
+														: navLinkInactive
+												].join(' ')
+											}
+										>
+											{item.label}
+										</NavLink>
+									</li>
+								))}
+							</ul>
+
+							<div className='mt-3 flex flex-col gap-2'>
+								{isAuthenticated ? (
+									<>
+										{user?.username ? (
+											<Link
+												to={`/u/${encodeURIComponent(
+													user.username
+												)}`}
+												onClick={() => setIsOpen(false)}
+												className={`${pillGreeting} justify-center`}
+											>
+												Hello,&nbsp;
+												<span className='font-semibold'>
+													{user.fullName}
+												</span>
+											</Link>
+										) : (
+											<span
+												className={`${pillGreeting} justify-center`}
+											>
+												Hello,&nbsp;
+												<span className='font-semibold'>
+													{user?.fullName}
+												</span>
+											</span>
+										)}
+										<button
+											type='button'
+											onClick={() => {
+												setShowLogoutConfirm(true)
+												setIsOpen(false)
+											}}
+											className={`${buttonSecondary} w-full justify-center cursor-pointer`}
+										>
+											Log out
+										</button>
+									</>
+								) : (
+									<>
+										<Link
+											to='/login'
+											onClick={() => setIsOpen(false)}
+											className={`${buttonGhost} w-full justify-center`}
+										>
+											Login
+										</Link>
+										<Link
+											to='/register'
+											onClick={() => setIsOpen(false)}
+											className={`${buttonPrimary} w-full justify-center`}
+										>
+											Register
+										</Link>
+									</>
+								)}
+							</div>
+						</div>
+					</div>
+				)}
+			</header>
+
+			<ConfirmationDialog
+				isOpen={showLogoutConfirm}
+				title='Confirm Logout'
+				message='Are you sure you want to log out?'
+				confirmLabel='Logout'
+				cancelLabel='Cancel'
+				onConfirm={handleLogout}
+				onCancel={() => setShowLogoutConfirm(false)}
+				variant='warning'
+			/>
 		</>
 	)
 }

@@ -13,11 +13,8 @@ export function Spinner({ size = 'md', className = '' }: SpinnerProps) {
 	return (
 		<div
 			className={`inline-block animate-spin rounded-full border-sky-600 border-t-transparent ${sizeClasses[size]} ${className}`}
-			role='status'
-			aria-label='Loading'
 		>
 			<span className='sr-only'>Loading...</span>
 		</div>
 	)
 }
-

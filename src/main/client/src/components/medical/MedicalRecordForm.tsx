@@ -81,6 +81,7 @@ export function MedicalRecordForm({ visitId, onCreated, defaultTitle }: Props) {
 			// Extract error message from API response
 			let msg = 'Failed to create medical record'
 			if (err instanceof Error) {
+				// biome-ignore lint: no need to narrow
 				const httpError = err as any
 				if (httpError.body?.message) {
 					msg = httpError.body.message
@@ -321,8 +322,18 @@ export function MedicalRecordForm({ visitId, onCreated, defaultTitle }: Props) {
 					</p>
 				</div>
 				<div className='flex gap-2 pt-1'>
-					<Button type='submit' variant='primary' disabled={loading} className='flex items-center gap-2'>
-						{loading && <Spinner size='sm' className='border-white border-t-transparent' />}
+					<Button
+						type='submit'
+						variant='primary'
+						disabled={loading}
+						className='flex items-center gap-2'
+					>
+						{loading && (
+							<Spinner
+								size='sm'
+								className='border-white border-t-transparent'
+							/>
+						)}
 						Create
 					</Button>
 					<Button

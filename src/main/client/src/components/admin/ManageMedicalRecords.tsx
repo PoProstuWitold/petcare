@@ -37,7 +37,9 @@ export function ManageMedicalRecords() {
 	const [filterVisitId, setFilterVisitId] = useState<string>('')
 
 	const [submitting, setSubmitting] = useState(false)
-	const [recordToDelete, setRecordToDelete] = useState<MedicalRecord | null>(null)
+	const [recordToDelete, setRecordToDelete] = useState<MedicalRecord | null>(
+		null
+	)
 	const [form, setForm] = useState<RecordFormState>({
 		visitId: '',
 		title: '',
@@ -175,14 +177,11 @@ export function ManageMedicalRecords() {
 					prescriptions: form.prescriptions || null,
 					notes: form.notes || null
 				}
-				await httpJson<MedicalRecord>(
-					'/api/medical-records',
-					{
-						method: 'POST',
-						headers: authHeaders(accessToken),
-						body: JSON.stringify(payload)
-					}
-				)
+				await httpJson<MedicalRecord>('/api/medical-records', {
+					method: 'POST',
+					headers: authHeaders(accessToken),
+					body: JSON.stringify(payload)
+				})
 			}
 			// Refresh full list to ensure consistency with server state
 			await loadRecords()
@@ -218,7 +217,8 @@ export function ManageMedicalRecords() {
 			})
 			// Refresh full list to ensure consistency with server state
 			await loadRecords()
-			if (selectedRecord && selectedRecord.id === recordToDelete.id) startCreate()
+			if (selectedRecord && selectedRecord.id === recordToDelete.id)
+				startCreate()
 			setRecordToDelete(null)
 		} catch (e) {
 			setError(
@@ -548,7 +548,12 @@ export function ManageMedicalRecords() {
 							}
 							className='flex items-center gap-2'
 						>
-							{submitting && <Spinner size='sm' className='border-white border-t-transparent' />}
+							{submitting && (
+								<Spinner
+									size='sm'
+									className='border-white border-t-transparent'
+								/>
+							)}
 							{submitting
 								? mode === 'EDIT'
 									? 'Saving...'

@@ -405,6 +405,7 @@ export function VisitBookingForm({
 			// Extract error message from API response
 			let message = 'Unexpected error while booking visit.'
 			if (err instanceof Error) {
+				// biome-ignore lint: no need to narrow
 				const httpError = err as any
 				if (httpError.body?.message) {
 					message = httpError.body.message
@@ -670,7 +671,12 @@ export function VisitBookingForm({
 					}
 					className='flex items-center gap-2'
 				>
-					{isSubmitting && <Spinner size='sm' className='border-white border-t-transparent' />}
+					{isSubmitting && (
+						<Spinner
+							size='sm'
+							className='border-white border-t-transparent'
+						/>
+					)}
 					{isSubmitting ? 'Booking...' : 'Book visit'}
 				</Button>
 			</div>

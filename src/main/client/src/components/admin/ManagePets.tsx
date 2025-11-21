@@ -5,8 +5,8 @@ import { authHeaders, httpJson } from '../../utils/http'
 import type { Pet, User } from '../../utils/types'
 import { Alert } from '../ui/Alert'
 import { Button } from '../ui/Button'
-import { Spinner } from '../ui/Spinner'
 import { ConfirmationDialog } from '../ui/ConfirmationDialog'
+import { Spinner } from '../ui/Spinner'
 
 const SPECIES_OPTIONS = [
 	'DOG',
@@ -167,7 +167,7 @@ export function ManagePets() {
 		}
 
 		try {
-			const saved = await httpJson<Pet>(url, {
+			await httpJson<Pet>(url, {
 				method,
 				headers: authHeaders(accessToken),
 				body: JSON.stringify(payload)
@@ -545,7 +545,12 @@ export function ManagePets() {
 							disabled={!canSubmit || submitting}
 							className='flex items-center gap-2'
 						>
-							{submitting && <Spinner size='sm' className='border-white border-t-transparent' />}
+							{submitting && (
+								<Spinner
+									size='sm'
+									className='border-white border-t-transparent'
+								/>
+							)}
 							{submitting
 								? formMode === 'EDIT'
 									? 'Saving...'

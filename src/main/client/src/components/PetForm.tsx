@@ -45,10 +45,10 @@ interface PetFormState {
 // Format: "field: message, field2: message2"
 function parseValidationErrors(errorMessage: string): Record<string, string> {
 	const errors: Record<string, string> = {}
-	
+
 	// Split by comma and parse each "field: message" pair
-	const parts = errorMessage.split(',').map(s => s.trim())
-	
+	const parts = errorMessage.split(',').map((s) => s.trim())
+
 	for (const part of parts) {
 		const colonIndex = part.indexOf(':')
 		if (colonIndex > 0) {
@@ -59,7 +59,7 @@ function parseValidationErrors(errorMessage: string): Record<string, string> {
 			}
 		}
 	}
-	
+
 	return errors
 }
 
@@ -173,6 +173,7 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 			let errorMessage = 'Unexpected error while saving pet.'
 			if (error instanceof Error) {
 				// HttpError from httpJson has body.message or error.message
+				// biome-ignore lint: no need to narrow
 				const httpError = error as any
 				if (httpError.body?.message) {
 					errorMessage = httpError.body.message
@@ -180,8 +181,9 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 					errorMessage = error.message
 				}
 			}
-			
+
 			// Check if it's a validation error (400 Bad Request with field: message format)
+			// biome-ignore lint: no need to narrow
 			const httpError = error as any
 			if (httpError.status === 400 && errorMessage.includes(':')) {
 				// Parse validation errors and map to fields
@@ -234,7 +236,9 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 						required
 					/>
 					{fieldErrors.name && (
-						<p className='mt-1 text-xs text-red-600'>{fieldErrors.name}</p>
+						<p className='mt-1 text-xs text-red-600'>
+							{fieldErrors.name}
+						</p>
 					)}
 				</div>
 
@@ -264,7 +268,9 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 						))}
 					</select>
 					{fieldErrors.species && (
-						<p className='mt-1 text-xs text-red-600'>{fieldErrors.species}</p>
+						<p className='mt-1 text-xs text-red-600'>
+							{fieldErrors.species}
+						</p>
 					)}
 				</div>
 
@@ -292,7 +298,9 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 						))}
 					</select>
 					{fieldErrors.sex && (
-						<p className='mt-1 text-xs text-red-600'>{fieldErrors.sex}</p>
+						<p className='mt-1 text-xs text-red-600'>
+							{fieldErrors.sex}
+						</p>
 					)}
 				</div>
 
@@ -316,7 +324,9 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 						placeholder='optional'
 					/>
 					{fieldErrors.breed && (
-						<p className='mt-1 text-xs text-red-600'>{fieldErrors.breed}</p>
+						<p className='mt-1 text-xs text-red-600'>
+							{fieldErrors.breed}
+						</p>
 					)}
 				</div>
 
@@ -339,7 +349,9 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 						}`}
 					/>
 					{fieldErrors.birthDate && (
-						<p className='mt-1 text-xs text-red-600'>{fieldErrors.birthDate}</p>
+						<p className='mt-1 text-xs text-red-600'>
+							{fieldErrors.birthDate}
+						</p>
 					)}
 					<p className='mt-1 text-[11px] text-slate-500'>
 						If you do not know exact date, you can provide only year
@@ -369,7 +381,9 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 						max={new Date().getFullYear()}
 					/>
 					{fieldErrors.birthYear && (
-						<p className='mt-1 text-xs text-red-600'>{fieldErrors.birthYear}</p>
+						<p className='mt-1 text-xs text-red-600'>
+							{fieldErrors.birthYear}
+						</p>
 					)}
 				</div>
 
@@ -395,7 +409,9 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 						placeholder='optional'
 					/>
 					{fieldErrors.weight && (
-						<p className='mt-1 text-xs text-red-600'>{fieldErrors.weight}</p>
+						<p className='mt-1 text-xs text-red-600'>
+							{fieldErrors.weight}
+						</p>
 					)}
 				</div>
 
@@ -419,7 +435,9 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 						placeholder='Any important medical or behavioral notes...'
 					/>
 					{fieldErrors.notes && (
-						<p className='mt-1 text-xs text-red-600'>{fieldErrors.notes}</p>
+						<p className='mt-1 text-xs text-red-600'>
+							{fieldErrors.notes}
+						</p>
 					)}
 				</div>
 			</div>
@@ -435,8 +453,18 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 						Cancel
 					</Button>
 				)}
-				<Button type='submit' variant='primary' disabled={isSubmitting} className='flex items-center gap-2'>
-					{isSubmitting && <Spinner size='sm' className='border-white border-t-transparent' />}
+				<Button
+					type='submit'
+					variant='primary'
+					disabled={isSubmitting}
+					className='flex items-center gap-2'
+				>
+					{isSubmitting && (
+						<Spinner
+							size='sm'
+							className='border-white border-t-transparent'
+						/>
+					)}
 					{isSubmitting
 						? mode === 'edit'
 							? 'Saving...'
