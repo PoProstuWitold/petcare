@@ -64,8 +64,9 @@ export function Navbar() {
 	const { user, isAuthenticated, hasRole, logout } = useAuth()
 
 	const handleLogout = () => {
-		logout()
+		setShowLogoutConfirm(false)
 		setIsOpen(false)
+		logout()
 	}
 
 	const visibleNavItems = navItems.filter((item) => {
@@ -82,6 +83,7 @@ export function Navbar() {
 	})
 
 	return (
+		<>
 		<header className='border-b border-slate-200 bg-white/80 backdrop-blur'>
 			<nav className='mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8'>
 				{/* Logo */}
@@ -270,16 +272,18 @@ export function Navbar() {
 				</div>
 			)}
 
-			<ConfirmationDialog
-				isOpen={showLogoutConfirm}
-				title='Wylogowanie'
-				message='Czy na pewno chcesz się wylogować?'
-				confirmLabel='Wyloguj'
-				cancelLabel='Anuluj'
-				onConfirm={handleLogout}
-				onCancel={() => setShowLogoutConfirm(false)}
-				variant='warning'
-			/>
 		</header>
+
+		<ConfirmationDialog
+			isOpen={showLogoutConfirm}
+			title='Wylogowanie'
+			message='Czy na pewno chcesz się wylogować?'
+			confirmLabel='Wyloguj'
+			cancelLabel='Anuluj'
+			onConfirm={handleLogout}
+			onCancel={() => setShowLogoutConfirm(false)}
+			variant='warning'
+		/>
+		</>
 	)
 }
