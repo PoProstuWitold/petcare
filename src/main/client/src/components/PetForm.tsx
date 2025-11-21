@@ -134,8 +134,19 @@ export function PetForm({ mode, initialPet, onCancel, onSaved }: PetFormProps) {
 				})
 			}
 		} catch (error) {
-			console.error('ErrorHandler while submitting pet form', error)
-			toast.error('Unexpected error while saving pet.')
+			console.error('Error while submitting pet form', error)
+			// Extract error message from API response
+			let errorMessage = 'Unexpected error while saving pet.'
+			if (error instanceof Error) {
+				// HttpError from httpJson has body.message or error.message
+				const httpError = error as any
+				if (httpError.body?.message) {
+					errorMessage = httpError.body.message
+				} else if (error.message) {
+					errorMessage = error.message
+				}
+			}
+			toast.error(errorMessage)
 		} finally {
 			setIsSubmitting(false)
 		}

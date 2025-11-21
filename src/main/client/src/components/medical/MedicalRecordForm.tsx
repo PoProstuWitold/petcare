@@ -79,10 +79,16 @@ export function MedicalRecordForm({ visitId, onCreated, defaultTitle }: Props) {
 				window.location.href = '/vet'
 			}, 500)
 		} catch (err: unknown) {
-			const msg =
-				err instanceof Error
-					? err.message
-					: 'Failed to create medical record'
+			// Extract error message from API response
+			let msg = 'Failed to create medical record'
+			if (err instanceof Error) {
+				const httpError = err as any
+				if (httpError.body?.message) {
+					msg = httpError.body.message
+				} else if (err.message) {
+					msg = err.message
+				}
+			}
 			setError(msg)
 			toast.error(msg)
 		} finally {

@@ -401,10 +401,16 @@ export function VisitBookingForm({
 			setAvailableSlots([])
 		} catch (err) {
 			console.error('Error while booking visit', err)
-			const message =
-				err instanceof Error
-					? err.message
-					: 'Unexpected error while booking visit.'
+			// Extract error message from API response
+			let message = 'Unexpected error while booking visit.'
+			if (err instanceof Error) {
+				const httpError = err as any
+				if (httpError.body?.message) {
+					message = httpError.body.message
+				} else if (err.message) {
+					message = err.message
+				}
+			}
 			setError(message)
 			toast.error(message)
 		} finally {
