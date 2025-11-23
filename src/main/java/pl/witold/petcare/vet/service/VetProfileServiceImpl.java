@@ -1,6 +1,8 @@
 package pl.witold.petcare.vet.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,6 +65,12 @@ public class VetProfileServiceImpl implements VetProfileService {
     @Transactional(readOnly = true)
     public List<VetProfile> getAllProfiles() {
         return vetProfileRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<VetProfile> getAllProfiles(Pageable pageable) {
+        return vetProfileRepository.findAll(pageable);
     }
 
     private void applySpecializations(VetProfile profile, Set<VetSpecialization> specs) {

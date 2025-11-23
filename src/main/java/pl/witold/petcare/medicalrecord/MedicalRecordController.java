@@ -1,7 +1,6 @@
 package pl.witold.petcare.medicalrecord;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -9,6 +8,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +18,6 @@ import pl.witold.petcare.dto.MedicalRecordResponseDto;
 import pl.witold.petcare.medicalrecord.commands.MedicalRecordCreateCommand;
 import pl.witold.petcare.medicalrecord.commands.MedicalRecordUpdateCommand;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -56,33 +57,40 @@ public class MedicalRecordController {
 
     @Operation(
             summary = "Get medical records for a pet",
-            description = "Returns medical records for the given pet id, newest first. Access is checked against pet visibility."
+            description = "Returns a paginated list of medical records for the given pet id, newest first. Access is checked against pet visibility. " +
+                    "Supports pagination with parameters: page (default: 0), size (default: 20, max: 100), sort (e.g., createdAt,desc)."
     )
     @ApiResponse(
             responseCode = "200",
-            description = "List of medical records for the pet",
-            content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = MedicalRecordResponseDto.class)))
+            description = "Paginated list of medical records for the pet",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))
     )
     @ApiResponse(responseCode = "404", description = "Pet not found")
     @GetMapping("/by-pet/{petId}")
-    public ResponseEntity<List<MedicalRecordResponseDto>> getForPet(@PathVariable Long petId) {
-        List<MedicalRecordResponseDto> list = medicalRecordService.getForPet(petId);
-        return ResponseEntity.ok(list);
+    public ResponseEntity<Page<MedicalRecordResponseDto>> getForPet(
+            @PathVariable Long petId,
+            @PageableDefault(size = 20, sort = "createdAt,desc") Pageable pageable
+    ) {
+        Page<MedicalRecordResponseDto> page = medicalRecordService.getForPet(petId, pageable);
+        return ResponseEntity.ok(page);
     }
 
     @Operation(
             summary = "Get medical records for current vet",
-            description = "Returns medical records authored by the currently authenticated vet, newest first."
+            description = "Returns a paginated list of medical records authored by the currently authenticated vet, newest first. " +
+                    "Supports pagination with parameters: page (default: 0), size (default: 20, max: 100), sort (e.g., createdAt,desc)."
     )
     @ApiResponse(
             responseCode = "200",
-            description = "List of medical records for current vet",
-            content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = MedicalRecordResponseDto.class)))
+            description = "Paginated list of medical records for current vet",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))
     )
     @GetMapping("/me")
-    public ResponseEntity<List<MedicalRecordResponseDto>> getForCurrentVet() {
-        List<MedicalRecordResponseDto> list = medicalRecordService.getForCurrentVet();
-        return ResponseEntity.ok(list);
+    public ResponseEntity<Page<MedicalRecordResponseDto>> getForCurrentVet(
+            @PageableDefault(size = 20, sort = "createdAt,desc") Pageable pageable
+    ) {
+        Page<MedicalRecordResponseDto> page = medicalRecordService.getForCurrentVet(pageable);
+        return ResponseEntity.ok(page);
     }
 
     @Operation(
@@ -136,16 +144,19 @@ public class MedicalRecordController {
 
     @Operation(
             summary = "List all medical records",
-            description = "Returns all medical records ordered by creation date (newest first). Intended for admin or vet dashboards."
+            description = "Returns a paginated list of all medical records ordered by creation date (newest first). Intended for admin or vet dashboards. " +
+                    "Supports pagination with parameters: page (default: 0), size (default: 20, max: 100), sort (e.g., createdAt,desc)."
     )
     @ApiResponse(
             responseCode = "200",
-            description = "List of all medical records",
-            content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = MedicalRecordResponseDto.class)))
+            description = "Paginated list of all medical records",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))
     )
     @GetMapping
-    public ResponseEntity<List<MedicalRecordResponseDto>> getAll() {
-        List<MedicalRecordResponseDto> list = medicalRecordService.getAll();
-        return ResponseEntity.ok(list);
+    public ResponseEntity<Page<MedicalRecordResponseDto>> getAll(
+            @PageableDefault(size = 20, sort = "createdAt,desc") Pageable pageable
+    ) {
+        Page<MedicalRecordResponseDto> page = medicalRecordService.getAll(pageable);
+        return ResponseEntity.ok(page);
     }
 }

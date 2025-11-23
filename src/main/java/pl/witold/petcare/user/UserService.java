@@ -1,5 +1,7 @@
 package pl.witold.petcare.user;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import pl.witold.petcare.user.commands.UserRegistrationCommand;
 
 import java.util.List;
@@ -12,6 +14,7 @@ public interface UserService {
     User getByUsername(String username);
     User getByEmail(String email);
     List<User> getAll();
+    Page<User> getAll(Pageable pageable);
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
     void deleteById(Long id);

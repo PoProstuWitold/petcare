@@ -1,5 +1,7 @@
 package pl.witold.petcare.visit;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import pl.witold.petcare.dto.VisitResponseDto;
 import pl.witold.petcare.visit.commands.VisitCreateCommand;
 
@@ -15,12 +17,18 @@ public interface VisitService {
 
     List<Visit> getVisitsForPet(Long petId);
 
+    Page<Visit> getVisitsForPet(Long petId, Pageable pageable);
+
     List<Visit> getVisitsForVetAndDate(Long vetProfileId, LocalDate date);
+
+    Page<Visit> getVisitsForVetAndDate(Long vetProfileId, LocalDate date, Pageable pageable);
 
     /**
      * Returns all visits for currently authenticated vet.
      */
     List<Visit> getVisitsForCurrentVet();
+
+    Page<Visit> getVisitsForCurrentVet(Pageable pageable);
 
     VisitResponseDto updateVisitStatus(Long visitId, VisitStatus status);
 

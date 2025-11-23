@@ -2,6 +2,9 @@ package pl.witold.petcare.vet.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.witold.petcare.dto.VetProfileResponseDto;
@@ -46,22 +49,23 @@ public class VetController {
      */
     @Operation(
             summary = "Get all vets",
-            description = "Returns all vet profiles available in the system."
+            description = "Returns a paginated list of all vet profiles available in the system. " +
+                    "Supports pagination with parameters: page (default: 0), size (default: 20, max: 100), sort (e.g., id,asc)."
     )
     @ApiResponse(
             responseCode = "200",
-            description = "List of vet profiles returned successfully",
+            description = "Paginated list of vet profiles returned successfully",
             content = @Content(
                     mediaType = "application/json",
-                    array = @ArraySchema(schema = @Schema(implementation = VetProfileResponseDto.class))
+                    schema = @Schema(implementation = Page.class)
             )
     )
     @GetMapping
-    public ResponseEntity<List<VetProfileResponseDto>> getAllVets() {
-        List<VetProfileResponseDto> result = vetProfileService.getAllProfiles().stream()
-                .map(VetProfileMapper::toDto)
-                .collect(Collectors.toList());
-
+    public ResponseEntity<Page<VetProfileResponseDto>> getAllVets(
+            @PageableDefault(size = 20, sort = "id,asc") Pageable pageable
+    ) {
+        Page<VetProfile> profiles = vetProfileService.getAllProfiles(pageable);
+        Page<VetProfileResponseDto> result = profiles.map(VetProfileMapper::toDto);
         return ResponseEntity.ok(result);
     }
 
