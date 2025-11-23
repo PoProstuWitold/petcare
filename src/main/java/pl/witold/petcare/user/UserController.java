@@ -80,7 +80,7 @@ public class UserController {
     )
     @GetMapping
     public ResponseEntity<Page<UserResponseDto>> getAll(
-            @PageableDefault(size = 20, sort = "username,asc") Pageable pageable
+            @PageableDefault(size = 20) Pageable pageable
     ) {
         Page<User> users = userService.getAll(pageable);
         Page<UserResponseDto> result = users.map(UserMapper::toDto);

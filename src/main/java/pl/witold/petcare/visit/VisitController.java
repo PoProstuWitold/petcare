@@ -96,7 +96,7 @@ public class VisitController {
     public ResponseEntity<Page<VisitResponseDto>> getVisitsForPet(
             @Parameter(description = "Pet id", example = "1")
             @PathVariable Long petId,
-            @PageableDefault(size = 20, sort = "date,asc") Pageable pageable
+            @PageableDefault(size = 20) Pageable pageable
     ) {
         Page<Visit> visits = visitService.getVisitsForPet(petId, pageable);
         Page<VisitResponseDto> result = visits.map(VisitMapper::toDto);
@@ -132,7 +132,7 @@ public class VisitController {
                     example = "2025-11-10"
             )
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @PageableDefault(size = 20, sort = "startTime,asc") Pageable pageable
+            @PageableDefault(size = 20) Pageable pageable
     ) {
         Page<Visit> visits = visitService.getVisitsForVetAndDate(vetProfileId, date, pageable);
         Page<VisitResponseDto> result = visits.map(VisitMapper::toDto);
@@ -154,7 +154,7 @@ public class VisitController {
     )
     @GetMapping("/me")
     public ResponseEntity<Page<VisitResponseDto>> getMyVisits(
-            @PageableDefault(size = 20, sort = "date,asc") Pageable pageable
+            @PageableDefault(size = 20) Pageable pageable
     ) {
         Page<Visit> visits = visitService.getVisitsForCurrentVet(pageable);
         Page<VisitResponseDto> result = visits.map(VisitMapper::toDto);

@@ -151,7 +151,7 @@ public class PetController {
     )
     @GetMapping
     public ResponseEntity<Page<PetResponseDto>> getAll(
-            @PageableDefault(size = 20, sort = "name") Pageable pageable
+            @PageableDefault(size = 20) Pageable pageable
     ) {
         Page<Pet> pets = petService.getAll(pageable);
         Page<PetResponseDto> result = pets.map(PetMapper::toDto);
@@ -208,7 +208,7 @@ public class PetController {
     public ResponseEntity<Page<PetResponseDto>> getByOwner(
             @Parameter(description = "Owner id", example = "1")
             @PathVariable Long ownerId,
-            @PageableDefault(size = 20, sort = "name") Pageable pageable
+            @PageableDefault(size = 20) Pageable pageable
     ) {
         Page<Pet> pets = petService.getByOwnerId(ownerId, pageable);
         Page<PetResponseDto> result = pets.map(PetMapper::toDto);
@@ -237,10 +237,7 @@ public class PetController {
     @GetMapping("/me")
     public ResponseEntity<List<PetResponseDto>> getMyPets(Authentication authentication) {
         User currentUser = userService.getByUsername(authentication.getName());
-        List<PetResponseDto> result = petService.getByOwnerId(currentUser.getId())
-                .stream()
-                .map(PetMapper::toDto)
-                .toList();
+        List<PetResponseDto> result = petService.getByOwnerIdAsDto(currentUser.getId());
         return ResponseEntity.ok(result);
     }
 

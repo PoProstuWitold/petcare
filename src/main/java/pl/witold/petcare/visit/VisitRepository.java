@@ -30,8 +30,6 @@ public interface VisitRepository extends JpaRepository<Visit, Long> {
     """)
     Optional<Visit> findByIdWithRelations(@Param("id") Long id);
 
-    List<Visit> findByPetOrderByDateAscStartTimeAsc(Pet pet);
-
     @Query("""
         select v from Visit v
         left join fetch v.pet p
@@ -41,9 +39,18 @@ public interface VisitRepository extends JpaRepository<Visit, Long> {
         where v.pet = :pet
         order by v.date asc, v.startTime asc
         """)
-    Page<Visit> findByPetOrderByDateAscStartTimeAsc(@Param("pet") Pet pet, Pageable pageable);
+    List<Visit> findByPetOrderByDateAscStartTimeAsc(@Param("pet") Pet pet);
 
-    List<Visit> findByVetProfileAndDateOrderByStartTimeAsc(VetProfile vetProfile, LocalDate date);
+    @Query(value = """
+        select distinct v from Visit v
+        left join fetch v.pet p
+        left join fetch p.owner
+        left join fetch v.vetProfile vp
+        left join fetch vp.user
+        where v.pet = :pet
+        order by v.date asc, v.startTime asc
+        """, countQuery = "select count(distinct v) from Visit v where v.pet = :pet")
+    Page<Visit> findByPetOrderByDateAscStartTimeAsc(@Param("pet") Pet pet, Pageable pageable);
 
     @Query("""
         select v from Visit v
@@ -54,6 +61,17 @@ public interface VisitRepository extends JpaRepository<Visit, Long> {
         where v.vetProfile = :vetProfile and v.date = :date
         order by v.startTime asc
         """)
+    List<Visit> findByVetProfileAndDateOrderByStartTimeAsc(@Param("vetProfile") VetProfile vetProfile, @Param("date") LocalDate date);
+
+    @Query(value = """
+        select distinct v from Visit v
+        left join fetch v.pet p
+        left join fetch p.owner
+        left join fetch v.vetProfile vp
+        left join fetch vp.user
+        where v.vetProfile = :vetProfile and v.date = :date
+        order by v.startTime asc
+        """, countQuery = "select count(distinct v) from Visit v where v.vetProfile = :vetProfile and v.date = :date")
     Page<Visit> findByVetProfileAndDateOrderByStartTimeAsc(
             @Param("vetProfile") VetProfile vetProfile,
             @Param("date") LocalDate date,
@@ -75,6 +93,14 @@ public interface VisitRepository extends JpaRepository<Visit, Long> {
     @EntityGraph(attributePaths = {"pet", "pet.owner", "vetProfile", "vetProfile.user"})
     List<Visit> findByVetProfileOrderByDateAscStartTimeAsc(VetProfile vetProfile);
 
-    @EntityGraph(attributePaths = {"pet", "pet.owner", "vetProfile", "vetProfile.user"})
-    Page<Visit> findByVetProfileOrderByDateAscStartTimeAsc(VetProfile vetProfile, Pageable pageable);
+    @Query(value = """
+        select distinct v from Visit v
+        left join fetch v.pet p
+        left join fetch p.owner
+        left join fetch v.vetProfile vp
+        left join fetch vp.user
+        where v.vetProfile = :vetProfile
+        order by v.date asc, v.startTime asc
+        """, countQuery = "select count(distinct v) from Visit v where v.vetProfile = :vetProfile")
+    Page<Visit> findByVetProfileOrderByDateAscStartTimeAsc(@Param("vetProfile") VetProfile vetProfile, Pageable pageable);
 }

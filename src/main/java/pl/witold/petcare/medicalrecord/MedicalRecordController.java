@@ -69,7 +69,7 @@ public class MedicalRecordController {
     @GetMapping("/by-pet/{petId}")
     public ResponseEntity<Page<MedicalRecordResponseDto>> getForPet(
             @PathVariable Long petId,
-            @PageableDefault(size = 20, sort = "createdAt,desc") Pageable pageable
+            @PageableDefault(size = 20) Pageable pageable
     ) {
         Page<MedicalRecordResponseDto> page = medicalRecordService.getForPet(petId, pageable);
         return ResponseEntity.ok(page);
@@ -87,7 +87,7 @@ public class MedicalRecordController {
     )
     @GetMapping("/me")
     public ResponseEntity<Page<MedicalRecordResponseDto>> getForCurrentVet(
-            @PageableDefault(size = 20, sort = "createdAt,desc") Pageable pageable
+            @PageableDefault(size = 20) Pageable pageable
     ) {
         Page<MedicalRecordResponseDto> page = medicalRecordService.getForCurrentVet(pageable);
         return ResponseEntity.ok(page);
@@ -154,7 +154,7 @@ public class MedicalRecordController {
     )
     @GetMapping
     public ResponseEntity<Page<MedicalRecordResponseDto>> getAll(
-            @PageableDefault(size = 20, sort = "createdAt,desc") Pageable pageable
+            @PageableDefault(size = 20) Pageable pageable
     ) {
         Page<MedicalRecordResponseDto> page = medicalRecordService.getAll(pageable);
         return ResponseEntity.ok(page);

@@ -89,10 +89,24 @@ export function ManageUsers() {
 		setLoading(true)
 		setError(null)
 		try {
-			const data = await httpJson<User>('/api/users', {
+			type PageResponse<T> = {
+				content: T[]
+				totalElements: number
+				totalPages: number
+				size: number
+				number: number
+			}
+			const data = await httpJson<User[] | PageResponse<User>>('/api/users', {
 				headers: authHeaders(accessToken)
 			})
-			setUsers(data as unknown as User[])
+			// Handle both Page and List responses
+			if (Array.isArray(data)) {
+				setUsers(data)
+			} else if (data && typeof data === 'object' && 'content' in data) {
+				setUsers((data as PageResponse<User>).content || [])
+			} else {
+				setUsers([])
+			}
 		} catch (e) {
 			setError(e instanceof Error ? e.message : 'Failed to load users')
 		} finally {

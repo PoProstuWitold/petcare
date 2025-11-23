@@ -61,10 +61,24 @@ export function ManageMedicalRecords() {
 	const loadPets = useCallback(async () => {
 		if (!accessToken) return
 		try {
-			const data = await httpJson<Pet[]>('/api/pets', {
+			type PageResponse<T> = {
+				content: T[]
+				totalElements: number
+				totalPages: number
+				size: number
+				number: number
+			}
+			const data = await httpJson<Pet[] | PageResponse<Pet>>('/api/pets', {
 				headers: authHeaders(accessToken)
 			})
-			setPets(data)
+			// Handle both Page and List responses
+			if (Array.isArray(data)) {
+				setPets(data)
+			} else if (data && typeof data === 'object' && 'content' in data) {
+				setPets((data as PageResponse<Pet>).content || [])
+			} else {
+				setPets([])
+			}
 		} catch {}
 	}, [accessToken])
 
@@ -73,10 +87,26 @@ export function ManageMedicalRecords() {
 		setLoading(true)
 		setError(null)
 		try {
+			type PageResponse<T> = {
+				content: T[]
+				totalElements: number
+				totalPages: number
+				size: number
+				number: number
+			}
 			// Fetch all records once
-			let list = await httpJson<MedicalRecord[]>('/api/medical-records', {
+			const response = await httpJson<MedicalRecord[] | PageResponse<MedicalRecord>>('/api/medical-records', {
 				headers: authHeaders(accessToken)
 			})
+			// Handle both Page and List responses
+			let list: MedicalRecord[]
+			if (Array.isArray(response)) {
+				list = response
+			} else if (response && typeof response === 'object' && 'content' in response) {
+				list = (response as PageResponse<MedicalRecord>).content || []
+			} else {
+				list = []
+			}
 			// Client-side filters
 			if (filterVisitId) {
 				list = list.filter((r) => String(r.visit.id) === filterVisitId)

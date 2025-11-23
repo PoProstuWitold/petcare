@@ -78,21 +78,53 @@ export function ManageVisits() {
 		setLoading(true)
 		setError(null)
 		try {
+			type PageResponse<T> = {
+				content: T[]
+				totalElements: number
+				totalPages: number
+				size: number
+				number: number
+			}
 			// Basic listing: if filter by pet use by-pet endpoint else if vet+date maybe we could call by-vet; fallback: aggregated by all pets (loop pets) – for simplicity GET by each pet when filtered.
 			let data: Visit[]
 			if (filterPetId) {
-				data = await httpJson<Visit[]>(
+				const visitResponse = await httpJson<Visit[] | PageResponse<Visit>>(
 					`/api/visits/by-pet/${filterPetId}`,
 					{ headers: authHeaders(accessToken) }
 				)
+				// Handle both Page and List responses
+				if (Array.isArray(visitResponse)) {
+					data = visitResponse
+				} else if (visitResponse && typeof visitResponse === 'object' && 'content' in visitResponse) {
+					data = (visitResponse as PageResponse<Visit>).content || []
+				} else {
+					data = []
+				}
 			} else {
-				const petList = await httpJson<Pet[]>('/api/pets', {
+				const petResponse = await httpJson<Pet[] | PageResponse<Pet>>('/api/pets', {
 					headers: authHeaders(accessToken)
 				})
+				// Handle both Page and List responses
+				let petList: Pet[]
+				if (Array.isArray(petResponse)) {
+					petList = petResponse
+				} else if (petResponse && typeof petResponse === 'object' && 'content' in petResponse) {
+					petList = (petResponse as PageResponse<Pet>).content || []
+				} else {
+					petList = []
+				}
 				setPets(petList)
 				const visitPromises = petList.map((p) =>
-					httpJson<Visit[]>(`/api/visits/by-pet/${p.id}`, {
+					httpJson<Visit[] | PageResponse<Visit>>(`/api/visits/by-pet/${p.id}`, {
 						headers: authHeaders(accessToken)
+					}).then((response) => {
+						// Handle both Page and List responses
+						if (Array.isArray(response)) {
+							return response
+						} else if (response && typeof response === 'object' && 'content' in response) {
+							return (response as PageResponse<Visit>).content || []
+						}
+						return []
 					}).catch(() => [] as Visit[])
 				)
 				const results = await Promise.all(visitPromises)
@@ -119,10 +151,24 @@ export function ManageVisits() {
 	const loadPets = useCallback(async () => {
 		if (!accessToken) return
 		try {
-			const data = await httpJson<Pet[]>('/api/pets', {
+			type PageResponse<T> = {
+				content: T[]
+				totalElements: number
+				totalPages: number
+				size: number
+				number: number
+			}
+			const data = await httpJson<Pet[] | PageResponse<Pet>>('/api/pets', {
 				headers: authHeaders(accessToken)
 			})
-			setPets(data)
+			// Handle both Page and List responses
+			if (Array.isArray(data)) {
+				setPets(data)
+			} else if (data && typeof data === 'object' && 'content' in data) {
+				setPets((data as PageResponse<Pet>).content || [])
+			} else {
+				setPets([])
+			}
 		} catch {}
 	}, [accessToken])
 

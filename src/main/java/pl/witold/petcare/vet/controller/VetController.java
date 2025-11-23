@@ -62,7 +62,7 @@ public class VetController {
     )
     @GetMapping
     public ResponseEntity<Page<VetProfileResponseDto>> getAllVets(
-            @PageableDefault(size = 20, sort = "id,asc") Pageable pageable
+            @PageableDefault(size = 20) Pageable pageable
     ) {
         Page<VetProfile> profiles = vetProfileService.getAllProfiles(pageable);
         Page<VetProfileResponseDto> result = profiles.map(VetProfileMapper::toDto);
