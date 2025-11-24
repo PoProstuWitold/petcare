@@ -68,9 +68,12 @@ export function ManageMedicalRecords() {
 				size: number
 				number: number
 			}
-			const data = await httpJson<Pet[] | PageResponse<Pet>>('/api/pets', {
-				headers: authHeaders(accessToken)
-			})
+			const data = await httpJson<Pet[] | PageResponse<Pet>>(
+				'/api/pets',
+				{
+					headers: authHeaders(accessToken)
+				}
+			)
 			// Handle both Page and List responses
 			if (Array.isArray(data)) {
 				setPets(data)
@@ -95,14 +98,20 @@ export function ManageMedicalRecords() {
 				number: number
 			}
 			// Fetch all records once
-			const response = await httpJson<MedicalRecord[] | PageResponse<MedicalRecord>>('/api/medical-records', {
+			const response = await httpJson<
+				MedicalRecord[] | PageResponse<MedicalRecord>
+			>('/api/medical-records', {
 				headers: authHeaders(accessToken)
 			})
 			// Handle both Page and List responses
 			let list: MedicalRecord[]
 			if (Array.isArray(response)) {
 				list = response
-			} else if (response && typeof response === 'object' && 'content' in response) {
+			} else if (
+				response &&
+				typeof response === 'object' &&
+				'content' in response
+			) {
 				list = (response as PageResponse<MedicalRecord>).content || []
 			} else {
 				list = []

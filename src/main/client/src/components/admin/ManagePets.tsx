@@ -77,9 +77,12 @@ export function ManagePets() {
 				size: number
 				number: number
 			}
-			const data = await httpJson<Pet[] | PageResponse<Pet>>('/api/pets', {
-				headers: authHeaders(accessToken)
-			})
+			const data = await httpJson<Pet[] | PageResponse<Pet>>(
+				'/api/pets',
+				{
+					headers: authHeaders(accessToken)
+				}
+			)
 			// Handle both Page and List responses
 			if (Array.isArray(data)) {
 				setPets(data)
@@ -105,9 +108,12 @@ export function ManagePets() {
 				size: number
 				number: number
 			}
-			const data = await httpJson<User[] | PageResponse<User>>('/api/users', {
-				headers: authHeaders(accessToken)
-			})
+			const data = await httpJson<User[] | PageResponse<User>>(
+				'/api/users',
+				{
+					headers: authHeaders(accessToken)
+				}
+			)
 			// Handle both Page and List responses
 			if (Array.isArray(data)) {
 				setUsers(data)

@@ -96,9 +96,12 @@ export function ManageUsers() {
 				size: number
 				number: number
 			}
-			const data = await httpJson<User[] | PageResponse<User>>('/api/users', {
-				headers: authHeaders(accessToken)
-			})
+			const data = await httpJson<User[] | PageResponse<User>>(
+				'/api/users',
+				{
+					headers: authHeaders(accessToken)
+				}
+			)
 			// Handle both Page and List responses
 			if (Array.isArray(data)) {
 				setUsers(data)
