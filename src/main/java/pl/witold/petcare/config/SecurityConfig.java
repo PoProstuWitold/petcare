@@ -67,9 +67,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
                         // Public status/health endpoints
                         .requestMatchers("/api/status/**").permitAll()
-                        // Actuator endpoints - health and info are public, others require authentication
-                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
-                        .requestMatchers("/actuator/**").hasAnyRole("ADMIN", "VET")
                         // Swagger / OpenAPI documentation
                         .requestMatchers(
                                 "/v3/api-docs/**",

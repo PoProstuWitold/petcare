@@ -2,7 +2,6 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.6'
     id 'io.spring.dependency-management' version '1.1.7'
-    id 'com.gorylenko.gradle-git-properties' version '2.5.2'
 }
 
 group = 'pl.witold'
@@ -51,9 +50,6 @@ dependencies {
     // OpenAPI/Swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
 
-    // Actuator
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-
     // Lombok
     compileOnly 'org.projectlombok:lombok:1.18.34'
     annotationProcessor 'org.projectlombok:lombok:1.18.34'
@@ -64,10 +60,4 @@ dependencies {
 test {
     jvmArgs "-javaagent:${configurations.testRuntimeClasspath.find { it.name.contains('mockito-core') }}", '-Xshare:off'
     useJUnitPlatform()
-}
-
-gitProperties {
-    keys = ['git.branch', 'git.commit.id', 'git.commit.id.abbrev', 'git.commit.id.describe', 'git.commit.user.name', 'git.commit.user.email', 'git.commit.message.short', 'git.commit.time', 'git.dirty']
-    dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
-    dateFormatTimeZone = "UTC"
 }
