@@ -1,5 +1,7 @@
 package pl.witold.petcare.vet.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import pl.witold.petcare.vet.VetProfile;
 import pl.witold.petcare.vet.commands.VetProfileUpdateCommand;
 
@@ -29,4 +31,9 @@ public interface VetProfileService {
      * Returns all vet profiles.
      */
     List<VetProfile> getAllProfiles();
+
+    /**
+     * Returns a paginated list of all vet profiles.
+     */
+    Page<VetProfile> getAllProfiles(Pageable pageable);
 }

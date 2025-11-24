@@ -2,6 +2,9 @@ package pl.witold.petcare.pet;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -135,22 +138,23 @@ public class PetController {
      */
     @Operation(
             summary = "Get all pets",
-            description = "Returns a list of all pets in the system. Intended mainly for VET and ADMIN usage."
+            description = "Returns a paginated list of all pets in the system. Intended mainly for VET and ADMIN usage. " +
+                    "Supports pagination with parameters: page (default: 0), size (default: 20, max: 100), sort (e.g., name,asc)."
     )
     @ApiResponse(
             responseCode = "200",
-            description = "List of pets returned successfully",
+            description = "Paginated list of pets returned successfully",
             content = @Content(
                     mediaType = "application/json",
-                    array = @ArraySchema(schema = @Schema(implementation = PetResponseDto.class))
+                    schema = @Schema(implementation = Page.class)
             )
     )
     @GetMapping
-    public ResponseEntity<List<PetResponseDto>> getAll() {
-        List<PetResponseDto> result = petService.getAll()
-                .stream()
-                .map(PetMapper::toDto)
-                .toList();
+    public ResponseEntity<Page<PetResponseDto>> getAll(
+            @PageableDefault(size = 20) Pageable pageable
+    ) {
+        Page<Pet> pets = petService.getAll(pageable);
+        Page<PetResponseDto> result = pets.map(PetMapper::toDto);
         return ResponseEntity.ok(result);
     }
 
@@ -189,25 +193,25 @@ public class PetController {
      */
     @Operation(
             summary = "Get pets by owner id",
-            description = "Returns pets belonging to the given owner id. Useful for vet/admin views."
+            description = "Returns a paginated list of pets belonging to the given owner id. Useful for vet/admin views. " +
+                    "Supports pagination with parameters: page (default: 0), size (default: 20, max: 100), sort (e.g., name,asc)."
     )
     @ApiResponse(
             responseCode = "200",
-            description = "List of pets for the given owner returned successfully",
+            description = "Paginated list of pets for the given owner returned successfully",
             content = @Content(
                     mediaType = "application/json",
-                    array = @ArraySchema(schema = @Schema(implementation = PetResponseDto.class))
+                    schema = @Schema(implementation = Page.class)
             )
     )
     @GetMapping("/owner/{ownerId}")
-    public ResponseEntity<List<PetResponseDto>> getByOwner(
+    public ResponseEntity<Page<PetResponseDto>> getByOwner(
             @Parameter(description = "Owner id", example = "1")
-            @PathVariable Long ownerId
+            @PathVariable Long ownerId,
+            @PageableDefault(size = 20) Pageable pageable
     ) {
-        List<PetResponseDto> result = petService.getByOwnerId(ownerId)
-                .stream()
-                .map(PetMapper::toDto)
-                .toList();
+        Page<Pet> pets = petService.getByOwnerId(ownerId, pageable);
+        Page<PetResponseDto> result = pets.map(PetMapper::toDto);
         return ResponseEntity.ok(result);
     }
 
@@ -233,10 +237,7 @@ public class PetController {
     @GetMapping("/me")
     public ResponseEntity<List<PetResponseDto>> getMyPets(Authentication authentication) {
         User currentUser = userService.getByUsername(authentication.getName());
-        List<PetResponseDto> result = petService.getByOwnerId(currentUser.getId())
-                .stream()
-                .map(PetMapper::toDto)
-                .toList();
+        List<PetResponseDto> result = petService.getByOwnerIdAsDto(currentUser.getId());
         return ResponseEntity.ok(result);
     }
 

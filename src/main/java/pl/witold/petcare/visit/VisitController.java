@@ -2,6 +2,9 @@ package pl.witold.petcare.visit;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +17,6 @@ import pl.witold.petcare.visit.commands.VisitPartialUpdateCommand;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -22,7 +24,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.time.LocalDate;
-import java.util.List;
 
 /**
  * REST controller exposing endpoints for booking and listing visits.
@@ -80,25 +81,25 @@ public class VisitController {
      */
     @Operation(
             summary = "Get visits for a pet",
-            description = "Returns all visits for the given pet id."
+            description = "Returns a paginated list of visits for the given pet id. " +
+                    "Supports pagination with parameters: page (default: 0), size (default: 20, max: 100), sort (e.g., date,asc)."
     )
     @ApiResponse(
             responseCode = "200",
-            description = "List of visits for the pet returned successfully",
+            description = "Paginated list of visits for the pet returned successfully",
             content = @Content(
                     mediaType = "application/json",
-                    array = @ArraySchema(schema = @Schema(implementation = VisitResponseDto.class))
+                    schema = @Schema(implementation = Page.class)
             )
     )
     @GetMapping("/by-pet/{petId}")
-    public ResponseEntity<List<VisitResponseDto>> getVisitsForPet(
+    public ResponseEntity<Page<VisitResponseDto>> getVisitsForPet(
             @Parameter(description = "Pet id", example = "1")
-            @PathVariable Long petId
+            @PathVariable Long petId,
+            @PageableDefault(size = 20) Pageable pageable
     ) {
-        List<VisitResponseDto> result = visitService.getVisitsForPet(petId).stream()
-                .map(VisitMapper::toDto)
-                .toList();
-
+        Page<Visit> visits = visitService.getVisitsForPet(petId, pageable);
+        Page<VisitResponseDto> result = visits.map(VisitMapper::toDto);
         return ResponseEntity.ok(result);
     }
 
@@ -109,54 +110,54 @@ public class VisitController {
      */
     @Operation(
             summary = "Get visits for vet and date",
-            description = "Returns all visits for a given vet profile on a specific date. "
-                    + "Typically used by booking UI to block already taken slots."
+            description = "Returns a paginated list of visits for a given vet profile on a specific date. "
+                    + "Typically used by booking UI to block already taken slots. " +
+                    "Supports pagination with parameters: page (default: 0), size (default: 20, max: 100), sort (e.g., startTime,asc)."
     )
     @ApiResponse(
             responseCode = "200",
-            description = "List of visits for the vet and date returned successfully",
+            description = "Paginated list of visits for the vet and date returned successfully",
             content = @Content(
                     mediaType = "application/json",
-                    array = @ArraySchema(schema = @Schema(implementation = VisitResponseDto.class))
+                    schema = @Schema(implementation = Page.class)
             )
     )
     @Transactional(readOnly = true)
     @GetMapping("/by-vet/{vetProfileId}")
-    public ResponseEntity<List<VisitResponseDto>> getVisitsForVetAndDate(
+    public ResponseEntity<Page<VisitResponseDto>> getVisitsForVetAndDate(
             @Parameter(description = "Vet profile id", example = "1")
             @PathVariable Long vetProfileId,
             @Parameter(
                     description = "Date for which visits should be returned",
                     example = "2025-11-10"
             )
-            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @PageableDefault(size = 20) Pageable pageable
     ) {
-        List<VisitResponseDto> result =
-                visitService.getVisitsForVetAndDate(vetProfileId, date).stream()
-                        .map(VisitMapper::toDto)
-                        .toList();
-
+        Page<Visit> visits = visitService.getVisitsForVetAndDate(vetProfileId, date, pageable);
+        Page<VisitResponseDto> result = visits.map(VisitMapper::toDto);
         return ResponseEntity.ok(result);
     }
 
     @Operation(
             summary = "Get visits for current vet",
-            description = "Returns all visits assigned to the currently authenticated vet."
+            description = "Returns a paginated list of visits assigned to the currently authenticated vet. " +
+                    "Supports pagination with parameters: page (default: 0), size (default: 20, max: 100), sort (e.g., date,asc)."
     )
     @ApiResponse(
             responseCode = "200",
-            description = "List of visits for the current vet returned successfully",
+            description = "Paginated list of visits for the current vet returned successfully",
             content = @Content(
                     mediaType = "application/json",
-                    array = @ArraySchema(schema = @Schema(implementation = VisitResponseDto.class))
+                    schema = @Schema(implementation = Page.class)
             )
     )
     @GetMapping("/me")
-    public ResponseEntity<List<VisitResponseDto>> getMyVisits() {
-        List<VisitResponseDto> result = visitService.getVisitsForCurrentVet().stream()
-                .map(VisitMapper::toDto)
-                .toList();
-
+    public ResponseEntity<Page<VisitResponseDto>> getMyVisits(
+            @PageableDefault(size = 20) Pageable pageable
+    ) {
+        Page<Visit> visits = visitService.getVisitsForCurrentVet(pageable);
+        Page<VisitResponseDto> result = visits.map(VisitMapper::toDto);
         return ResponseEntity.ok(result);
     }
 

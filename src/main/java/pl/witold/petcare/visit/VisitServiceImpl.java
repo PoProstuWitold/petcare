@@ -1,6 +1,9 @@
 package pl.witold.petcare.visit;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -84,6 +87,16 @@ public class VisitServiceImpl implements VisitService {
 
     @Override
     @Transactional(readOnly = true)
+    public Page<Visit> getVisitsForPet(Long petId, Pageable pageable) {
+        Pet pet = petService.getById(petId);
+        petAccessService.checkCanView(pet);
+        // Remove sorting from Pageable since it's already in the query
+        Pageable unsortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        return visitRepository.findByPetOrderByDateAscStartTimeAsc(pet, unsortedPageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Visit> getVisitsForVetAndDate(Long vetProfileId, LocalDate date) {
         VetProfile profile = vetProfileService.getById(vetProfileId);
         return visitRepository.findByVetProfileAndDateOrderByStartTimeAsc(profile, date);
@@ -91,9 +104,27 @@ public class VisitServiceImpl implements VisitService {
 
     @Override
     @Transactional(readOnly = true)
+    public Page<Visit> getVisitsForVetAndDate(Long vetProfileId, LocalDate date, Pageable pageable) {
+        VetProfile profile = vetProfileService.getById(vetProfileId);
+        // Remove sorting from Pageable since it's already in the query
+        Pageable unsortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        return visitRepository.findByVetProfileAndDateOrderByStartTimeAsc(profile, date, unsortedPageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Visit> getVisitsForCurrentVet() {
         VetProfile profile = vetProfileService.getOrCreateCurrentVetProfile();
         return visitRepository.findByVetProfileOrderByDateAscStartTimeAsc(profile);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Visit> getVisitsForCurrentVet(Pageable pageable) {
+        VetProfile profile = vetProfileService.getOrCreateCurrentVetProfile();
+        // Remove sorting from Pageable since it's already in the query
+        Pageable unsortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        return visitRepository.findByVetProfileOrderByDateAscStartTimeAsc(profile, unsortedPageable);
     }
 
     @Override

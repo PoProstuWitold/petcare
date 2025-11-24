@@ -70,10 +70,27 @@ export function ManagePets() {
 		setLoading(true)
 		setError(null)
 		try {
-			const data = await httpJson<Pet>('/api/pets', {
-				headers: authHeaders(accessToken)
-			})
-			setPets(data as unknown as Pet[])
+			type PageResponse<T> = {
+				content: T[]
+				totalElements: number
+				totalPages: number
+				size: number
+				number: number
+			}
+			const data = await httpJson<Pet[] | PageResponse<Pet>>(
+				'/api/pets',
+				{
+					headers: authHeaders(accessToken)
+				}
+			)
+			// Handle both Page and List responses
+			if (Array.isArray(data)) {
+				setPets(data)
+			} else if (data && typeof data === 'object' && 'content' in data) {
+				setPets((data as PageResponse<Pet>).content || [])
+			} else {
+				setPets([])
+			}
 		} catch (e) {
 			setError(e instanceof Error ? e.message : 'Failed to load pets')
 		} finally {
@@ -84,10 +101,27 @@ export function ManagePets() {
 	const loadUsers = useCallback(async () => {
 		if (!accessToken) return
 		try {
-			const data = await httpJson<User>('/api/users', {
-				headers: authHeaders(accessToken)
-			})
-			setUsers(data as unknown as User[])
+			type PageResponse<T> = {
+				content: T[]
+				totalElements: number
+				totalPages: number
+				size: number
+				number: number
+			}
+			const data = await httpJson<User[] | PageResponse<User>>(
+				'/api/users',
+				{
+					headers: authHeaders(accessToken)
+				}
+			)
+			// Handle both Page and List responses
+			if (Array.isArray(data)) {
+				setUsers(data)
+			} else if (data && typeof data === 'object' && 'content' in data) {
+				setUsers((data as PageResponse<User>).content || [])
+			} else {
+				setUsers([])
+			}
 		} catch (_e) {
 			// keep silent here, owner dropdown will be empty
 		}

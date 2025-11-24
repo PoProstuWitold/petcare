@@ -11,13 +11,32 @@ export type CreateVisitPayload = {
 	notes?: string
 }
 
+type PageResponse<T> = {
+	content: T[]
+	totalElements: number
+	totalPages: number
+	size: number
+	number: number
+}
+
 export async function fetchPetVisits(
 	petId: number,
 	token: string
 ): Promise<Visit[]> {
-	return httpJson<Visit[]>(`${BASE_URL}/visits/by-pet/${petId}`, {
-		headers: authHeaders(token)
-	})
+	const response = await httpJson<Visit[] | PageResponse<Visit>>(
+		`${BASE_URL}/visits/by-pet/${petId}`,
+		{
+			headers: authHeaders(token)
+		}
+	)
+	// Handle both Page and List responses
+	if (Array.isArray(response)) {
+		return response
+	}
+	if (response && typeof response === 'object' && 'content' in response) {
+		return (response as PageResponse<Visit>).content || []
+	}
+	return []
 }
 
 export async function fetchVetVisitsForDate(
@@ -25,12 +44,20 @@ export async function fetchVetVisitsForDate(
 	date: string,
 	token: string
 ): Promise<Visit[]> {
-	return httpJson<Visit[]>(
+	const response = await httpJson<Visit[] | PageResponse<Visit>>(
 		`${BASE_URL}/visits/by-vet/${vetProfileId}?date=${date}`,
 		{
 			headers: authHeaders(token)
 		}
 	)
+	// Handle both Page and List responses
+	if (Array.isArray(response)) {
+		return response
+	}
+	if (response && typeof response === 'object' && 'content' in response) {
+		return (response as PageResponse<Visit>).content || []
+	}
+	return []
 }
 
 export async function createVisitForPet(

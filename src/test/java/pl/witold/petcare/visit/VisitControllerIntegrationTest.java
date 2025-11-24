@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
@@ -106,10 +109,11 @@ class VisitControllerIntegrationTest {
         when(vetProfile.getUser()).thenReturn(vetUser);
         when(visit.getVetProfile()).thenReturn(vetProfile);
 
-        when(visitService.getVisitsForVetAndDate(eq(5L), any())).thenReturn(List.of(visit));
+        Page<Visit> visitPage = new PageImpl<>(List.of(visit));
+        when(visitService.getVisitsForVetAndDate(eq(5L), eq(LocalDate.now().plusDays(2)), any(Pageable.class))).thenReturn(visitPage);
 
         mockMvc.perform(get("/api/visits/by-vet/5").param("date", LocalDate.now().plusDays(2).toString()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(11));
+                .andExpect(jsonPath("$.content[0].id").value(11));
     }
 }

@@ -1,6 +1,9 @@
 package pl.witold.petcare.medicalrecord;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -81,12 +84,33 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
     @Override
     @Transactional(readOnly = true)
+    public Page<MedicalRecordResponseDto> getForPet(Long petId, Pageable pageable) {
+        Pet pet = petService.getById(petId);
+        petAccessService.checkCanView(pet);
+        // Remove sorting from Pageable since it's already in the query
+        Pageable unsortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        return medicalRecordRepository.findByPetIdOrderByCreatedAtDesc(pet.getId(), unsortedPageable)
+                .map(MedicalRecordMapper::toDto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<MedicalRecordResponseDto> getForCurrentVet() {
         VetProfile profile = vetProfileService.getOrCreateCurrentVetProfile();
         return medicalRecordRepository.findByVetProfileIdOrderByCreatedAtDesc(profile.getId())
                 .stream()
                 .map(MedicalRecordMapper::toDto)
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<MedicalRecordResponseDto> getForCurrentVet(Pageable pageable) {
+        VetProfile profile = vetProfileService.getOrCreateCurrentVetProfile();
+        // Remove sorting from Pageable since it's already in the query
+        Pageable unsortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        return medicalRecordRepository.findByVetProfileIdOrderByCreatedAtDesc(profile.getId(), unsortedPageable)
+                .map(MedicalRecordMapper::toDto);
     }
 
     @Override
@@ -122,6 +146,15 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         return medicalRecordRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(MedicalRecordMapper::toDto)
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<MedicalRecordResponseDto> getAll(Pageable pageable) {
+        // Remove sorting from Pageable since it's already in the query
+        Pageable unsortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        return medicalRecordRepository.findAllByOrderByCreatedAtDesc(unsortedPageable)
+                .map(MedicalRecordMapper::toDto);
     }
 
     // --- Private helpers ---
