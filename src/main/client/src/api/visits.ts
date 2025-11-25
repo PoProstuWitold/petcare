@@ -11,7 +11,7 @@ export type CreateVisitPayload = {
 	notes?: string
 }
 
-type PageResponse<T> = {
+export type PageResponse<T> = {
 	content: T[]
 	totalElements: number
 	totalPages: number
@@ -21,22 +21,36 @@ type PageResponse<T> = {
 
 export async function fetchPetVisits(
 	petId: number,
-	token: string
-): Promise<Visit[]> {
+	token: string,
+	page = 0,
+	size = 20
+): Promise<PageResponse<Visit>> {
 	const response = await httpJson<Visit[] | PageResponse<Visit>>(
-		`${BASE_URL}/visits/by-pet/${petId}`,
+		`${BASE_URL}/visits/by-pet/${petId}?page=${page}&size=${size}`,
 		{
 			headers: authHeaders(token)
 		}
 	)
 	// Handle both Page and List responses
 	if (Array.isArray(response)) {
-		return response
+		return {
+			content: response,
+			totalElements: response.length,
+			totalPages: 1,
+			size: response.length,
+			number: 0
+		}
 	}
 	if (response && typeof response === 'object' && 'content' in response) {
-		return (response as PageResponse<Visit>).content || []
+		return response as PageResponse<Visit>
 	}
-	return []
+	return {
+		content: [],
+		totalElements: 0,
+		totalPages: 0,
+		size: 0,
+		number: 0
+	}
 }
 
 export async function fetchVetVisitsForDate(

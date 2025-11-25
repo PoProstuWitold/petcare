@@ -16,6 +16,7 @@ import type { Pet, Visit, VisitStatus } from '../../utils/types'
 import { Alert } from '../ui/Alert'
 import { Button } from '../ui/Button'
 import { ConfirmationDialog } from '../ui/ConfirmationDialog'
+import { Pagination } from '../ui/Pagination'
 import { Spinner } from '../ui/Spinner'
 
 // Remove VisitExtended alias
@@ -39,8 +40,21 @@ const STATUS_OPTIONS: VisitStatus[] = [
 	'CANCELLED'
 ]
 
+type PageResponse<T> = {
+	content: T[]
+	totalElements: number
+	totalPages: number
+	size: number
+	number: number
+}
+
 export function ManageVisits() {
 	const { accessToken } = useAuth()
+	const [page, setPage] = useState(0)
+	const [pageSize, setPageSize] = useState(20)
+	const [visitsData, setVisitsData] = useState<PageResponse<Visit> | null>(
+		null
+	)
 	const [visits, setVisits] = useState<Visit[]>([])
 	const [pets, setPets] = useState<Pet[]>([])
 	const [loading, setLoading] = useState(false)
@@ -78,34 +92,56 @@ export function ManageVisits() {
 		setLoading(true)
 		setError(null)
 		try {
-			type PageResponse<T> = {
-				content: T[]
-				totalElements: number
-				totalPages: number
-				size: number
-				number: number
-			}
-			// Basic listing: if filter by pet use by-pet endpoint else if vet+date maybe we could call by-vet; fallback: aggregated by all pets (loop pets) – for simplicity GET by each pet when filtered.
-			let data: Visit[]
+			// If filtering by pet, use paginated endpoint
 			if (filterPetId) {
 				const visitResponse = await httpJson<
 					Visit[] | PageResponse<Visit>
-				>(`/api/visits/by-pet/${filterPetId}`, {
-					headers: authHeaders(accessToken)
-				})
+				>(
+					`/api/visits/by-pet/${filterPetId}?page=${page}&size=${pageSize}`,
+					{
+						headers: authHeaders(accessToken)
+					}
+				)
 				// Handle both Page and List responses
 				if (Array.isArray(visitResponse)) {
-					data = visitResponse
+					const pageData: PageResponse<Visit> = {
+						content: visitResponse,
+						totalElements: visitResponse.length,
+						totalPages: 1,
+						size: visitResponse.length,
+						number: 0
+					}
+					setVisitsData(pageData)
+					setVisits(visitResponse)
 				} else if (
 					visitResponse &&
 					typeof visitResponse === 'object' &&
 					'content' in visitResponse
 				) {
-					data = (visitResponse as PageResponse<Visit>).content || []
+					const pageData = visitResponse as PageResponse<Visit>
+					// Optional vet filter
+					let filtered = pageData.content || []
+					if (filterVetProfileId) {
+						filtered = filtered.filter(
+							(v) => String(v.vetProfileId) === filterVetProfileId
+						)
+						pageData.content = filtered
+						pageData.totalElements = filtered.length
+					}
+					setVisitsData(pageData)
+					setVisits(filtered)
 				} else {
-					data = []
+					setVisitsData({
+						content: [],
+						totalElements: 0,
+						totalPages: 0,
+						size: 0,
+						number: 0
+					})
+					setVisits([])
 				}
 			} else {
+				// No pet filter - aggregate all visits (no server-side pagination)
 				const petResponse = await httpJson<Pet[] | PageResponse<Pet>>(
 					'/api/pets',
 					{
@@ -153,25 +189,36 @@ export function ManageVisits() {
 						.catch(() => [] as Visit[])
 				)
 				const results = await Promise.all(visitPromises)
-				data = results.flat()
-			}
-			// Optional vet filter
-			if (filterVetProfileId) {
-				data = data.filter(
-					(v) => String(v.vetProfileId) === filterVetProfileId
+				let data = results.flat()
+				// Optional vet filter
+				if (filterVetProfileId) {
+					data = data.filter(
+						(v) => String(v.vetProfileId) === filterVetProfileId
+					)
+				}
+				// Sort by date / startTime
+				data.sort((a, b) =>
+					(a.date + a.startTime).localeCompare(b.date + b.startTime)
 				)
+				// Client-side pagination for aggregated results
+				const start = page * pageSize
+				const end = start + pageSize
+				const paginatedData = data.slice(start, end)
+				setVisitsData({
+					content: paginatedData,
+					totalElements: data.length,
+					totalPages: Math.ceil(data.length / pageSize),
+					size: pageSize,
+					number: page
+				})
+				setVisits(paginatedData)
 			}
-			// Sort by date / startTime
-			data.sort((a, b) =>
-				(a.date + a.startTime).localeCompare(b.date + b.startTime)
-			)
-			setVisits(data)
 		} catch (e) {
 			setError(e instanceof Error ? e.message : 'Failed to load visits')
 		} finally {
 			setLoading(false)
 		}
-	}, [accessToken, filterPetId, filterVetProfileId])
+	}, [accessToken, filterPetId, filterVetProfileId, page, pageSize])
 
 	const loadPets = useCallback(async () => {
 		if (!accessToken) return
@@ -506,6 +553,22 @@ export function ManageVisits() {
 					</tbody>
 				</table>
 			</div>
+
+			{visitsData && (
+				<div className='mt-4'>
+					<Pagination
+						currentPage={visitsData.number}
+						totalPages={visitsData.totalPages}
+						pageSize={visitsData.size}
+						totalElements={visitsData.totalElements}
+						onPageChange={setPage}
+						onPageSizeChange={(size) => {
+							setPageSize(size)
+							setPage(0)
+						}}
+					/>
+				</div>
+			)}
 
 			{/* Form */}
 			<div className='rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-6'>

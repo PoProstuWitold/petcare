@@ -1,10 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
-import { fetchMedicalRecordsForCurrentVet } from '../../api/medicalRecords'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+	fetchMedicalRecordsForCurrentVet,
+	type PageResponse
+} from '../../api/medicalRecords'
 import { useAuth } from '../../context/AuthContext'
 import { useAsync } from '../../hooks/useAsync'
 import type { MedicalRecord } from '../../utils/types'
 import { MedicalRecordCard } from '../medical/MedicalRecordCard'
 import { Alert } from '../ui/Alert'
+import { Pagination } from '../ui/Pagination'
 
 function compareRecordDateTime(a: MedicalRecord, b: MedicalRecord): number {
 	const aKey = `${a.visit.date}T${a.visit.startTime}`
@@ -15,18 +19,35 @@ function compareRecordDateTime(a: MedicalRecord, b: MedicalRecord): number {
 export function VetMedicalRecordsCard() {
 	const { accessToken } = useAuth()
 	const token = accessToken
-	const { data, loading, error } = useAsync<MedicalRecord[]>(
+	const [page, setPage] = useState(0)
+	const [pageSize, setPageSize] = useState(20)
+	const { data, loading, error } = useAsync<PageResponse<MedicalRecord>>(
 		() =>
 			token
-				? fetchMedicalRecordsForCurrentVet(token)
-				: Promise.resolve([]),
-		[token]
+				? fetchMedicalRecordsForCurrentVet(token, page, pageSize)
+				: Promise.resolve({
+						content: [],
+						totalElements: 0,
+						totalPages: 0,
+						size: 0,
+						number: 0
+					}),
+		[token, page, pageSize]
 	)
 
 	const [records, setRecords] = useState<MedicalRecord[]>([])
 	useEffect(() => {
-		setRecords(data ?? [])
+		setRecords(data?.content ?? [])
 	}, [data])
+
+	const handlePageChange = useCallback((newPage: number) => {
+		setPage(newPage)
+	}, [])
+
+	const handlePageSizeChange = useCallback((newSize: number) => {
+		setPageSize(newSize)
+		setPage(0)
+	}, [])
 
 	const { upcoming, past } = useMemo(() => {
 		const sorted = [...records].sort(compareRecordDateTime)
@@ -71,26 +92,40 @@ export function VetMedicalRecordsCard() {
 			)}
 
 			{!loading && !error && records.length > 0 && (
-				<div className='flex flex-col gap-4 my-3'>
-					{upcoming.length > 0 && (
-						<div className='flex flex-col gap-4'>
-							{upcoming.map((r) => (
-								<MedicalRecordCard key={r.id} record={r} />
-							))}
-						</div>
-					)}
+				<>
+					<div className='flex flex-col gap-4 my-3'>
+						{upcoming.length > 0 && (
+							<div className='flex flex-col gap-4'>
+								{upcoming.map((r) => (
+									<MedicalRecordCard key={r.id} record={r} />
+								))}
+							</div>
+						)}
 
-					{past.length > 0 && (
-						<div className='flex flex-col gap-4'>
-							<p className='text-xs font-semibold uppercase tracking-wide text-slate-500'>
-								Past (by visit date)
-							</p>
-							{past.map((r) => (
-								<MedicalRecordCard key={r.id} record={r} />
-							))}
+						{past.length > 0 && (
+							<div className='flex flex-col gap-4'>
+								<p className='text-xs font-semibold uppercase tracking-wide text-slate-500'>
+									Past (by visit date)
+								</p>
+								{past.map((r) => (
+									<MedicalRecordCard key={r.id} record={r} />
+								))}
+							</div>
+						)}
+					</div>
+					{data && (
+						<div className='mt-4'>
+							<Pagination
+								currentPage={data.number}
+								totalPages={data.totalPages}
+								pageSize={data.size}
+								totalElements={data.totalElements}
+								onPageChange={handlePageChange}
+								onPageSizeChange={handlePageSizeChange}
+							/>
 						</div>
 					)}
-				</div>
+				</>
 			)}
 		</section>
 	)

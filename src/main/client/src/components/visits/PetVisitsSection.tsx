@@ -1,9 +1,10 @@
-import { useState } from 'react'
-import { fetchPetVisits } from '../../api/visits'
+import { useCallback, useState } from 'react'
+import { fetchPetVisits, type PageResponse } from '../../api/visits'
 import { useAuth } from '../../context/AuthContext'
 import { useAsync } from '../../hooks/useAsync'
 import type { Pet, Visit } from '../../utils/types'
 import { Alert } from '../ui/Alert'
+import { Pagination } from '../ui/Pagination'
 import { VisitCard } from '../VisitCard'
 
 type PetVisitsSectionProps = {
@@ -13,15 +14,35 @@ type PetVisitsSectionProps = {
 export function PetVisitsSection({ pet }: PetVisitsSectionProps) {
 	const { accessToken } = useAuth()
 	const token = accessToken
-	const { data, loading, error } = useAsync<Visit[]>(
-		() => (token ? fetchPetVisits(pet.id, token) : Promise.resolve([])),
-		[token, pet.id]
+	const [page, setPage] = useState(0)
+	const [pageSize, setPageSize] = useState(20)
+	const { data, loading, error } = useAsync<PageResponse<Visit>>(
+		() =>
+			token
+				? fetchPetVisits(pet.id, token, page, pageSize)
+				: Promise.resolve({
+						content: [],
+						totalElements: 0,
+						totalPages: 0,
+						size: 0,
+						number: 0
+					}),
+		[token, pet.id, page, pageSize]
 	)
 
-	const visits = data ?? []
-	const visitCount = visits.length
+	const visits = data?.content ?? []
+	const visitCount = data?.totalElements ?? 0
 
 	const [expanded, setExpanded] = useState(false)
+
+	const handlePageChange = useCallback((newPage: number) => {
+		setPage(newPage)
+	}, [])
+
+	const handlePageSizeChange = useCallback((newSize: number) => {
+		setPageSize(newSize)
+		setPage(0)
+	}, [])
 
 	const sortedVisits = [...visits].sort((a, b) => {
 		const aKey = `${a.date}T${a.startTime}`
@@ -59,11 +80,25 @@ export function PetVisitsSection({ pet }: PetVisitsSectionProps) {
 					</button>
 
 					{expanded && (
-						<div className='mt-2 space-y-2'>
-							{sortedVisits.map((visit) => (
-								<VisitCard key={visit.id} visit={visit} />
-							))}
-						</div>
+						<>
+							<div className='mt-2 space-y-2'>
+								{sortedVisits.map((visit) => (
+									<VisitCard key={visit.id} visit={visit} />
+								))}
+							</div>
+							{data && (
+								<div className='mt-4'>
+									<Pagination
+										currentPage={data.number}
+										totalPages={data.totalPages}
+										pageSize={data.size}
+										totalElements={data.totalElements}
+										onPageChange={handlePageChange}
+										onPageSizeChange={handlePageSizeChange}
+									/>
+								</div>
+							)}
+						</>
 					)}
 				</>
 			)}
