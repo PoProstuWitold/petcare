@@ -73,7 +73,10 @@ export function StatusPage() {
 
 	return (
 		<main className='page-container'>
-			<ProtectedHeader title='Application Status'>
+			<ProtectedHeader
+				title='Application Status'
+				description='Monitor the health and status of the application.'
+			>
 				<span
 					className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium ${getStatusColor(
 						status
