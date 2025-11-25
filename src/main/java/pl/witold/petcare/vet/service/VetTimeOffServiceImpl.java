@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import pl.witold.petcare.exceptions.VetTimeOffNotFoundException;
 import pl.witold.petcare.vet.VetProfile;
 import pl.witold.petcare.vet.VetTimeOff;
-import pl.witold.petcare.vet.commands.*;
+import pl.witold.petcare.vet.commands.VetTimeOffCreateCommand;
 import pl.witold.petcare.vet.repository.VetTimeOffRepository;
 
 import java.time.LocalDate;

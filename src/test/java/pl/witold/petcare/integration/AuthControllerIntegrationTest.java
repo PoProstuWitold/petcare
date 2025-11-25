@@ -5,22 +5,22 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
-import pl.witold.petcare.auth.AuthService;
 import pl.witold.petcare.auth.AuthController;
+import pl.witold.petcare.auth.AuthService;
 import pl.witold.petcare.dto.AuthRequest;
 import pl.witold.petcare.dto.AuthResponse;
 import pl.witold.petcare.dto.RegisterRequest;
 import pl.witold.petcare.dto.UserResponseDto;
-import pl.witold.petcare.user.Role;
 import pl.witold.petcare.security.jwt.JwtService;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import pl.witold.petcare.user.Role;
 
 import java.util.Set;
 

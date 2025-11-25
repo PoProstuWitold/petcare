@@ -14,11 +14,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
-import pl.witold.petcare.security.jwt.JwtService;
-import pl.witold.petcare.visit.commands.VisitCreateCommand;
 import pl.witold.petcare.pet.Pet;
+import pl.witold.petcare.security.jwt.JwtService;
 import pl.witold.petcare.user.User;
 import pl.witold.petcare.vet.VetProfile;
+import pl.witold.petcare.visit.commands.VisitCreateCommand;
 
 import java.time.LocalDate;
 import java.time.LocalTime;

@@ -16,13 +16,13 @@ import pl.witold.petcare.medicalrecord.commands.MedicalRecordUpdateCommand;
 import pl.witold.petcare.pet.Pet;
 import pl.witold.petcare.pet.PetAccessService;
 import pl.witold.petcare.pet.PetService;
+import pl.witold.petcare.security.CurrentUserService;
+import pl.witold.petcare.user.Role;
 import pl.witold.petcare.vet.VetProfile;
 import pl.witold.petcare.vet.service.VetProfileService;
 import pl.witold.petcare.visit.Visit;
 import pl.witold.petcare.visit.VisitRepository;
 import pl.witold.petcare.visit.VisitStatus;
-import pl.witold.petcare.security.CurrentUserService;
-import pl.witold.petcare.user.Role;
 
 import java.util.EnumSet;
 import java.util.List;

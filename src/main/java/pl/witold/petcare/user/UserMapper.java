@@ -1,6 +1,6 @@
 package pl.witold.petcare.user;
 
-import pl.witold.petcare.dto.*;
+import pl.witold.petcare.dto.UserResponseDto;
 
 /**
  * Mapper responsible for converting between User entity and UserResponseDto.

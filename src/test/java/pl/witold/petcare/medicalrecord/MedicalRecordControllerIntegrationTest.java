@@ -15,8 +15,8 @@ import pl.witold.petcare.dto.MedicalRecordResponseDto;
 import pl.witold.petcare.dto.PetResponseDto;
 import pl.witold.petcare.dto.VetProfileResponseDto;
 import pl.witold.petcare.dto.VisitResponseDto;
-import pl.witold.petcare.security.jwt.JwtService;
 import pl.witold.petcare.medicalrecord.commands.MedicalRecordCreateCommand;
+import pl.witold.petcare.security.jwt.JwtService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
