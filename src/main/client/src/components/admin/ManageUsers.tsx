@@ -18,6 +18,7 @@ import type {
 import { Alert } from '../ui/Alert'
 import { Button } from '../ui/Button'
 import { ConfirmationDialog } from '../ui/ConfirmationDialog'
+import { Pagination } from '../ui/Pagination'
 
 interface RoleToggleProps {
 	value: Role[]
@@ -52,8 +53,19 @@ function RoleSelector({ value, onChange }: RoleToggleProps) {
 
 type FormMode = 'CREATE' | 'PASSWORD' | 'ROLES'
 
+type PageResponse<T> = {
+	content: T[]
+	totalElements: number
+	totalPages: number
+	size: number
+	number: number
+}
+
 export function ManageUsers() {
 	const { accessToken } = useAuth()
+	const [page, setPage] = useState(0)
+	const [pageSize, setPageSize] = useState(20)
+	const [usersData, setUsersData] = useState<PageResponse<User> | null>(null)
 	const [users, setUsers] = useState<User[]>([])
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
@@ -89,25 +101,34 @@ export function ManageUsers() {
 		setLoading(true)
 		setError(null)
 		try {
-			type PageResponse<T> = {
-				content: T[]
-				totalElements: number
-				totalPages: number
-				size: number
-				number: number
-			}
 			const data = await httpJson<User[] | PageResponse<User>>(
-				'/api/users',
+				`/api/users?page=${page}&size=${pageSize}`,
 				{
 					headers: authHeaders(accessToken)
 				}
 			)
 			// Handle both Page and List responses
 			if (Array.isArray(data)) {
+				setUsersData({
+					content: data,
+					totalElements: data.length,
+					totalPages: 1,
+					size: data.length,
+					number: 0
+				})
 				setUsers(data)
 			} else if (data && typeof data === 'object' && 'content' in data) {
-				setUsers((data as PageResponse<User>).content || [])
+				const pageData = data as PageResponse<User>
+				setUsersData(pageData)
+				setUsers(pageData.content || [])
 			} else {
+				setUsersData({
+					content: [],
+					totalElements: 0,
+					totalPages: 0,
+					size: 0,
+					number: 0
+				})
 				setUsers([])
 			}
 		} catch (e) {
@@ -115,7 +136,7 @@ export function ManageUsers() {
 		} finally {
 			setLoading(false)
 		}
-	}, [accessToken])
+	}, [accessToken, page, pageSize])
 
 	useEffect(() => {
 		if (accessToken) loadUsers()
@@ -371,6 +392,22 @@ export function ManageUsers() {
 					</tbody>
 				</table>
 			</div>
+
+			{usersData && (
+				<div className='mt-4'>
+					<Pagination
+						currentPage={usersData.number}
+						totalPages={usersData.totalPages}
+						pageSize={usersData.size}
+						totalElements={usersData.totalElements}
+						onPageChange={setPage}
+						onPageSizeChange={(size) => {
+							setPageSize(size)
+							setPage(0)
+						}}
+					/>
+				</div>
+			)}
 
 			{/* Forms */}
 			<div className='rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-6'>

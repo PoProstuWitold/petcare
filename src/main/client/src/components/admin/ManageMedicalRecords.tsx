@@ -14,6 +14,7 @@ import type { MedicalRecord, Pet } from '../../utils/types'
 import { Alert } from '../ui/Alert'
 import { Button } from '../ui/Button'
 import { ConfirmationDialog } from '../ui/ConfirmationDialog'
+import { Pagination } from '../ui/Pagination'
 import { Spinner } from '../ui/Spinner'
 
 type RecordFormState = {
@@ -25,8 +26,20 @@ type RecordFormState = {
 	notes: string
 }
 
+type PageResponse<T> = {
+	content: T[]
+	totalElements: number
+	totalPages: number
+	size: number
+	number: number
+}
+
 export function ManageMedicalRecords() {
 	const { accessToken } = useAuth()
+	const [page, setPage] = useState(0)
+	const [pageSize, setPageSize] = useState(20)
+	const [recordsData, setRecordsData] =
+		useState<PageResponse<MedicalRecord> | null>(null)
 	const [records, setRecords] = useState<MedicalRecord[]>([])
 	const [pets, setPets] = useState<Pet[]>([])
 	const [loading, setLoading] = useState(false)
@@ -90,44 +103,96 @@ export function ManageMedicalRecords() {
 		setLoading(true)
 		setError(null)
 		try {
-			type PageResponse<T> = {
-				content: T[]
-				totalElements: number
-				totalPages: number
-				size: number
-				number: number
-			}
-			// Fetch all records once
-			const response = await httpJson<
-				MedicalRecord[] | PageResponse<MedicalRecord>
-			>('/api/medical-records', {
-				headers: authHeaders(accessToken)
-			})
-			// Handle both Page and List responses
-			let list: MedicalRecord[]
-			if (Array.isArray(response)) {
-				list = response
-			} else if (
-				response &&
-				typeof response === 'object' &&
-				'content' in response
-			) {
-				list = (response as PageResponse<MedicalRecord>).content || []
-			} else {
-				list = []
-			}
-			// Client-side filters
-			if (filterVisitId) {
-				list = list.filter((r) => String(r.visit.id) === filterVisitId)
-			}
+			// Build query params
+			const params = new URLSearchParams()
+			params.append('page', String(page))
+			params.append('size', String(pageSize))
 			if (filterPetId) {
-				list = list.filter((r) => String(r.pet.id) === filterPetId)
+				// If filtering by pet, use /by-pet endpoint
+				const response = await httpJson<
+					MedicalRecord[] | PageResponse<MedicalRecord>
+				>(
+					`/api/medical-records/by-pet/${filterPetId}?${params.toString()}`,
+					{
+						headers: authHeaders(accessToken)
+					}
+				)
+				if (Array.isArray(response)) {
+					setRecordsData({
+						content: response,
+						totalElements: response.length,
+						totalPages: 1,
+						size: response.length,
+						number: 0
+					})
+					setRecords(response)
+				} else if (
+					response &&
+					typeof response === 'object' &&
+					'content' in response
+				) {
+					const pageData = response as PageResponse<MedicalRecord>
+					setRecordsData(pageData)
+					setRecords(pageData.content || [])
+				} else {
+					setRecordsData({
+						content: [],
+						totalElements: 0,
+						totalPages: 0,
+						size: 0,
+						number: 0
+					})
+					setRecords([])
+				}
+			} else {
+				// Fetch all records with pagination
+				const response = await httpJson<
+					MedicalRecord[] | PageResponse<MedicalRecord>
+				>(`/api/medical-records?${params.toString()}`, {
+					headers: authHeaders(accessToken)
+				})
+				// Handle both Page and List responses
+				let pageData: PageResponse<MedicalRecord>
+				if (Array.isArray(response)) {
+					// Client-side filter by visit if needed
+					let list = response
+					if (filterVisitId) {
+						list = list.filter(
+							(r) => String(r.visit.id) === filterVisitId
+						)
+					}
+					pageData = {
+						content: list,
+						totalElements: list.length,
+						totalPages: 1,
+						size: list.length,
+						number: 0
+					}
+				} else if (
+					response &&
+					typeof response === 'object' &&
+					'content' in response
+				) {
+					pageData = response as PageResponse<MedicalRecord>
+					// Client-side filter by visit if needed
+					if (filterVisitId) {
+						pageData.content = pageData.content.filter(
+							(r) => String(r.visit.id) === filterVisitId
+						)
+						pageData.totalElements = pageData.content.length
+					}
+				} else {
+					pageData = {
+						content: [],
+						totalElements: 0,
+						totalPages: 0,
+						size: 0,
+						number: 0
+					}
+				}
+				setRecordsData(pageData)
+				setRecords(pageData.content || [])
 			}
-			// Sort newest first
-			list.sort((a, b) =>
-				(b.createdAt || '').localeCompare(a.createdAt || '')
-			)
-			setRecords(list)
 		} catch (e) {
 			setError(
 				e instanceof Error
@@ -137,7 +202,7 @@ export function ManageMedicalRecords() {
 		} finally {
 			setLoading(false)
 		}
-	}, [accessToken, filterPetId, filterVisitId])
+	}, [accessToken, page, pageSize, filterPetId, filterVisitId])
 
 	useEffect(() => {
 		if (!accessToken) return
@@ -439,6 +504,22 @@ export function ManageMedicalRecords() {
 					</tbody>
 				</table>
 			</div>
+
+			{recordsData && (
+				<div className='mt-4'>
+					<Pagination
+						currentPage={recordsData.number}
+						totalPages={recordsData.totalPages}
+						pageSize={recordsData.size}
+						totalElements={recordsData.totalElements}
+						onPageChange={setPage}
+						onPageSizeChange={(size) => {
+							setPageSize(size)
+							setPage(0)
+						}}
+					/>
+				</div>
+			)}
 
 			{/* Create form */}
 			<div className='rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-6'>
