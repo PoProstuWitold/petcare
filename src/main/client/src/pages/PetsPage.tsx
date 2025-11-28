@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
+import { fetchPetsByOwner, type PageResponse } from '../api/pets'
 import { ErrorHandler } from '../components/ErrorHandler'
 import { Loader } from '../components/Loader'
 import { PetMedicalRecordsSection } from '../components/medical/PetMedicalRecordsSection'
@@ -9,15 +10,19 @@ import { PetImportExportPanel } from '../components/PetImportExportPanel'
 import { ProtectedHeader } from '../components/ProtectedHeader'
 import { Button } from '../components/ui/Button'
 import { ConfirmationDialog } from '../components/ui/ConfirmationDialog'
+import { Pagination } from '../components/ui/Pagination'
 import { PetVisitsSection } from '../components/visits/PetVisitsSection'
 import { VisitBookingForm } from '../components/visits/VisitBookingForm'
 import { useAuth } from '../context/AuthContext'
+import { useAsync } from '../hooks/useAsync'
 import { useAuthFetch } from '../hooks/useAuthFetch'
 import type { Pet, Visit } from '../utils/types'
 
 export function PetsPage() {
 	const { accessToken, user } = useAuth()
 	const { json } = useAuthFetch()
+	const [page, setPage] = useState(0)
+	const [pageSize] = useState(4)
 	const [pets, setPets] = useState<Pet[]>([])
 	const [isLoading, setIsLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
@@ -28,57 +33,63 @@ export function PetsPage() {
 	const [visitsRefreshKey, setVisitsRefreshKey] = useState(0)
 	const [petToDelete, setPetToDelete] = useState<Pet | null>(null)
 
+	const {
+		data: petsData,
+		loading: petsLoading,
+		error: petsError,
+		execute: reloadPets
+	} = useAsync<PageResponse<Pet>>(
+		() =>
+			accessToken && user?.id
+				? fetchPetsByOwner(user.id, accessToken, page, pageSize)
+				: Promise.resolve({
+						content: [],
+						totalElements: 0,
+						totalPages: 0,
+						size: 0,
+						number: 0
+					}),
+		[accessToken, user?.id, page, pageSize]
+	)
+
 	useEffect(() => {
-		if (!accessToken) {
+		if (petsData) {
+			setPets(petsData.content)
 			setIsLoading(false)
-			setError('Missing access token. Please log in again.')
-			return
-		}
-
-		const controller = new AbortController()
-
-		const loadPets = async () => {
+			setError(null)
+		} else if (petsLoading) {
 			setIsLoading(true)
 			setError(null)
-
-			try {
-				const data = await json<Pet[]>('/api/pets/me')
-
-				setPets(data)
-			} catch (err) {
-				if (err instanceof DOMException && err.name === 'AbortError') {
-					return
-				}
-
-				console.error('Unexpected error while loading pets', err)
-				const message = 'Unexpected error while loading pets.'
-				setError(message)
-				toast.error(message)
-			} finally {
-				setIsLoading(false)
-			}
+		} else if (petsError) {
+			setError(petsError)
+			setIsLoading(false)
+			toast.error(petsError)
 		}
+	}, [petsData, petsLoading, petsError])
 
-		void loadPets()
-
-		return () => {
-			controller.abort()
-		}
-	}, [accessToken, json])
+	const handlePageChange = useCallback((newPage: number) => {
+		setPage(newPage)
+	}, [])
 
 	const handleCancelForm = () => {
 		setIsCreating(false)
 		setEditingPet(null)
 	}
 
-	const handleSavedPet = (saved: Pet) => {
-		setPets((prev) => {
-			const exists = prev.some((p) => p.id === saved.id)
-			if (exists) {
-				return prev.map((p) => (p.id === saved.id ? saved : p))
+	const handleSavedPet = async (saved: Pet) => {
+		// After saving, reload data from API to update pagination correctly
+		const isNewPet = !pets.some((p) => p.id === saved.id)
+		if (isNewPet) {
+			// If it's a new pet, go to first page to show it
+			if (page === 0) {
+				await reloadPets().catch(() => {})
+			} else {
+				setPage(0)
 			}
-			return [...prev, saved]
-		})
+		} else {
+			// If updating existing pet, just reload current page
+			await reloadPets().catch(() => {})
+		}
 		setIsCreating(false)
 		setEditingPet(null)
 	}
@@ -103,9 +114,8 @@ export function PetsPage() {
 				method: 'DELETE'
 			})
 
-			// Refresh full list to ensure consistency with server state
-			const data = await json<Pet[]>('/api/pets/me')
-			setPets(data)
+			// After deletion, reload data from API to update pagination correctly
+			await reloadPets().catch(() => {})
 
 			setEditingPet((current) =>
 				current && current.id === petToDelete.id ? null : current
@@ -174,16 +184,16 @@ export function PetsPage() {
 			</ProtectedHeader>
 			<div className='page-content'>
 				<PetImportExportPanel
-					onImported={(newPets) => {
-						// merge new pets (avoid duplicates by id)
-						setPets((prev) => {
-							const existingIds = new Set(prev.map((p) => p.id))
-							const merged = [...prev]
-							for (const p of newPets) {
-								if (!existingIds.has(p.id)) merged.push(p)
-							}
-							return merged
-						})
+					onImported={async () => {
+						// After import, reload data from API to update pagination correctly
+						// Go to first page to show newly imported pets
+						if (page === 0) {
+							// If already on page 0, reload data
+							await reloadPets().catch(() => {})
+						} else {
+							// If on another page, go to page 0 (this will auto-reload)
+							setPage(0)
+						}
 					}}
 					disabled={isCreating || !!editingPet || isBookingVisit}
 				/>
@@ -218,28 +228,41 @@ export function PetsPage() {
 				)}
 
 				{!isLoading && !error && pets.length > 0 && (
-					<div className='grid gap-4 md:grid-cols-2 mb-10'>
-						{pets.map((pet) => (
-							<PetCard
-								key={pet.id}
-								pet={pet}
-								onEdit={() => {
-									setIsCreating(false)
-									setIsBookingVisit(false)
-									setEditingPet(pet)
-								}}
-								onDelete={() => {
-									handleDeletePet(pet)
-								}}
-							>
-								<PetVisitsSection
-									key={`${visitsRefreshKey}-${pet.id}`}
+					<>
+						<div className='grid gap-4 md:grid-cols-2 mb-10'>
+							{pets.map((pet) => (
+								<PetCard
+									key={pet.id}
 									pet={pet}
+									onEdit={() => {
+										setIsCreating(false)
+										setIsBookingVisit(false)
+										setEditingPet(pet)
+									}}
+									onDelete={() => {
+										handleDeletePet(pet)
+									}}
+								>
+									<PetVisitsSection
+										key={`${visitsRefreshKey}-${pet.id}`}
+										pet={pet}
+									/>
+									<PetMedicalRecordsSection pet={pet} />
+								</PetCard>
+							))}
+						</div>
+						{petsData && (
+							<div className='mb-10'>
+								<Pagination
+									currentPage={petsData.number}
+									totalPages={petsData.totalPages}
+									pageSize={petsData.size}
+									totalElements={petsData.totalElements}
+									onPageChange={handlePageChange}
 								/>
-								<PetMedicalRecordsSection pet={pet} />
-							</PetCard>
-						))}
-					</div>
+							</div>
+						)}
+					</>
 				)}
 			</div>
 

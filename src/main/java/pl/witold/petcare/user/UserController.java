@@ -1,13 +1,5 @@
 package pl.witold.petcare.user;
 
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import pl.witold.petcare.dto.UserResponseDto;
-import pl.witold.petcare.user.commands.PasswordChangeCommand;
-import pl.witold.petcare.user.commands.UserRegistrationCommand;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -16,8 +8,17 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import pl.witold.petcare.dto.UserResponseDto;
+import pl.witold.petcare.user.commands.PasswordChangeCommand;
+import pl.witold.petcare.user.commands.UserRegistrationCommand;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -65,23 +66,24 @@ public class UserController {
 
     @Operation(
             summary = "Get all users (admin)",
-            description = "Returns a list of all registered users in the system. Admin only."
+            description = "Returns a paginated list of all registered users in the system. Admin only. " +
+                    "Supports pagination with parameters: page (default: 0), size (default: 20, max: 100), sort (e.g., username,asc)."
     )
     @ApiResponse(
             responseCode = "200",
-            description = "List of users returned successfully",
+            description = "Paginated list of users returned successfully",
             content = @Content(
                     mediaType = "application/json",
-                    array = @ArraySchema(schema = @Schema(implementation = UserResponseDto.class))
+                    schema = @Schema(implementation = Page.class)
             )
     )
     @GetMapping
-    public ResponseEntity<List<UserResponseDto>> getAll() {
-        List<UserResponseDto> users = userService.getAll()
-                .stream()
-                .map(UserMapper::toDto)
-                .toList();
-        return ResponseEntity.ok(users);
+    public ResponseEntity<Page<UserResponseDto>> getAll(
+            @PageableDefault(size = 20) Pageable pageable
+    ) {
+        Page<User> users = userService.getAll(pageable);
+        Page<UserResponseDto> result = users.map(UserMapper::toDto);
+        return ResponseEntity.ok(result);
     }
 
     @Operation(

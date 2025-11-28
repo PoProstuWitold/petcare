@@ -9,11 +9,17 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.witold.petcare.dto.AuthRequest;
+import pl.witold.petcare.dto.AuthResponse;
+import pl.witold.petcare.dto.RegisterRequest;
+import pl.witold.petcare.dto.UserResponseDto;
 import pl.witold.petcare.exceptions.FieldIsAlreadyTakenException;
 import pl.witold.petcare.exceptions.UserNotFoundException;
 import pl.witold.petcare.security.jwt.JwtService;
-import pl.witold.petcare.user.*;
-import pl.witold.petcare.dto.*;
+import pl.witold.petcare.user.Role;
+import pl.witold.petcare.user.User;
+import pl.witold.petcare.user.UserMapper;
+import pl.witold.petcare.user.UserRepository;
 
 import java.util.Set;
 

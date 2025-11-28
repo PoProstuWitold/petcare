@@ -14,10 +14,10 @@ import pl.witold.petcare.user.Role;
 import pl.witold.petcare.user.User;
 import pl.witold.petcare.user.UserRepository;
 import pl.witold.petcare.vet.VetProfile;
-import pl.witold.petcare.vet.repository.VetProfileRepository;
 import pl.witold.petcare.vet.VetScheduleEntry;
-import pl.witold.petcare.vet.repository.VetScheduleEntryRepository;
 import pl.witold.petcare.vet.VetSpecialization;
+import pl.witold.petcare.vet.repository.VetProfileRepository;
+import pl.witold.petcare.vet.repository.VetScheduleEntryRepository;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;

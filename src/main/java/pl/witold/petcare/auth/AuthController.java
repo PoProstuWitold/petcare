@@ -1,21 +1,23 @@
 package pl.witold.petcare.auth;
 
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
-import pl.witold.petcare.dto.AuthRequest;
-import pl.witold.petcare.dto.AuthResponse;
-import pl.witold.petcare.dto.RegisterRequest;
-import pl.witold.petcare.dto.UserResponseDto;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import pl.witold.petcare.dto.AuthRequest;
+import pl.witold.petcare.dto.AuthResponse;
+import pl.witold.petcare.dto.RegisterRequest;
+import pl.witold.petcare.dto.UserResponseDto;
 
 /**
  * REST controller for authentication and registration endpoints.

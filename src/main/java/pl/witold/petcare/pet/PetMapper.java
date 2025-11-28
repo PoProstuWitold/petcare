@@ -14,6 +14,12 @@ public final class PetMapper {
     }
 
     public static PetResponseDto toDto(Pet pet) {
+        if (pet == null) {
+            throw new IllegalArgumentException("Pet cannot be null");
+        }
+        if (pet.getOwner() == null) {
+            throw new IllegalStateException("Pet owner is null for pet ID: " + pet.getId());
+        }
         return new PetResponseDto(
                 pet.getId(),
                 pet.getOwner().getId(),

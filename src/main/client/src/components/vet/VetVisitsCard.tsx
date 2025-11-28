@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
-import { fetchVisitsForCurrentVet } from '../../api/vets'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { fetchVisitsForCurrentVet, type PageResponse } from '../../api/vets'
 import { updateVisitStatus } from '../../api/visits'
 import { useAuth } from '../../context/AuthContext'
 import { useAsync } from '../../hooks/useAsync'
 import type { Visit, VisitStatus } from '../../utils/types'
 import { Alert } from '../ui/Alert'
+import { Pagination } from '../ui/Pagination'
 import { VisitCard } from '../VisitCard'
 
 function compareDateTime(a: Visit, b: Visit): number {
@@ -16,15 +17,35 @@ function compareDateTime(a: Visit, b: Visit): number {
 export function VetVisitsCard() {
 	const { accessToken } = useAuth()
 	const token = accessToken
-	const { data, loading, error, execute } = useAsync<Visit[]>(
-		() => (token ? fetchVisitsForCurrentVet(token) : Promise.resolve([])),
-		[token]
+	const [page, setPage] = useState(0)
+	const [pageSize, setPageSize] = useState(20)
+	const { data, loading, error, execute } = useAsync<PageResponse<Visit>>(
+		() =>
+			token
+				? fetchVisitsForCurrentVet(token, page, pageSize)
+				: Promise.resolve({
+						content: [],
+						totalElements: 0,
+						totalPages: 0,
+						size: 0,
+						number: 0
+					}),
+		[token, page, pageSize]
 	)
 	const [visits, setVisits] = useState<Visit[]>([])
 	useEffect(() => {
-		setVisits(data ?? [])
+		setVisits(data?.content ?? [])
 	}, [data])
 	const [_savingId, setSavingId] = useState<number | null>(null)
+
+	const handlePageChange = useCallback((newPage: number) => {
+		setPage(newPage)
+	}, [])
+
+	const handlePageSizeChange = useCallback((newSize: number) => {
+		setPageSize(newSize)
+		setPage(0)
+	}, [])
 
 	const handleStatusChange = async (visit: Visit, newStatus: VisitStatus) => {
 		if (!token) return
@@ -88,62 +109,76 @@ export function VetVisitsCard() {
 			)}
 
 			{!loading && !error && visits.length > 0 && (
-				<div className='flex flex-col gap-4 my-3'>
-					{upcoming.length > 0 && (
-						<div className='flex flex-col gap-4'>
-							<p className='text-xs font-semibold uppercase tracking-wide text-emerald-700'>
-								Upcoming
-							</p>
-							{upcoming.map((visit) => (
-								<VisitCard
-									key={visit.id}
-									visit={visit}
-									enableStatusEditing
-									onStatusChangeRequest={(status) =>
-										handleStatusChange(visit, status)
-									}
-									// onCreateMedicalRecord navigates to new medical record form route `/vet/medical-records/new?visitId=...`
-									onCreateMedicalRecord={() => {
-										window.location.href = `/vet/medical-records/new?visitId=${visit.id}`
-									}}
-									onViewPetDetails={() => {
-										if (visit.pet?.id) {
-											window.location.href = `/pets/${visit.pet.id}`
+				<>
+					<div className='flex flex-col gap-4 my-3'>
+						{upcoming.length > 0 && (
+							<div className='flex flex-col gap-4'>
+								<p className='text-xs font-semibold uppercase tracking-wide text-emerald-700'>
+									Upcoming
+								</p>
+								{upcoming.map((visit) => (
+									<VisitCard
+										key={visit.id}
+										visit={visit}
+										enableStatusEditing
+										onStatusChangeRequest={(status) =>
+											handleStatusChange(visit, status)
 										}
-									}}
-								/>
-							))}
-						</div>
-					)}
+										// onCreateMedicalRecord navigates to new medical record form route `/vet/medical-records/new?visitId=...`
+										onCreateMedicalRecord={() => {
+											window.location.href = `/vet/medical-records/new?visitId=${visit.id}`
+										}}
+										onViewPetDetails={() => {
+											if (visit.pet?.id) {
+												window.location.href = `/pets/${visit.pet.id}`
+											}
+										}}
+									/>
+								))}
+							</div>
+						)}
 
-					{past.length > 0 && (
-						<div className='flex flex-col gap-4 my-3'>
-							<p className='text-xs font-semibold uppercase tracking-wide text-slate-500'>
-								Past
-							</p>
-							{past.map((visit) => (
-								<VisitCard
-									key={visit.id}
-									title='Past visit'
-									visit={visit}
-									enableStatusEditing
-									onStatusChangeRequest={(status) =>
-										handleStatusChange(visit, status)
-									}
-									// onCreateMedicalRecord navigates to new medical record form route `/vet/medical-records/new?visitId=...`
-									onCreateMedicalRecord={() => {
-										window.location.href = `/vet/medical-records/new?visitId=${visit.id}`
-									}}
-									onViewPetDetails={() => {
-										if (visit.pet?.id) {
-											window.location.href = `/pets/${visit.pet.id}`
+						{past.length > 0 && (
+							<div className='flex flex-col gap-4 my-3'>
+								<p className='text-xs font-semibold uppercase tracking-wide text-slate-500'>
+									Past
+								</p>
+								{past.map((visit) => (
+									<VisitCard
+										key={visit.id}
+										title='Past visit'
+										visit={visit}
+										enableStatusEditing
+										onStatusChangeRequest={(status) =>
+											handleStatusChange(visit, status)
 										}
-									}}
-								/>
-							))}
+										// onCreateMedicalRecord navigates to new medical record form route `/vet/medical-records/new?visitId=...`
+										onCreateMedicalRecord={() => {
+											window.location.href = `/vet/medical-records/new?visitId=${visit.id}`
+										}}
+										onViewPetDetails={() => {
+											if (visit.pet?.id) {
+												window.location.href = `/pets/${visit.pet.id}`
+											}
+										}}
+									/>
+								))}
+							</div>
+						)}
+					</div>
+					{data && (
+						<div className='mt-4'>
+							<Pagination
+								currentPage={data.number}
+								totalPages={data.totalPages}
+								pageSize={data.size}
+								totalElements={data.totalElements}
+								onPageChange={handlePageChange}
+								onPageSizeChange={handlePageSizeChange}
+							/>
 						</div>
 					)}
-				</div>
+				</>
 			)}
 		</section>
 	)

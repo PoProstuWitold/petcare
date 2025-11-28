@@ -6,6 +6,7 @@ import type { Pet, User } from '../../utils/types'
 import { Alert } from '../ui/Alert'
 import { Button } from '../ui/Button'
 import { ConfirmationDialog } from '../ui/ConfirmationDialog'
+import { Pagination } from '../ui/Pagination'
 import { Spinner } from '../ui/Spinner'
 
 const SPECIES_OPTIONS = [
@@ -36,8 +37,19 @@ type PetFormState = {
 	notes: string
 }
 
+type PageResponse<T> = {
+	content: T[]
+	totalElements: number
+	totalPages: number
+	size: number
+	number: number
+}
+
 export function ManagePets() {
 	const { accessToken } = useAuth()
+	const [page, setPage] = useState(0)
+	const [pageSize, setPageSize] = useState(20)
+	const [petsData, setPetsData] = useState<PageResponse<Pet> | null>(null)
 	const [pets, setPets] = useState<Pet[]>([])
 	const [users, setUsers] = useState<User[]>([])
 	const [loading, setLoading] = useState(false)
@@ -70,24 +82,67 @@ export function ManagePets() {
 		setLoading(true)
 		setError(null)
 		try {
-			const data = await httpJson<Pet>('/api/pets', {
-				headers: authHeaders(accessToken)
-			})
-			setPets(data as unknown as Pet[])
+			const data = await httpJson<Pet[] | PageResponse<Pet>>(
+				`/api/pets?page=${page}&size=${pageSize}`,
+				{
+					headers: authHeaders(accessToken)
+				}
+			)
+			// Handle both Page and List responses
+			if (Array.isArray(data)) {
+				setPetsData({
+					content: data,
+					totalElements: data.length,
+					totalPages: 1,
+					size: data.length,
+					number: 0
+				})
+				setPets(data)
+			} else if (data && typeof data === 'object' && 'content' in data) {
+				const pageData = data as PageResponse<Pet>
+				setPetsData(pageData)
+				setPets(pageData.content || [])
+			} else {
+				setPetsData({
+					content: [],
+					totalElements: 0,
+					totalPages: 0,
+					size: 0,
+					number: 0
+				})
+				setPets([])
+			}
 		} catch (e) {
 			setError(e instanceof Error ? e.message : 'Failed to load pets')
 		} finally {
 			setLoading(false)
 		}
-	}, [accessToken])
+	}, [accessToken, page, pageSize])
 
 	const loadUsers = useCallback(async () => {
 		if (!accessToken) return
 		try {
-			const data = await httpJson<User>('/api/users', {
-				headers: authHeaders(accessToken)
-			})
-			setUsers(data as unknown as User[])
+			type PageResponse<T> = {
+				content: T[]
+				totalElements: number
+				totalPages: number
+				size: number
+				number: number
+			}
+			const data = await httpJson<User[] | PageResponse<User>>(
+				'/api/users',
+				{
+					headers: authHeaders(accessToken)
+				}
+			)
+			// Handle both Page and List responses
+			if (Array.isArray(data)) {
+				setUsers(data)
+			} else if (data && typeof data === 'object' && 'content' in data) {
+				setUsers((data as PageResponse<User>).content || [])
+			} else {
+				setUsers([])
+			}
 		} catch (_e) {
 			// keep silent here, owner dropdown will be empty
 		}
@@ -96,8 +151,12 @@ export function ManagePets() {
 	useEffect(() => {
 		if (!accessToken) return
 		loadPets()
+	}, [accessToken, loadPets])
+
+	useEffect(() => {
+		if (!accessToken) return
 		loadUsers()
-	}, [accessToken, loadPets, loadUsers])
+	}, [accessToken, loadUsers])
 
 	function resetForm() {
 		setForm({
@@ -330,6 +389,22 @@ export function ManagePets() {
 					</tbody>
 				</table>
 			</div>
+
+			{petsData && (
+				<div className='mt-4'>
+					<Pagination
+						currentPage={petsData.number}
+						totalPages={petsData.totalPages}
+						pageSize={petsData.size}
+						totalElements={petsData.totalElements}
+						onPageChange={setPage}
+						onPageSizeChange={(size) => {
+							setPageSize(size)
+							setPage(0)
+						}}
+					/>
+				</div>
+			)}
 
 			<div className='rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-6'>
 				<nav className='flex flex-wrap gap-2 text-xs font-medium'>

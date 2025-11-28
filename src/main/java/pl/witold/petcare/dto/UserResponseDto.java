@@ -1,7 +1,8 @@
 package pl.witold.petcare.dto;
 
-import java.util.Set;
 import pl.witold.petcare.user.Role;
+
+import java.util.Set;
 
 /**
  * DTO for returning user data in API responses.

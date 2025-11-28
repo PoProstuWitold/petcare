@@ -1,5 +1,7 @@
 package pl.witold.petcare.pet;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,7 +24,17 @@ public interface PetRepository extends JpaRepository<Pet, Long> {
     List<Pet> findAllWithOwner();
 
     @Query("""
+        select p from Pet p join fetch p.owner o
+        """)
+    Page<Pet> findAllWithOwner(Pageable pageable);
+
+    @Query("""
         select p from Pet p join fetch p.owner o where o.id = :ownerId
         """)
     List<Pet> findByOwnerIdWithOwner(@Param("ownerId") Long ownerId);
+
+    @Query("""
+        select p from Pet p join fetch p.owner o where o.id = :ownerId
+        """)
+    Page<Pet> findByOwnerIdWithOwner(@Param("ownerId") Long ownerId, Pageable pageable);
 }

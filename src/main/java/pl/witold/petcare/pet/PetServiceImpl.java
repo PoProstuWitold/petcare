@@ -1,10 +1,13 @@
 package pl.witold.petcare.pet;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.witold.petcare.dto.PetImportDto;
+import pl.witold.petcare.dto.PetResponseDto;
 import pl.witold.petcare.exceptions.PetNotFoundException;
 import pl.witold.petcare.exceptions.UserNotFoundException;
 import pl.witold.petcare.pet.commands.PetCreateCommand;
@@ -89,9 +92,36 @@ public class PetServiceImpl implements PetService {
 
     @Override
     @Transactional(readOnly = true)
+    public Page<Pet> getAll(Pageable pageable) {
+        if (!isElevated()) {
+            throw new AccessDeniedException("You are not allowed to access all pets");
+        }
+        return petRepository.findAllWithOwner(pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Pet> getByOwnerId(Long ownerId) {
         assertOwnerScope(ownerId, "access pets");
         return petRepository.findByOwnerIdWithOwner(ownerId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Pet> getByOwnerId(Long ownerId, Pageable pageable) {
+        assertOwnerScope(ownerId, "access pets");
+        return petRepository.findByOwnerIdWithOwner(ownerId, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PetResponseDto> getByOwnerIdAsDto(Long ownerId) {
+        assertOwnerScope(ownerId, "access pets");
+        List<Pet> pets = petRepository.findByOwnerIdWithOwner(ownerId);
+        // Map to DTOs while still in transaction to avoid LazyInitializationException
+        return pets.stream()
+                .map(PetMapper::toDto)
+                .toList();
     }
 
     @Override
