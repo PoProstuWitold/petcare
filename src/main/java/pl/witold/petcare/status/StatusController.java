@@ -12,6 +12,7 @@ import pl.witold.petcare.dto.HealthStatusResponse;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.Objects;
 
 @Tag(
         name = "Status",
@@ -44,10 +45,19 @@ public class StatusController {
     public HealthStatusResponse overall() {
         Map<String, Object> payload = statusService.overall();
 
+        String status = Objects.requireNonNull(
+                (String) payload.get("status"),
+                "Status key must exist in StatusService.overall() response"
+        );
+        Object details = Objects.requireNonNull(
+                payload.get("details"),
+                "Details key must exist in StatusService.overall() response"
+        );
+
         return new HealthStatusResponse(
                 Instant.now().toString(),
-                (String) payload.get("status"),
-                payload.get("details")
+                status,
+                details
         );
     }
 }

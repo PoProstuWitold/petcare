@@ -94,7 +94,9 @@ public class DataInitializer implements CommandLineRunner {
         boolean emailTaken = userRepository.existsByEmail(email);
         if (emailTaken) {
             log.info("Email '{}' already used. Skipping user '{}' seeding.", email, username);
-            return userRepository.findByEmail(email).orElse(null);
+            return userRepository.findByEmail(email)
+                    .orElseThrow(() -> new IllegalStateException(
+                            "Email '" + email + "' is marked as taken but user does not exist. Data inconsistency detected."));
         }
 
         String hash = passwordEncoder.encode(rawPassword);
