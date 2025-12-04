@@ -8,6 +8,7 @@ import java.lang.management.RuntimeMXBean;
 import java.sql.Connection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -56,10 +57,17 @@ public class StatusService {
 
     public Map<String, Object> readiness() {
         Map<String, Object> base = overall();
-        String status = (String) base.get("status");
+        String status = Objects.requireNonNull(
+                (String) base.get("status"),
+                "Status key must exist in overall() response"
+        );
+        Object details = Objects.requireNonNull(
+                base.get("details"),
+                "Details key must exist in overall() response"
+        );
         return Map.of(
                 "status", status,
-                "details", base.get("details")
+                "details", details
         );
     }
 }
