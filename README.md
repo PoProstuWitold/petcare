@@ -4,9 +4,10 @@
 
 System do zarządzania wizytami u weterynarza i profilami zwierząt.
 
-- Autor: Witold Zawada (projekt indywidualny)
-- Stos technologiczny: Spring Boot, Spring Security, JPA, Flyway, React (Vite), JWT
-- Wersja JDK: 21
+- Autorzy: 
+  - Witold Zawada,
+  - Wiktor Wypyszyński
+- Stos technologiczny: Spring Boot, Spring Security, JPA, Flyway, React (Vite), JWT, Java 21, JDK 21
 
 ---
 
