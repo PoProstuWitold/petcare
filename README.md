@@ -1,8 +1,9 @@
 <a id="top"></a>
 
 # PetCare
+[EN] A system for managing vet visits and pets profiles.
 
-System do zarządzania wizytami u weterynarza i profilami zwierząt.
+[PL] System do zarządzania wizytami u weterynarza i profilami zwierząt.
 
 - Autorzy: 
   - Witold Zawada,
