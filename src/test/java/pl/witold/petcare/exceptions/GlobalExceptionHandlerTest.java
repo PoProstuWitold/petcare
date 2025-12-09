@@ -17,7 +17,7 @@ class GlobalExceptionHandlerTest {
     void illegalArgumentYields422() {
         MockHttpServletRequest req = new MockHttpServletRequest();
         req.setRequestURI("/api/visits");
-        String[] msgs = new String[] {
+        String[] msgs = new String[]{
                 "Requested time is outside vet working hours",
                 "Selected time slot is already taken",
                 "Visit date cannot be in the past",

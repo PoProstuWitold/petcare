@@ -27,12 +27,17 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class MedicalRecordServiceImplTest {
 
-    @Mock private MedicalRecordRepository medicalRecordRepository;
-    @Mock private VetProfileService vetProfileService;
-    @Mock private VisitRepository visitRepository;
-    @Mock private CurrentUserService currentUserService;
+    @Mock
+    private MedicalRecordRepository medicalRecordRepository;
+    @Mock
+    private VetProfileService vetProfileService;
+    @Mock
+    private VisitRepository visitRepository;
+    @Mock
+    private CurrentUserService currentUserService;
 
-    @InjectMocks private MedicalRecordServiceImpl medicalRecordService;
+    @InjectMocks
+    private MedicalRecordServiceImpl medicalRecordService;
 
     @Test
     @DisplayName("Reject creation when visit not found")

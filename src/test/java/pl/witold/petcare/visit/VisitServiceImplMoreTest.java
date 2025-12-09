@@ -32,14 +32,21 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class VisitServiceImplMoreTest {
 
-    @Mock private VisitRepository visitRepository;
-    @Mock private PetService petService;
-    @Mock private PetAccessService petAccessService;
-    @Mock private VetProfileService vetProfileService;
-    @Mock private VetScheduleService vetScheduleService;
-    @Mock private CurrentUserService currentUserService;
+    @Mock
+    private VisitRepository visitRepository;
+    @Mock
+    private PetService petService;
+    @Mock
+    private PetAccessService petAccessService;
+    @Mock
+    private VetProfileService vetProfileService;
+    @Mock
+    private VetScheduleService vetScheduleService;
+    @Mock
+    private CurrentUserService currentUserService;
 
-    @InjectMocks private VisitServiceImpl visitService;
+    @InjectMocks
+    private VisitServiceImpl visitService;
 
     @Test
     @DisplayName("getById: admin can view any visit")
@@ -121,13 +128,13 @@ class VisitServiceImplMoreTest {
         LocalDate date = LocalDate.now().plusDays(1);
         VetScheduleEntry entry = mock(VetScheduleEntry.class);
         when(entry.getDayOfWeek()).thenReturn(date.getDayOfWeek());
-        when(entry.getStartTime()).thenReturn(LocalTime.of(9,0));
-        when(entry.getEndTime()).thenReturn(LocalTime.of(12,0));
+        when(entry.getStartTime()).thenReturn(LocalTime.of(9, 0));
+        when(entry.getEndTime()).thenReturn(LocalTime.of(12, 0));
         when(entry.getSlotLengthMinutes()).thenReturn(30);
         when(vetScheduleService.getScheduleForVetProfile(2L)).thenReturn(List.of(entry));
 
         // Non-aligned time 09:10 should be rejected in findScheduleEntry
-        VisitCreateCommand cmd = new VisitCreateCommand(1L, 2L, date, LocalTime.of(9,10), "Reason", null);
+        VisitCreateCommand cmd = new VisitCreateCommand(1L, 2L, date, LocalTime.of(9, 10), "Reason", null);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> visitService.createVisit(cmd));
         assertTrue(ex.getMessage().toLowerCase().contains("outside"));
     }

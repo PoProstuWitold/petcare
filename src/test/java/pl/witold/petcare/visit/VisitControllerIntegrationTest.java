@@ -36,15 +36,29 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 class VisitControllerIntegrationTest {
 
-    @Autowired private MockMvc mockMvc;
-    @Autowired private ObjectMapper objectMapper;
-    @Autowired private VisitService visitService;
+    @Autowired
+    private MockMvc mockMvc;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
+    private VisitService visitService;
 
     @org.springframework.boot.test.context.TestConfiguration
     static class Cfg {
-        @Bean VisitService visitService() { return Mockito.mock(VisitService.class); }
-        @Bean JwtService jwtService() { return Mockito.mock(JwtService.class); }
-        @Bean UserDetailsService userDetailsService() { return Mockito.mock(UserDetailsService.class); }
+        @Bean
+        VisitService visitService() {
+            return Mockito.mock(VisitService.class);
+        }
+
+        @Bean
+        JwtService jwtService() {
+            return Mockito.mock(JwtService.class);
+        }
+
+        @Bean
+        UserDetailsService userDetailsService() {
+            return Mockito.mock(UserDetailsService.class);
+        }
     }
 
     @Test
@@ -53,8 +67,8 @@ class VisitControllerIntegrationTest {
         Visit visit = Mockito.mock(Visit.class);
         when(visit.getId()).thenReturn(10L);
         when(visit.getDate()).thenReturn(LocalDate.now().plusDays(1));
-        when(visit.getStartTime()).thenReturn(LocalTime.of(10,0));
-        when(visit.getEndTime()).thenReturn(LocalTime.of(10,30));
+        when(visit.getStartTime()).thenReturn(LocalTime.of(10, 0));
+        when(visit.getEndTime()).thenReturn(LocalTime.of(10, 30));
         when(visit.getStatus()).thenReturn(VisitStatus.SCHEDULED);
         // Stub nested relations for VisitMapper
         Pet pet = Mockito.mock(Pet.class);
@@ -74,7 +88,7 @@ class VisitControllerIntegrationTest {
 
         when(visitService.createVisit(any())).thenReturn(visit);
 
-        VisitCreateCommand cmd = new VisitCreateCommand(1L, 2L, LocalDate.now().plusDays(1), LocalTime.of(10,0), "Reason", null);
+        VisitCreateCommand cmd = new VisitCreateCommand(1L, 2L, LocalDate.now().plusDays(1), LocalTime.of(10, 0), "Reason", null);
         String payload = objectMapper.writeValueAsString(cmd);
 
         mockMvc.perform(post("/api/visits")
@@ -90,8 +104,8 @@ class VisitControllerIntegrationTest {
         Visit visit = Mockito.mock(Visit.class);
         when(visit.getId()).thenReturn(11L);
         when(visit.getDate()).thenReturn(LocalDate.now().plusDays(2));
-        when(visit.getStartTime()).thenReturn(LocalTime.of(9,0));
-        when(visit.getEndTime()).thenReturn(LocalTime.of(9,30));
+        when(visit.getStartTime()).thenReturn(LocalTime.of(9, 0));
+        when(visit.getEndTime()).thenReturn(LocalTime.of(9, 30));
         when(visit.getStatus()).thenReturn(VisitStatus.SCHEDULED);
         // Stub nested relations for VisitMapper
         Pet pet = Mockito.mock(Pet.class);

@@ -18,7 +18,7 @@ class PetMapperTest {
     @DisplayName("toDto and fromImportDto preserve key fields")
     void mappingRoundTrip() {
         User owner = new User("Owner Name", "owner1", "owner@local", "hash", Set.of(Role.USER));
-        Pet pet = new Pet(owner, "Sara", Species.DOG, Sex.FEMALE, "Mixed", LocalDate.of(2021,5,10), 2021, 9.2, "notes");
+        Pet pet = new Pet(owner, "Sara", Species.DOG, Sex.FEMALE, "Mixed", LocalDate.of(2021, 5, 10), 2021, 9.2, "notes");
 
         PetResponseDto dto = PetMapper.toDto(pet);
         assertEquals("Sara", dto.name());

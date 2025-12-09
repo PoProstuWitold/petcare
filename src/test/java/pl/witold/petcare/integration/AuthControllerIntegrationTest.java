@@ -46,9 +46,20 @@ class AuthControllerIntegrationTest {
 
     @TestConfiguration
     static class TestConfig {
-        @Bean AuthService authService() { return Mockito.mock(AuthService.class); }
-        @Bean JwtService jwtService() { return Mockito.mock(JwtService.class); }
-        @Bean UserDetailsService userDetailsService() { return Mockito.mock(UserDetailsService.class); }
+        @Bean
+        AuthService authService() {
+            return Mockito.mock(AuthService.class);
+        }
+
+        @Bean
+        JwtService jwtService() {
+            return Mockito.mock(JwtService.class);
+        }
+
+        @Bean
+        UserDetailsService userDetailsService() {
+            return Mockito.mock(UserDetailsService.class);
+        }
     }
 
     @Test
@@ -60,8 +71,8 @@ class AuthControllerIntegrationTest {
         AuthRequest req = new AuthRequest("witold", "secret");
 
         mockMvc.perform(post("/api/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(req)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").value("abcdef12345"))
                 .andExpect(jsonPath("$.tokenType").value("Bearer"));
@@ -76,8 +87,8 @@ class AuthControllerIntegrationTest {
         RegisterRequest req = new RegisterRequest("Witold Zawada", "witq", "witq@petcare.local", "password123");
 
         mockMvc.perform(post("/api/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(req)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.username").value("witq"))

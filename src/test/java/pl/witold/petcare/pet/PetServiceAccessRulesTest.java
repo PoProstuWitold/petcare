@@ -18,11 +18,15 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class PetServiceAccessRulesTest {
 
-    @Mock private PetRepository petRepository;
-    @Mock private CurrentUserService currentUserService;
-    @Mock private PetAccessService petAccessService;
+    @Mock
+    private PetRepository petRepository;
+    @Mock
+    private CurrentUserService currentUserService;
+    @Mock
+    private PetAccessService petAccessService;
 
-    @InjectMocks private PetServiceImpl petService;
+    @InjectMocks
+    private PetServiceImpl petService;
 
     @Test
     @DisplayName("getAll: only ADMIN or VET is allowed")

@@ -28,12 +28,17 @@ import static org.mockito.Mockito.*;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class PetServiceImplTest {
 
-    @Mock private PetRepository petRepository;
-    @Mock private UserRepository userRepository;
-    @Mock private CurrentUserService currentUserService;
-    @Mock private PetAccessService petAccessService;
+    @Mock
+    private PetRepository petRepository;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private CurrentUserService currentUserService;
+    @Mock
+    private PetAccessService petAccessService;
 
-    @InjectMocks private PetServiceImpl petService;
+    @InjectMocks
+    private PetServiceImpl petService;
 
     @Test
     @DisplayName("Regular user cannot create pet for another owner")

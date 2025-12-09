@@ -35,15 +35,29 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 class MedicalRecordControllerIntegrationTest {
 
-    @Autowired private MockMvc mockMvc;
-    @Autowired private ObjectMapper objectMapper;
-    @Autowired private MedicalRecordService medicalRecordService;
+    @Autowired
+    private MockMvc mockMvc;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
+    private MedicalRecordService medicalRecordService;
 
     @org.springframework.boot.test.context.TestConfiguration
     static class Cfg {
-        @Bean MedicalRecordService medicalRecordService() { return Mockito.mock(MedicalRecordService.class); }
-        @Bean JwtService jwtService() { return Mockito.mock(JwtService.class); }
-        @Bean UserDetailsService userDetailsService() { return Mockito.mock(UserDetailsService.class); }
+        @Bean
+        MedicalRecordService medicalRecordService() {
+            return Mockito.mock(MedicalRecordService.class);
+        }
+
+        @Bean
+        JwtService jwtService() {
+            return Mockito.mock(JwtService.class);
+        }
+
+        @Bean
+        UserDetailsService userDetailsService() {
+            return Mockito.mock(UserDetailsService.class);
+        }
     }
 
     @Test
@@ -61,7 +75,7 @@ class MedicalRecordControllerIntegrationTest {
                 30,
                 Set.of()
         );
-        VisitResponseDto visitDto = new VisitResponseDto(5L, petDto, 3L, 4L, "Vet User", LocalDate.now().plusDays(1), LocalTime.of(10,0), LocalTime.of(10,30), pl.witold.petcare.visit.VisitStatus.SCHEDULED, "Reason", null);
+        VisitResponseDto visitDto = new VisitResponseDto(5L, petDto, 3L, 4L, "Vet User", LocalDate.now().plusDays(1), LocalTime.of(10, 0), LocalTime.of(10, 30), pl.witold.petcare.visit.VisitStatus.SCHEDULED, "Reason", null);
         MedicalRecordResponseDto resp = new MedicalRecordResponseDto(10L, petDto, vetDto, visitDto, "Title", "Diag", "Treat", null, null, LocalDateTime.now());
         when(medicalRecordService.create(any())).thenReturn(resp);
 

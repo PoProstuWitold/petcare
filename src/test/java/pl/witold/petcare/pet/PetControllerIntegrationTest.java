@@ -34,17 +34,36 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(PetMapper.class)
 class PetControllerIntegrationTest {
 
-    @Autowired private MockMvc mockMvc;
-    @Autowired private ObjectMapper objectMapper;
-    @Autowired private PetService petService;
-    @Autowired private UserService userService;
+    @Autowired
+    private MockMvc mockMvc;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
+    private PetService petService;
+    @Autowired
+    private UserService userService;
 
     @TestConfiguration
     static class Cfg {
-        @Bean PetService petService() { return Mockito.mock(PetService.class); }
-        @Bean UserService userService() { return Mockito.mock(UserService.class); }
-        @Bean JwtService jwtService() { return Mockito.mock(JwtService.class); }
-        @Bean UserDetailsService userDetailsService() { return Mockito.mock(UserDetailsService.class); }
+        @Bean
+        PetService petService() {
+            return Mockito.mock(PetService.class);
+        }
+
+        @Bean
+        UserService userService() {
+            return Mockito.mock(UserService.class);
+        }
+
+        @Bean
+        JwtService jwtService() {
+            return Mockito.mock(JwtService.class);
+        }
+
+        @Bean
+        UserDetailsService userDetailsService() {
+            return Mockito.mock(UserDetailsService.class);
+        }
     }
 
     @Test

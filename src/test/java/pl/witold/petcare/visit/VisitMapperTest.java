@@ -33,7 +33,7 @@ class VisitMapperTest {
         Mockito.when(profile.getId()).thenReturn(3L);
         Mockito.when(profile.getUser()).thenReturn(vetUser);
 
-        Visit visit = new Visit(pet, profile, LocalDate.now().plusDays(1), LocalTime.of(10,0), LocalTime.of(10,30), "Reason", null);
+        Visit visit = new Visit(pet, profile, LocalDate.now().plusDays(1), LocalTime.of(10, 0), LocalTime.of(10, 30), "Reason", null);
 
         VisitResponseDto dto = VisitMapper.toDto(visit);
         assertNotNull(dto);
@@ -42,7 +42,7 @@ class VisitMapperTest {
         assertEquals("Owner Name", petDto.ownerFullName());
         assertEquals("Sara", petDto.name());
         assertEquals("Vet User", dto.vetFullName());
-        assertEquals(LocalTime.of(10,0), dto.startTime());
-        assertEquals(LocalTime.of(10,30), dto.endTime());
+        assertEquals(LocalTime.of(10, 0), dto.startTime());
+        assertEquals(LocalTime.of(10, 30), dto.endTime());
     }
 }

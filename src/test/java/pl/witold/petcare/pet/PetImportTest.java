@@ -27,12 +27,17 @@ import static org.mockito.Mockito.when;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class PetImportTest {
 
-    @Mock private PetRepository petRepository;
-    @Mock private UserRepository userRepository;
-    @Mock private CurrentUserService currentUserService;
-    @Mock private PetAccessService petAccessService; // not used in import but required for ctor
+    @Mock
+    private PetRepository petRepository;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private CurrentUserService currentUserService;
+    @Mock
+    private PetAccessService petAccessService; // not used in import but required for ctor
 
-    @InjectMocks private PetServiceImpl petService;
+    @InjectMocks
+    private PetServiceImpl petService;
 
     @Test
     @DisplayName("Import creates new pets with owner assignment")

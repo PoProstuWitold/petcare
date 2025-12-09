@@ -30,14 +30,21 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class VisitServiceImplTest {
 
-    @Mock private VisitRepository visitRepository;
-    @Mock private PetService petService;
-    @Mock private PetAccessService petAccessService;
-    @Mock private VetProfileService vetProfileService;
-    @Mock private VetScheduleService vetScheduleService;
-    @Mock private VetTimeOffService vetTimeOffService;
+    @Mock
+    private VisitRepository visitRepository;
+    @Mock
+    private PetService petService;
+    @Mock
+    private PetAccessService petAccessService;
+    @Mock
+    private VetProfileService vetProfileService;
+    @Mock
+    private VetScheduleService vetScheduleService;
+    @Mock
+    private VetTimeOffService vetTimeOffService;
 
-    @InjectMocks private VisitServiceImpl visitService;
+    @InjectMocks
+    private VisitServiceImpl visitService;
 
     @Test
     @DisplayName("Reject past visit date")
@@ -48,7 +55,7 @@ class VisitServiceImplTest {
         VetProfile vetProfile = mock(VetProfile.class);
         when(vetProfileService.getById(2L)).thenReturn(vetProfile);
 
-        VisitCreateCommand cmd = new VisitCreateCommand(1L, 2L, LocalDate.now().minusDays(1), LocalTime.of(10,0), null, null);
+        VisitCreateCommand cmd = new VisitCreateCommand(1L, 2L, LocalDate.now().minusDays(1), LocalTime.of(10, 0), null, null);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> visitService.createVisit(cmd));
         assertTrue(ex.getMessage().toLowerCase().contains("past"));
     }
@@ -66,7 +73,7 @@ class VisitServiceImplTest {
         LocalDate date = LocalDate.now().plusDays(1);
         when(vetScheduleService.getScheduleForVetProfile(2L)).thenReturn(List.of());
 
-        VisitCreateCommand cmd = new VisitCreateCommand(1L, 2L, date, LocalTime.of(10,0), null, null);
+        VisitCreateCommand cmd = new VisitCreateCommand(1L, 2L, date, LocalTime.of(10, 0), null, null);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> visitService.createVisit(cmd));
         assertTrue(ex.getMessage().toLowerCase().contains("outside"));
     }
@@ -91,8 +98,8 @@ class VisitServiceImplTest {
         when(visit.getVetProfile()).thenReturn(vetProfile);
         when(visit.getId()).thenReturn(55L);
         when(visit.getDate()).thenReturn(LocalDate.now().plusDays(2));
-        when(visit.getStartTime()).thenReturn(LocalTime.of(9,0));
-        when(visit.getEndTime()).thenReturn(LocalTime.of(9,30));
+        when(visit.getStartTime()).thenReturn(LocalTime.of(9, 0));
+        when(visit.getEndTime()).thenReturn(LocalTime.of(9, 30));
         when(visit.getStatus()).thenReturn(VisitStatus.SCHEDULED);
         when(visitRepository.findByIdWithRelations(55L)).thenReturn(Optional.of(visit));
 
@@ -123,14 +130,14 @@ class VisitServiceImplTest {
         LocalDate date = LocalDate.now().plusDays(1);
         VetScheduleEntry entry = mock(VetScheduleEntry.class);
         when(entry.getDayOfWeek()).thenReturn(date.getDayOfWeek());
-        when(entry.getStartTime()).thenReturn(java.time.LocalTime.of(9,0));
-        when(entry.getEndTime()).thenReturn(java.time.LocalTime.of(12,0));
+        when(entry.getStartTime()).thenReturn(java.time.LocalTime.of(9, 0));
+        when(entry.getEndTime()).thenReturn(java.time.LocalTime.of(12, 0));
         when(entry.getSlotLengthMinutes()).thenReturn(30);
         when(vetScheduleService.getScheduleForVetProfile(2L)).thenReturn(java.util.List.of(entry));
 
         when(vetTimeOffService.isVetOnTimeOffOnDate(vetProfile, date)).thenReturn(true);
 
-        VisitCreateCommand cmd = new VisitCreateCommand(1L, 2L, date, java.time.LocalTime.of(9,0), null, null);
+        VisitCreateCommand cmd = new VisitCreateCommand(1L, 2L, date, java.time.LocalTime.of(9, 0), null, null);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> visitService.createVisit(cmd));
         assertTrue(ex.getMessage().toLowerCase().contains("time off"));
     }
@@ -148,8 +155,8 @@ class VisitServiceImplTest {
         LocalDate date = LocalDate.now().plusDays(1);
         VetScheduleEntry entry = mock(VetScheduleEntry.class);
         when(entry.getDayOfWeek()).thenReturn(date.getDayOfWeek());
-        when(entry.getStartTime()).thenReturn(java.time.LocalTime.of(9,0));
-        when(entry.getEndTime()).thenReturn(java.time.LocalTime.of(12,0));
+        when(entry.getStartTime()).thenReturn(java.time.LocalTime.of(9, 0));
+        when(entry.getEndTime()).thenReturn(java.time.LocalTime.of(12, 0));
         when(entry.getSlotLengthMinutes()).thenReturn(30);
         when(vetScheduleService.getScheduleForVetProfile(2L)).thenReturn(java.util.List.of(entry));
 
@@ -158,7 +165,7 @@ class VisitServiceImplTest {
                 eq(vetProfile), eq(date), anySet(), any(), any()
         )).thenReturn(true);
 
-        VisitCreateCommand cmd = new VisitCreateCommand(1L, 2L, date, java.time.LocalTime.of(9,0), null, null);
+        VisitCreateCommand cmd = new VisitCreateCommand(1L, 2L, date, java.time.LocalTime.of(9, 0), null, null);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> visitService.createVisit(cmd));
         assertTrue(ex.getMessage().toLowerCase().contains("taken"));
     }
