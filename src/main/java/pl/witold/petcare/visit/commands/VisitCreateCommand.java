@@ -28,4 +28,5 @@ public record VisitCreateCommand(
 
         @Size(max = 1024, message = "Notes cannot exceed 1024 characters")
         String notes
-) {}
+) {
+}

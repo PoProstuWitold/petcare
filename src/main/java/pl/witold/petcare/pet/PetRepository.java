@@ -14,27 +14,27 @@ public interface PetRepository extends JpaRepository<Pet, Long> {
     List<Pet> findByOwnerId(Long ownerId);
 
     @Query("""
-        select p from Pet p join fetch p.owner o where p.id = :id
-        """)
+            select p from Pet p join fetch p.owner o where p.id = :id
+            """)
     Optional<Pet> findByIdWithOwner(@Param("id") Long id);
 
     @Query("""
-        select p from Pet p join fetch p.owner o
-        """)
+            select p from Pet p join fetch p.owner o
+            """)
     List<Pet> findAllWithOwner();
 
     @Query("""
-        select p from Pet p join fetch p.owner o
-        """)
+            select p from Pet p join fetch p.owner o
+            """)
     Page<Pet> findAllWithOwner(Pageable pageable);
 
     @Query("""
-        select p from Pet p join fetch p.owner o where o.id = :ownerId
-        """)
+            select p from Pet p join fetch p.owner o where o.id = :ownerId
+            """)
     List<Pet> findByOwnerIdWithOwner(@Param("ownerId") Long ownerId);
 
     @Query("""
-        select p from Pet p join fetch p.owner o where o.id = :ownerId
-        """)
+            select p from Pet p join fetch p.owner o where o.id = :ownerId
+            """)
     Page<Pet> findByOwnerIdWithOwner(@Param("ownerId") Long ownerId, Pageable pageable);
 }

@@ -11,4 +11,5 @@ public record VetScheduleEntryDto(
         LocalTime startTime,
         LocalTime endTime,
         Integer slotLengthMinutes
-) {}
+) {
+}

@@ -10,6 +10,8 @@ import pl.witold.petcare.dto.UserResponseDto;
  */
 public interface AuthService {
     AuthResponse login(AuthRequest request);
+
     UserResponseDto register(RegisterRequest request);
+
     UserResponseDto getCurrentUser(String username);
 }

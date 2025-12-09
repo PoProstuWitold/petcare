@@ -110,8 +110,8 @@ public class MedicalRecordController {
     }
 
     @Operation(
-        summary = "Update medical record",
-        description = "Partially updates editable fields (title, diagnosis, treatment, prescriptions, notes). Allowed for the authoring vet or ADMIN."
+            summary = "Update medical record",
+            description = "Partially updates editable fields (title, diagnosis, treatment, prescriptions, notes). Allowed for the authoring vet or ADMIN."
     )
     @ApiResponse(
             responseCode = "200",

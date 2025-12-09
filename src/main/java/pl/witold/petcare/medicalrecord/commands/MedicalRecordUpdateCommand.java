@@ -8,5 +8,6 @@ public record MedicalRecordUpdateCommand(
         @Size(max = 1024) String treatment,
         @Size(max = 1024) String prescriptions,
         @Size(max = 2048) String notes
-) {}
+) {
+}
 

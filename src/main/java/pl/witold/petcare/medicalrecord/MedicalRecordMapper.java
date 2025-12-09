@@ -12,7 +12,8 @@ import pl.witold.petcare.visit.VisitMapper;
 
 public final class MedicalRecordMapper {
 
-    private MedicalRecordMapper() {}
+    private MedicalRecordMapper() {
+    }
 
     public static pl.witold.petcare.dto.MedicalRecordResponseDto toDto(MedicalRecord record) {
         Pet pet = record.getPet();

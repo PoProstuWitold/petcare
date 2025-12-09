@@ -17,4 +17,5 @@ public record VetProfileResponseDto(
         boolean acceptsNewPatients,
         Integer averageVisitLengthMinutes,
         Set<VetSpecialization> specializations
-) {}
+) {
+}

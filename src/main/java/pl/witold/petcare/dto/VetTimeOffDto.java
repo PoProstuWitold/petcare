@@ -10,4 +10,5 @@ public record VetTimeOffDto(
         LocalDate startDate,
         LocalDate endDate,
         String reason
-) {}
+) {
+}

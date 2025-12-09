@@ -37,4 +37,5 @@ public record PetUpdateCommand(
 
         @Size(max = 512, message = "Notes cannot exceed 512 characters")
         String notes
-) {}
+) {
+}

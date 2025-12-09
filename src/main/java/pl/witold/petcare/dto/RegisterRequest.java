@@ -24,4 +24,5 @@ public record RegisterRequest(
         @NotBlank(message = "Password cannot be empty")
         @Size(min = 8, max = 64)
         String password
-) {}
+) {
+}

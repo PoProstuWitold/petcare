@@ -5,7 +5,8 @@ import pl.witold.petcare.vet.VetProfile;
 
 import java.util.Optional;
 
-/**c
+/**
+ * c
  * Repository for accessing VetProfile entities.
  */
 public interface VetProfileRepository extends JpaRepository<VetProfile, Long> {

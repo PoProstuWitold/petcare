@@ -12,4 +12,5 @@ public record AuthRequest(
 
         @NotBlank(message = "Password cannot be empty")
         String password
-) {}
+) {
+}

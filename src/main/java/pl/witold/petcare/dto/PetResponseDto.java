@@ -20,4 +20,5 @@ public record PetResponseDto(
         Integer birthYear,
         Double weight,
         String notes
-) {}
+) {
+}

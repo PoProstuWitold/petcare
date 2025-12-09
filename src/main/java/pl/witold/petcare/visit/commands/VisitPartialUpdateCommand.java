@@ -9,4 +9,5 @@ import jakarta.validation.constraints.Size;
 public record VisitPartialUpdateCommand(
         @Nullable @Size(max = 255) String reason,
         @Nullable @Size(max = 1024) String notes
-) {}
+) {
+}

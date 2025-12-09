@@ -20,4 +20,5 @@ public record VisitResponseDto(
         VisitStatus status,
         String reason,
         String notes
-) {}
+) {
+}

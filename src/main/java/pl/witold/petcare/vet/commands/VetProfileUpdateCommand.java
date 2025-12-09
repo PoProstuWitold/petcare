@@ -25,4 +25,5 @@ public record VetProfileUpdateCommand(
         Integer averageVisitLengthMinutes,
 
         Set<VetSpecialization> specializations
-) {}
+) {
+}

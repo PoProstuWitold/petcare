@@ -25,4 +25,5 @@ public record VetScheduleEntryCommand(
         @Min(value = 5, message = "Slot length must be at least 5 minutes")
         @Max(value = 240, message = "Slot length cannot exceed 240 minutes")
         Integer slotLengthMinutes
-) {}
+) {
+}

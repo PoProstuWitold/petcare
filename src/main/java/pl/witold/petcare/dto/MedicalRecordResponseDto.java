@@ -13,4 +13,5 @@ public record MedicalRecordResponseDto(
         String prescriptions,
         String notes,
         LocalDateTime createdAt
-) {}
+) {
+}
