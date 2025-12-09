@@ -32,7 +32,7 @@ import java.time.LocalDate;
         description = "Booking, listing and managing veterinary visits"
 )
 @RestController
-@RequestMapping("/api/visits")
+@RequestMapping("${api.prefix:/api}/visits")
 @RequiredArgsConstructor
 public class VisitController {
 

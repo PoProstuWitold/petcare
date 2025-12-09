@@ -1,5 +1,6 @@
 package pl.witold.petcare.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,17 +36,20 @@ public class SecurityConfig {
     private final JwtAuthEntryPoint jwtAuthEntryPoint;
     private final RestAccessDeniedHandler accessDeniedHandler;
     private final CorsProperties corsProperties;
+    private final String apiPrefix;
 
     public SecurityConfig(
             JwtAuthFilter jwtAuthFilter,
             JwtAuthEntryPoint jwtAuthEntryPoint,
             RestAccessDeniedHandler accessDeniedHandler,
-            CorsProperties corsProperties
+            CorsProperties corsProperties,
+            @Value("${api.prefix:/api}") String apiPrefix
     ) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.jwtAuthEntryPoint = jwtAuthEntryPoint;
         this.accessDeniedHandler = accessDeniedHandler;
         this.corsProperties = corsProperties;
+        this.apiPrefix = apiPrefix;
     }
 
     @Bean
@@ -53,6 +57,8 @@ public class SecurityConfig {
             HttpSecurity http,
             AuthenticationProvider authenticationProvider
     ) throws Exception {
+
+        String p = apiPrefix.endsWith("/") ? apiPrefix.substring(0, apiPrefix.length() - 1) : apiPrefix;
 
         http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -64,9 +70,9 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         // Public authentication endpoints
-                        .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
+                        .requestMatchers(p + "/auth/register", p + "/auth/login").permitAll()
                         // Public status/health endpoints
-                        .requestMatchers("/api/status/**").permitAll()
+                        .requestMatchers(p + "/status/**").permitAll()
                         // Swagger / OpenAPI documentation
                         .requestMatchers(
                                 "/v3/api-docs/**",
@@ -74,18 +80,18 @@ public class SecurityConfig {
                                 "/swagger-ui.html"
                         ).permitAll()
                         // Admin-only areas
-                        .requestMatchers("/api/users/**").hasRole("ADMIN")
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers(p + "/users/**").hasRole("ADMIN")
+                        .requestMatchers(p + "/admin/**").hasRole("ADMIN")
                         // Vet profile & schedule – only vets can manage their own data
-                        .requestMatchers("/api/vets/me/**").hasAnyRole("VET", "ADMIN")
+                        .requestMatchers(p + "/vets/me/**").hasAnyRole("VET", "ADMIN")
                         // Vet listing – available for authenticated domain users
-                        .requestMatchers("/api/vets/**").hasAnyRole("USER", "VET", "ADMIN")
+                        .requestMatchers(p + "/vets/**").hasAnyRole("USER", "VET", "ADMIN")
                         // Pets API – any authenticated domain role; ownership will be validated in guards
-                        .requestMatchers("/api/pets/**").hasAnyRole("USER", "VET", "ADMIN")
+                        .requestMatchers(p + "/pets/**").hasAnyRole("USER", "VET", "ADMIN")
                         // Visits API – authenticated domain roles only
-                        .requestMatchers("/api/visits/**").hasAnyRole("USER", "VET", "ADMIN")
+                        .requestMatchers(p + "/visits/**").hasAnyRole("USER", "VET", "ADMIN")
                         // Medical Records API – authenticated domain roles only
-                        .requestMatchers("/api/medical-records/**").hasAnyRole("USER", "VET", "ADMIN")
+                        .requestMatchers(p + "/medical-records/**").hasAnyRole("USER", "VET", "ADMIN")
                         // Everything else does not require authentication
                         .anyRequest().permitAll()
                 )

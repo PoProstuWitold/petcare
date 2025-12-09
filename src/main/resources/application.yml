@@ -49,3 +49,7 @@ app:
   cors:
     allowed-origins:
       - http://localhost:5173
+
+# API prefix used across controllers and security configuration
+api:
+  prefix: /api

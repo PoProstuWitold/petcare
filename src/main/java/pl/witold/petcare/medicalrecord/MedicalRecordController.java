@@ -21,7 +21,7 @@ import pl.witold.petcare.medicalrecord.commands.MedicalRecordUpdateCommand;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/medical-records")
+@RequestMapping("${api.prefix:/api}/medical-records")
 @RequiredArgsConstructor
 @Tag(name = "Medical Records", description = "Create, list, update and delete medical records")
 public class MedicalRecordController {

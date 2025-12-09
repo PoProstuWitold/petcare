@@ -27,7 +27,7 @@ import pl.witold.petcare.dto.UserResponseDto;
         description = "User authentication, registration and current user info"
 )
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("${api.prefix:/api}/auth")
 @RequiredArgsConstructor
 public class AuthController {
 

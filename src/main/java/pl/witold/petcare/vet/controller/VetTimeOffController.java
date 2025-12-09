@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
         description = "Vet profiles, schedules and time-off management"
 )
 @RestController
-@RequestMapping("/api/vets")
+@RequestMapping("${api.prefix:/api}/vets")
 @RequiredArgsConstructor
 public class VetTimeOffController {
 

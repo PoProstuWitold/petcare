@@ -33,7 +33,7 @@ import java.util.List;
         description = "Managing pets: creation, update, deletion and listing for owners and vets"
 )
 @RestController
-@RequestMapping("/api/pets")
+@RequestMapping("${api.prefix:/api}/pets")
 @RequiredArgsConstructor
 public class PetController {
 

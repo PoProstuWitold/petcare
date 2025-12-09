@@ -29,7 +29,7 @@ import java.util.Set;
         description = "Fetching and managing application users and their roles"
 )
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("${api.prefix:/api}/users")
 @RequiredArgsConstructor
 public class UserController {
 

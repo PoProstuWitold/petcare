@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,14 +20,11 @@ import java.util.Objects;
         description = "Application health and status"
 )
 @RestController
-@RequestMapping("/api/status")
+@RequestMapping("${api.prefix:/api}/status")
+@RequiredArgsConstructor
 public class StatusController {
 
     private final StatusService statusService;
-
-    public StatusController(StatusService statusService) {
-        this.statusService = statusService;
-    }
 
     @Operation(
             summary = "Get overall application health",
